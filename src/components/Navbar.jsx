@@ -73,7 +73,7 @@ export default function Navbar() {
               transition={{ duration: 0.65, delay: 0.2, ease: "easeOut" }}
               className="relative overflow-hidden rounded-2xl px-1 py-1"
             >
-              <div className="text-[15px] md:text-[24px] font-semibold italic leading-[1.45] tracking-[0.04em] text-cyan-50/95 drop-shadow-[0_0_12px_rgba(103,232,249,0.25)]">
+              <div className="text-[13px] md:text-[22px] font-semibold italic leading-[1.45] tracking-[0.04em] text-cyan-50/95 drop-shadow-[0_0_12px_rgba(103,232,249,0.25)]">
                 <span className="bg-gradient-to-r from-white via-cyan-200 to-slate-300 bg-[length:220%_100%] bg-clip-text text-transparent animate-[facsSloganShine_5.5s_ease-in-out_infinite]">
                   Your Growth Starts
                   <br />Here With Us
