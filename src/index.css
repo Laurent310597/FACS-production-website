@@ -1,0 +1,56 @@
+@import "tailwindcss";
+
+html {
+  scroll-behavior: smooth;
+}
+
+body {
+  margin: 0;
+  background: radial-gradient(circle at top right, rgba(0,183,255,0.10), transparent 30%), linear-gradient(135deg, #0d1726 0%, #101b2f 48%, #132238 100%);
+  color: white;
+  font-family: Cambria, Georgia, serif;
+}
+
+::selection {
+  background: rgba(34, 211, 238, 0.28);
+}
+
+button, a, input, textarea {
+  outline-color: rgba(34, 211, 238, 0.45);
+}
+
+h1, h2, h3, .text-balance {
+  text-wrap: balance;
+}
+
+p, li, .text-pretty {
+  text-wrap: pretty;
+}
+
+.card-copy, .service-copy, .industry-copy {
+  overflow-wrap: normal;
+  word-break: normal;
+  hyphens: manual;
+}
+
+* {
+  box-sizing: border-box;
+}
+
+body {
+  -webkit-font-smoothing: antialiased;
+  text-rendering: geometricPrecision;
+}
+
+[id] {
+  scroll-margin-top: 112px;
+}
+
+img {
+  max-width: 100%;
+}
+
+@keyframes facsSloganShine {
+  0%, 100% { background-position: 0% 50%; opacity: 0.88; }
+  50% { background-position: 100% 50%; opacity: 1; }
+}

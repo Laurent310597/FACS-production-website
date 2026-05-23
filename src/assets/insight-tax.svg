@@ -1,0 +1,22 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 900 560">
+  <defs>
+    <linearGradient id="g" x1="0" y1="0" x2="1" y2="1"><stop offset="0" stop-color="#0d1726"/><stop offset="0.55" stop-color="#12304f"/><stop offset="1" stop-color="#0891b2"/></linearGradient>
+    <radialGradient id="r" cx="75%" cy="20%" r="65%"><stop offset="0" stop-color="#22d3ee" stop-opacity="0.45"/><stop offset="1" stop-color="#22d3ee" stop-opacity="0"/></radialGradient>
+  </defs>
+  <rect width="900" height="560" fill="url(#g)"/>
+  <rect width="900" height="560" fill="url(#r)"/>
+  <g fill="none" stroke="#e0f2fe" stroke-opacity="0.28" stroke-width="2">
+    <path d="M80 420 H820"/><path d="M80 340 H820"/><path d="M80 260 H820"/><path d="M80 180 H820"/>
+    <path d="M170 90 V470"/><path d="M330 90 V470"/><path d="M490 90 V470"/><path d="M650 90 V470"/>
+  </g>
+  <g transform="translate(115 105)">
+    <rect x="0" y="0" width="315" height="350" rx="28" fill="#ffffff" fill-opacity="0.09" stroke="#67e8f9" stroke-opacity="0.38"/>
+    <path d="M62 88h190M62 138h190M62 188h120M62 238h165" stroke="#e0f2fe" stroke-opacity="0.72" stroke-width="12" stroke-linecap="round"/>
+    <circle cx="245" cy="274" r="43" fill="#22d3ee" fill-opacity="0.78"/>
+    <path d="M224 274l14 14 31-38" stroke="#082f49" stroke-width="10" fill="none" stroke-linecap="round" stroke-linejoin="round"/>
+  </g>
+  <g transform="translate(520 145)" fill="#ffffff" fill-opacity="0.10" stroke="#67e8f9" stroke-opacity="0.35">
+    <rect x="0" y="170" width="56" height="170" rx="12"/><rect x="86" y="115" width="56" height="225" rx="12"/><rect x="172" y="62" width="56" height="278" rx="12"/>
+  </g>
+  <text x="520" y="108" fill="#e0f2fe" opacity=".9" font-size="38" font-family="Arial, sans-serif" font-weight="700">TAX</text>
+</svg>
