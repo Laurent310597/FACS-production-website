@@ -74,14 +74,12 @@ export default function Navbar() {
               className="relative overflow-hidden rounded-2xl px-1 py-1"
             >
               <div className="text-[12px] md:text-[20px] font-semibold italic leading-[1.45] tracking-[0.04em] text-cyan-50/95 drop-shadow-[0_0_12px_rgba(103,232,249,0.25)]">
-                <span className="bg-gradient-to-r from-blue via-cyan-200 to-slate-300 bg-[length:220%_100%] bg-clip-text text-transparent animate-[facsSloganShine_5.5s_ease-in-out_infinite]">
-                  Your Growth Starts
-                </span>
-                <br />
-                <span className="bg-gradient-to-r from-blue via-cyan-200 to-slate-300 bg-[length:220%_100%] bg-clip-text text-transparent animate-[facsSloganShine_5.5s_ease-in-out_infinite]">
-                  With Us
-                </span>
-              </div>
+  <span className="bg-gradient-to-r from-blue via-cyan-200 to-slate-300 bg-[length:220%_100%] bg-clip-text text-transparent animate-[facsSloganShine_5.5s_ease-in-out_infinite]">
+    Your Growth Starts
+    <br />
+    With Us
+  </span>
+</div>
               <span className="absolute bottom-0 left-1 h-px w-16 bg-gradient-to-r from-cyan-300/80 to-transparent" />
             </motion.div>
           </div>
