@@ -34,7 +34,7 @@ function FooterLogo() {
       <img
         src={facsLogoFull}
         alt="FACS"
-        className="relative z-10 h-12 w-auto object-contain drop-shadow-[0_0_24px_rgba(34,211,238,0.24)] transition-transform duration-500 group-hover:scale-[1.03] sm:h-14"
+        className="relative z-10 h-12 w-auto object-contain brightness-125 contrast-110 saturate-125 drop-shadow-[0_0_28px_rgba(56,189,248,0.34)] transition-transform duration-500 group-hover:scale-[1.03] sm:h-14"
       />
     </Link>
   );
