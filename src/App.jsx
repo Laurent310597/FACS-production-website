@@ -1,5 +1,5 @@
 import { useEffect, useState } from "react";
-import { BrowserRouter, Routes, Route, useLocation } from "react-router-dom";
+import { BrowserRouter, Routes, Route, Navigate, useLocation } from "react-router-dom";
 import { AnimatePresence, motion } from "framer-motion";
 
 import HomePage from "./pages/HomePage";
@@ -9,6 +9,11 @@ import ServiceDetailPage from "./pages/ServiceDetailPage";
 import IndustriesPage from "./pages/IndustriesPage";
 import IndustryDetailPage from "./pages/IndustryDetailPage";
 import InsightsPage from "./pages/InsightsPage";
+import InsightDetailPage from "./pages/InsightDetailPage";
+import AdminLoginPage from "./pages/admin/AdminLoginPage";
+import AdminPostsPage from "./pages/admin/AdminPostsPage";
+import AdminPostEditorPage from "./pages/admin/AdminPostEditorPage";
+import ProtectedAdminRoute from "./components/admin/ProtectedAdminRoute";
 import CareersPage from "./pages/CareersPage";
 import ApplicationPage from "./pages/ApplicationPage";
 import ContactPage from "./pages/ContactPage";
@@ -94,6 +99,12 @@ function AnimatedRoutes() {
         <Route path="/industries" element={<PageTransition><IndustriesPage /></PageTransition>} />
         <Route path="/industries/:slug" element={<IndustryDetailPage />} />
         <Route path="/insights" element={<PageTransition><InsightsPage /></PageTransition>} />
+        <Route path="/insights/:slug" element={<PageTransition><InsightDetailPage /></PageTransition>} />
+        <Route path="/admin" element={<Navigate to="/admin/posts" replace />} />
+        <Route path="/admin/login" element={<AdminLoginPage />} />
+        <Route path="/admin/posts" element={<ProtectedAdminRoute><AdminPostsPage /></ProtectedAdminRoute>} />
+        <Route path="/admin/posts/new" element={<ProtectedAdminRoute><AdminPostEditorPage /></ProtectedAdminRoute>} />
+        <Route path="/admin/posts/:id/edit" element={<ProtectedAdminRoute><AdminPostEditorPage /></ProtectedAdminRoute>} />
         <Route path="/careers" element={<PageTransition><CareersPage /></PageTransition>} />
         <Route path="/careers/apply" element={<PageTransition><ApplicationPage /></PageTransition>} />
         <Route path="/contact" element={<PageTransition><ContactPage /></PageTransition>} />

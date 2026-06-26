@@ -305,7 +305,7 @@ function applyTranslations(language) {
     acceptNode(node) {
       if (!node.nodeValue || !normalizeText(node.nodeValue)) return NodeFilter.FILTER_REJECT;
       const parent = node.parentElement;
-      if (!parent || parent.closest("script, style, textarea")) return NodeFilter.FILTER_REJECT;
+      if (!parent || parent.closest("script, style, textarea, [data-no-translate]")) return NodeFilter.FILTER_REJECT;
       return NodeFilter.FILTER_ACCEPT;
     },
   });
@@ -319,6 +319,7 @@ function applyTranslations(language) {
   });
 
   document.querySelectorAll("input[placeholder], textarea[placeholder]").forEach((el) => {
+    if (el.closest("[data-no-translate]")) return;
     const text = el.getAttribute("placeholder");
     const mapped = map[text];
     if (mapped) el.setAttribute("placeholder", mapped);
