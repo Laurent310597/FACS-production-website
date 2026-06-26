@@ -144,8 +144,8 @@ export default function InsightDetailPage() {
 
         {post.cover_image_url && (
           <div className="container mx-auto px-6 pt-10 lg:px-12 lg:pt-14">
-            <div className="mx-auto max-w-6xl overflow-hidden rounded-[34px] border border-white/10 bg-[#0d1726] shadow-[0_35px_110px_rgba(0,0,0,0.32)]">
-              <img src={post.cover_image_url} alt={localized.coverAlt} className="max-h-[680px] w-full object-cover" />
+            <div className="mx-auto max-w-5xl overflow-hidden rounded-[34px] border border-white/10 bg-white/[0.025] p-2 shadow-[0_35px_110px_rgba(0,0,0,0.32)] sm:p-3">
+              <img src={post.cover_image_url} alt={localized.coverAlt} className="h-auto w-full rounded-[26px] object-contain" />
             </div>
           </div>
         )}

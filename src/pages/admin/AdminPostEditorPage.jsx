@@ -267,8 +267,8 @@ export default function AdminPostEditorPage() {
           <section className="rounded-[28px] border border-white/10 bg-white/[0.035] p-5 md:p-7">
             <h2 className="text-xl font-semibold">Ảnh bìa</h2>
             <div className="mt-6 grid gap-5 lg:grid-cols-[260px_minmax(0,1fr)]">
-              <div className="flex min-h-44 items-center justify-center overflow-hidden rounded-2xl border border-dashed border-white/15 bg-[#081321]/70">
-                {form.cover_image_url ? <img src={form.cover_image_url} alt="Cover preview" className="h-full min-h-44 w-full object-cover" /> : <div className="px-6 text-center text-sm text-slate-600">Chưa có ảnh bìa</div>}
+              <div className="flex min-h-44 items-center justify-center overflow-hidden rounded-2xl border border-dashed border-white/15 bg-[#081321]/70 p-2">
+                {form.cover_image_url ? <img src={form.cover_image_url} alt="Cover preview" className="max-h-80 h-auto w-full rounded-xl object-contain" /> : <div className="px-6 text-center text-sm text-slate-600">Chưa có ảnh bìa</div>}
               </div>
               <div className="space-y-4">
                 <label className="inline-flex cursor-pointer items-center gap-2 rounded-2xl border border-cyan-200/25 px-5 py-3 font-semibold text-cyan-100 transition hover:bg-cyan-300/10">
@@ -305,7 +305,7 @@ export default function AdminPostEditorPage() {
 
         {previewOpen && (
           <aside className="h-fit overflow-hidden rounded-[28px] border border-cyan-200/15 bg-[#0b1625] 2xl:sticky 2xl:top-28">
-            {form.cover_image_url && <img src={form.cover_image_url} alt="" className="h-56 w-full object-cover" />}
+            {form.cover_image_url && <img src={form.cover_image_url} alt="" className="max-h-[520px] h-auto w-full bg-white/[0.025] p-3 object-contain" />}
             <div className="p-7">
               <div className="text-xs font-bold uppercase tracking-[0.18em] text-cyan-300">Bản xem trước · {activeLanguage.toUpperCase()}</div>
               <h2 className="mt-4 text-3xl font-bold leading-tight">{activeTitle}</h2>
