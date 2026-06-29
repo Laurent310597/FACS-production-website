@@ -3,7 +3,7 @@ import { Link, NavLink, useLocation } from "react-router-dom";
 import { motion } from "framer-motion";
 import { ChevronDown, Menu, X } from "lucide-react";
 import { useLanguage } from "./LanguageContext";
-import { services } from "../data/services";
+import { getServiceContent, services } from "../data/services";
 import { industries } from "../data/industries";
 
 const linkBase = "relative rounded-full px-1 py-2 transition-all duration-300 whitespace-nowrap after:absolute after:left-0 after:-bottom-1 after:h-[2px] after:w-0 after:bg-gradient-to-r after:from-cyan-200 after:to-blue-400 after:transition-all after:duration-300 hover:text-white hover:after:w-full";
@@ -97,8 +97,8 @@ export default function Navbar() {
                       <div className="px-4 pb-2 pt-1 text-xs font-bold uppercase tracking-[0.18em] text-cyan-300/80">{isVi ? `${services.length} nhóm dịch vụ` : `${services.length} Service Pillars`}</div>
                       {services.map((service) => renderDropdownItem({
                         to: `/services/${service.slug}`,
-                        title: service.title,
-                        desc: service.desc,
+                        title: getServiceContent(service, isVi).title,
+                        desc: getServiceContent(service, isVi).desc,
                         Icon: service.icon,
                       }))}
                     </div>

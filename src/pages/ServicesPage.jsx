@@ -7,10 +7,13 @@ import { BarChart3, Building2, CheckCircle2, ShieldCheck } from "lucide-react";
 
 import { Link, useLocation } from "react-router-dom";
 import { useEffect } from "react";
-import { services } from "../data/services";
+import { getServiceContent, services } from "../data/services";
+import { useLanguage } from "../components/LanguageContext";
 
 export default function ServicesPage() {
   const location = useLocation();
+  const { language } = useLanguage();
+  const isVi = language === "vi";
 
   useEffect(() => {
     if (!location.hash) return;
@@ -238,6 +241,7 @@ export default function ServicesPage() {
 
               {services.map((service) => {
                 const Icon = service.icon;
+                const serviceContent = getServiceContent(service, isVi);
 
                 return (
                   <motion.div
@@ -266,11 +270,11 @@ export default function ServicesPage() {
                     </div>
 
                     <h3 className="mt-8 text-3xl font-semibold leading-snug">
-                      {service.title}
+                      {serviceContent.title}
                     </h3>
 
                     <p className="mt-6 text-slate-400 leading-relaxed text-lg">
-                      {service.desc}
+                      {serviceContent.desc}
                     </p>
 
                     <Link to={`/services/${service.slug}`} className="inline-block mt-10 text-cyan-400 hover:text-cyan-300 hover:translate-x-1 transition-all duration-300">
