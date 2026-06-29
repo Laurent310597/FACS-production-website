@@ -277,7 +277,8 @@ export const services = [
     whyFacs: "Our multidisciplinary advisory model allows us to handle non-standard assignments with structure and professional judgment, helping clients move from confusion to a clear and manageable action plan.",
     whyFacsVi: "Mô hình tư vấn đa chuyên môn của chúng tôi cho phép xử lý các yêu cầu không tiêu chuẩn bằng cấu trúc và xét đoán chuyên nghiệp, giúp khách hàng chuyển từ tình trạng rối sang kế hoạch hành động rõ ràng và có thể quản lý.",
   },
-];export function getServiceContent(service, isVi = false) {
+];
+export function getServiceContent(service, isVi = false) {
   return {
     ...service,
     title: isVi ? service.titleVi || service.title : service.title,
