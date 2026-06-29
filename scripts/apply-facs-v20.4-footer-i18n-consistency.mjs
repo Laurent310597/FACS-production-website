@@ -1,4 +1,19 @@
-import {
+import fs from 'fs';
+import path from 'path';
+
+const root = process.cwd();
+const read = (file) => fs.readFileSync(path.join(root, file), 'utf8');
+const write = (file, content) => fs.writeFileSync(path.join(root, file), content, 'utf8');
+
+function assertExists(file) {
+  if (!fs.existsSync(path.join(root, file))) {
+    throw new Error(`Missing required file: ${file}. Please run this script from the website project root.`);
+  }
+}
+
+['package.json', 'src/data/services.js', 'src/components/Footer.jsx'].forEach(assertExists);
+
+const servicesJs = `import {
   Calculator,
   ShieldCheck,
   Scale,
@@ -278,3 +293,32 @@ export const services = [
     whyFacsVi: "Mô hình tư vấn đa chuyên môn của chúng tôi cho phép xử lý các yêu cầu không tiêu chuẩn bằng cấu trúc và xét đoán chuyên nghiệp, giúp khách hàng chuyển từ tình trạng rối sang kế hoạch hành động rõ ràng và có thể quản lý.",
   },
 ];
+`;
+
+write('src/data/services.js', servicesJs);
+console.log('Updated src/data/services.js with consistent bilingual titles and content.');
+
+let footer = read('src/components/Footer.jsx');
+footer = footer.replace('{service.title}', '{isVi ? service.titleVi : service.title}');
+footer = footer.replace('industries.slice(0, 6).map((industry) => (', 'industries.map((industry) => (');
+write('src/components/Footer.jsx', footer);
+console.log('Updated src/components/Footer.jsx service localization and full 8 industries list.');
+
+const pageFiles = ['src/pages/HomePage.jsx', 'src/pages/ServicesPage.jsx'];
+for (const file of pageFiles) {
+  if (!fs.existsSync(path.join(root, file))) continue;
+  let content = read(file);
+  content = content.replaceAll('{service.title}', '{isVi ? service.titleVi : service.title}');
+  content = content.replaceAll('{service.desc}', '{isVi ? service.descVi : service.desc}');
+  write(file, content);
+  console.log(`Checked ${file} for bilingual service title/description usage.`);
+}
+
+let navbar = read('src/components/Navbar.jsx');
+navbar = navbar.replace('title: service.title,\n                        desc: service.desc,', 'title: isVi ? service.titleVi : service.title,\n                        desc: isVi ? service.descVi : service.desc,');
+navbar = navbar.replace('{isVi ? "6 nhóm dịch vụ" : "6 Service Pillars"}', '{isVi ? "9 nhóm dịch vụ" : "9 Service Pillars"}');
+write('src/components/Navbar.jsx', navbar);
+console.log('Checked src/components/Navbar.jsx for bilingual dropdown and service count.');
+
+console.log('\nFACS v20.4 footer + i18n consistency patch applied.');
+console.log('Next: npm run build && git add . && git commit -m "Fix footer localization and service wording consistency" && git push');
