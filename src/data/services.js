@@ -5,6 +5,9 @@ import {
   Briefcase,
   Building2,
   GraduationCap,
+  FileCheck2,
+  Cog,
+  Puzzle,
 } from "lucide-react";
 
 export const services = [
@@ -109,5 +112,56 @@ export const services = [
       "FACS develops practical training sessions tailored to the enterprise’s actual transactions, workflows and internal roles. Our programs are designed to be clear, applicable and immediately useful for daily operations.",
     whyFacs:
       "We translate technical accounting, tax and compliance matters into business language, helping teams understand not only what to do, but why it matters.",
+  },
+  {
+    slug: "audit-assurance-support",
+    icon: FileCheck2,
+    title: "Independent Audit & Audit Support",
+    desc: "Independent audit coordination, audit-readiness review and practical support for financial statement audit processes.",
+    details: [
+      "Audit-readiness review of accounting records, supporting documents and financial statement schedules.",
+      "Coordination support during independent audit fieldwork, information requests and management explanations.",
+      "Post-audit follow-up support for adjustment tracking, documentation improvement and closing-file discipline.",
+    ],
+    whyChoose:
+      "An audit process can become time-consuming and disruptive when accounting records, schedules and supporting documents are not prepared in a clear and consistent manner. Proper audit support helps management reduce delays, improve audit response quality and strengthen financial reporting discipline.",
+    facsValue:
+      "FACS supports enterprises before, during and after the audit process by reviewing audit readiness, preparing schedules, coordinating information flow and helping management address audit queries in a structured manner.",
+    whyFacs:
+      "We understand both accounting operations and audit expectations. Our role is to help clients communicate financial information clearly, reduce avoidable audit friction and build a stronger reporting foundation for future periods.",
+  },
+  {
+    slug: "erp-consulting-implementation",
+    icon: Cog,
+    title: "ERP Consulting & Implementation",
+    desc: "ERP selection, process design, customization and implementation support for scalable business operations.",
+    details: [
+      "ERP needs assessment, process mapping and system selection support for newly established or growing businesses.",
+      "ERP customization and implementation coordination across accounting, inventory, purchasing, sales and reporting workflows.",
+      "Data migration, user acceptance testing, go-live support and preparation of ad-hoc management reports.",
+    ],
+    whyChoose:
+      "A poorly selected or poorly implemented ERP system can create duplicated work, unreliable reports and long-term operational inefficiency. Businesses need a practical bridge between finance, operations and system implementation.",
+    facsValue:
+      "FACS helps clients define system requirements, align ERP configuration with real business processes and support implementation in a practical, finance-driven manner. Our work focuses on usability, control and management visibility.",
+    whyFacs:
+      "We approach ERP not only as a software project, but as an operating model project. This allows us to connect accounting, tax, inventory, reporting and governance requirements into one coherent system design.",
+  },
+  {
+    slug: "tailored-business-support",
+    icon: Puzzle,
+    title: "Tailored Business Support",
+    desc: "Customized advisory and hands-on support for complex, urgent or non-standard accounting, tax, legal and reporting matters.",
+    details: [
+      "Merging two sets of books, cleaning accounting records and resolving historical bookkeeping inconsistencies.",
+      "Financial statement review, tax and accounting health checks, legal document review and compliance gap assessment.",
+      "Ad-hoc troubleshooting support for management reports, reconciliations, documentation gaps and operational bottlenecks.",
+    ],
+    whyChoose:
+      "Not every business issue fits neatly into a standard service package. Companies often face urgent, historical or cross-functional problems that require accounting, tax, legal and operational perspectives at the same time.",
+    facsValue:
+      "FACS designs tailored support based on the client’s actual problem, available records and desired outcome. We help clarify the issue, prioritize remediation steps and deliver practical documentation, review or implementation support.",
+    whyFacs:
+      "Our multidisciplinary advisory model allows us to handle non-standard assignments with structure and professional judgment, helping clients move from confusion to a clear and manageable action plan.",
   },
 ];

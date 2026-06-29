@@ -52,15 +52,15 @@ export default function HomePage() {
 
   const heroStats = [
     ["100+", isVi ? "Khách hàng doanh nghiệp" : "Enterprise Clients"],
-    ["10+", isVi ? "Năm kinh nghiệm" : "Years of Experience"],
+    ["9", isVi ? "Nhóm dịch vụ" : "Service Pillars"],
     ["8", isVi ? "Lĩnh vực chuyên sâu" : "Industry Sectors"],
     ["10+", isVi ? "Đối tác chiến lược" : "Strategic Partners"],
   ];
 
   const visualStats = [
+    [BriefcaseBusiness, "9", isVi ? "Nhóm dịch vụ" : "Service Pillars"],
     [ShieldCheck, "100%", isVi ? "Tuân thủ" : "Compliance"],
-    [BarChart3, "3.2x", isVi ? "Hiệu quả vận hành" : "Efficiency"],
-    [BriefcaseBusiness, "8", isVi ? "Lĩnh vực" : "Industry Sectors"],
+    [BarChart3, "8", isVi ? "Lĩnh vực" : "Industry Sectors"],
     [Handshake, "10+", isVi ? "Đối tác" : "Strategic Partners"],
   ];
 

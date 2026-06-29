@@ -7,7 +7,7 @@ import { services } from "../data/services";
 import { industries } from "../data/industries";
 
 const linkBase = "relative rounded-full px-1 py-2 transition-all duration-300 whitespace-nowrap after:absolute after:left-0 after:-bottom-1 after:h-[2px] after:w-0 after:bg-gradient-to-r after:from-cyan-200 after:to-blue-400 after:transition-all after:duration-300 hover:text-white hover:after:w-full";
-const dropdownClass = "pointer-events-none absolute left-1/2 top-full z-50 mt-4 w-[380px] -translate-x-1/2 translate-y-2 rounded-3xl border border-cyan-200/15 bg-[#0d1726]/96 p-3 opacity-0 shadow-[0_26px_90px_rgba(0,0,0,0.48)] backdrop-blur-2xl transition-all duration-300 group-hover:pointer-events-auto group-hover:translate-y-0 group-hover:opacity-100";
+const dropdownClass = "pointer-events-none absolute left-1/2 top-full z-50 mt-4 max-h-[calc(100vh-7rem)] w-[420px] -translate-x-1/2 translate-y-2 overflow-y-auto rounded-3xl border border-cyan-200/15 bg-[#0d1726]/96 p-3 opacity-0 shadow-[0_26px_90px_rgba(0,0,0,0.48)] backdrop-blur-2xl transition-all duration-300 group-hover:pointer-events-auto group-hover:translate-y-0 group-hover:opacity-100";
 
 function LogoWordmark({ compact = false }) {
   return (
@@ -94,7 +94,7 @@ export default function Navbar() {
                     </NavLink>
                     <div className={dropdownClass}>
                       <div className="absolute -top-4 left-0 right-0 h-4" />
-                      <div className="px-4 pb-2 pt-1 text-xs font-bold uppercase tracking-[0.18em] text-cyan-300/80">{isVi ? "6 nhóm dịch vụ" : "6 Service Pillars"}</div>
+                      <div className="px-4 pb-2 pt-1 text-xs font-bold uppercase tracking-[0.18em] text-cyan-300/80">{isVi ? `${services.length} nhóm dịch vụ` : `${services.length} Service Pillars`}</div>
                       {services.map((service) => renderDropdownItem({
                         to: `/services/${service.slug}`,
                         title: service.title,

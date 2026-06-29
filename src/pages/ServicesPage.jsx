@@ -72,7 +72,7 @@ export default function ServicesPage() {
 
                 <p className="mt-10 text-slate-400 text-xl leading-relaxed">
 
-                  Comprehensive accounting, taxation, legal and operational consulting solutions designed for modern enterprises.
+                  Comprehensive accounting, taxation, legal, audit, ERP and operational consulting solutions designed for modern enterprises.
 
                 </p>
 
@@ -81,7 +81,7 @@ export default function ServicesPage() {
 
                   <div>
 
-                    <AnimatedCounter value="6" className="text-5xl font-bold" />
+                    <AnimatedCounter value="9" className="text-5xl font-bold" />
 
                     <div className="mt-2 text-slate-400">
                       Service Pillars
@@ -134,7 +134,7 @@ export default function ServicesPage() {
                         className="text-cyan-400"
                       />
 
-                      <AnimatedCounter value="6" className="mt-6 block text-4xl font-bold" />
+                      <AnimatedCounter value="9" className="mt-6 block text-4xl font-bold" />
 
                       <div className="mt-2 text-slate-400">
                         Service Pillars
