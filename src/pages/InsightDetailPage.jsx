@@ -30,7 +30,7 @@ export default function InsightDetailPage() {
   useEffect(() => {
     let active = true;
 
-    const fetchPost = async () => {
+    const fetchPost = async (showLoading = false) => {
       if (!supabase) {
         const fallback = fallbackPosts.find((item) => item.slug === slug) || null;
         if (active) {
@@ -40,6 +40,7 @@ export default function InsightDetailPage() {
         return;
       }
 
+      if (showLoading) setLoading(true);
       const { data, error } = await supabase
         .from("posts")
         .select("*")
@@ -54,9 +55,15 @@ export default function InsightDetailPage() {
       setLoading(false);
     };
 
-    fetchPost();
+    const refreshOnFocus = () => fetchPost(false);
+    fetchPost(true);
+    const refreshTimer = window.setInterval(() => fetchPost(false), 60000);
+    window.addEventListener("focus", refreshOnFocus);
+
     return () => {
       active = false;
+      window.clearInterval(refreshTimer);
+      window.removeEventListener("focus", refreshOnFocus);
     };
   }, [slug]);
 

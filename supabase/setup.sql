@@ -58,7 +58,8 @@ grant usage on schema public to anon, authenticated;
 grant select on public.posts to anon;
 grant select, insert, update, delete on public.posts to authenticated;
 
--- Visitors can only read published posts.
+-- Visitors can only read articles whose publication time has arrived.
+-- Scheduled articles use status = 'published' with published_at in the future.
 drop policy if exists "Public can read published posts" on public.posts;
 create policy "Public can read published posts"
 on public.posts

@@ -1,9 +1,22 @@
 import { useEffect, useMemo, useState } from "react";
-import { Copy, Edit3, FilePlus2, Search, Trash2 } from "lucide-react";
+import { CalendarClock, Copy, Edit3, FilePlus2, Search, Trash2 } from "lucide-react";
 import { Link } from "react-router-dom";
 import AdminLayout from "../../components/admin/AdminLayout";
 import { getCategoryLabel, getLocalizedPost, slugify } from "../../lib/insights";
+import { formatVietnamDateTime, getPublicationState } from "../../lib/publication";
 import { supabase } from "../../lib/supabaseClient";
+
+const statusStyles = {
+  published: "bg-emerald-300/10 text-emerald-200",
+  scheduled: "bg-violet-300/10 text-violet-200",
+  draft: "bg-amber-300/10 text-amber-200",
+};
+
+const statusLabels = {
+  published: "Đã xuất bản",
+  scheduled: "Đã lên lịch",
+  draft: "Bản nháp",
+};
 
 export default function AdminPostsPage() {
   const [posts, setPosts] = useState([]);
@@ -11,6 +24,7 @@ export default function AdminPostsPage() {
   const [error, setError] = useState("");
   const [query, setQuery] = useState("");
   const [status, setStatus] = useState("all");
+  const [now, setNow] = useState(() => new Date());
 
   const fetchPosts = async () => {
     setLoading(true);
@@ -46,14 +60,20 @@ export default function AdminPostsPage() {
     };
   }, []);
 
+  useEffect(() => {
+    const timer = window.setInterval(() => setNow(new Date()), 60000);
+    return () => window.clearInterval(timer);
+  }, []);
+
   const filteredPosts = useMemo(() => {
     const normalized = query.trim().toLowerCase();
     return posts.filter((post) => {
-      const matchesStatus = status === "all" || post.status === status;
+      const publicationState = getPublicationState(post, now);
+      const matchesStatus = status === "all" || publicationState === status;
       const searchText = `${post.title_vi || ""} ${post.title_en || ""} ${post.slug || ""}`.toLowerCase();
       return matchesStatus && (!normalized || searchText.includes(normalized));
     });
-  }, [posts, query, status]);
+  }, [posts, query, status, now]);
 
   const deletePost = async (post) => {
     const title = getLocalizedPost(post, "vi").title;
@@ -113,7 +133,7 @@ export default function AdminPostsPage() {
         <div>
           <div className="text-xs font-bold uppercase tracking-[0.18em] text-cyan-300">Quản lý nội dung</div>
           <h1 className="mt-2 text-3xl font-bold md:text-4xl">Danh sách bài viết</h1>
-          <p className="mt-2 text-sm text-slate-400">Tạo, chỉnh sửa, lưu nháp hoặc xuất bản bài viết trên trang Insights.</p>
+          <p className="mt-2 text-sm text-slate-400">Tạo, lưu nháp, hẹn giờ hoặc đăng ngay bài viết trên trang Insights.</p>
         </div>
         <Link to="/admin/posts/new" className="inline-flex items-center justify-center gap-2 rounded-2xl bg-cyan-300 px-5 py-3 font-bold text-[#071421] transition hover:-translate-y-0.5 hover:bg-cyan-200">
           <FilePlus2 size={18} /> Viết bài mới
@@ -128,6 +148,7 @@ export default function AdminPostsPage() {
         <select value={status} onChange={(event) => setStatus(event.target.value)} className="rounded-2xl border border-white/10 bg-[#081321] px-4 py-3 text-sm text-white outline-none">
           <option value="all">Tất cả trạng thái</option>
           <option value="published">Đã xuất bản</option>
+          <option value="scheduled">Đã lên lịch</option>
           <option value="draft">Bản nháp</option>
         </select>
       </div>
@@ -146,6 +167,7 @@ export default function AdminPostsPage() {
           <div className="divide-y divide-white/10">
             {filteredPosts.map((post) => {
               const localized = getLocalizedPost(post, "vi");
+              const publicationState = getPublicationState(post, now);
               return (
                 <article key={post.id} className="grid gap-4 p-5 transition hover:bg-white/[0.025] md:grid-cols-[96px_minmax(0,1fr)_auto] md:items-center md:p-6">
                   <div className="h-20 overflow-hidden rounded-2xl border border-white/10 bg-[#081321]">
@@ -154,12 +176,17 @@ export default function AdminPostsPage() {
                   <div className="min-w-0">
                     <div className="flex flex-wrap items-center gap-2 text-xs">
                       <span className="rounded-full bg-cyan-300/10 px-3 py-1 font-semibold text-cyan-200">{getCategoryLabel(post.category, "vi")}</span>
-                      <span className={`rounded-full px-3 py-1 font-semibold ${post.status === "published" ? "bg-emerald-300/10 text-emerald-200" : "bg-amber-300/10 text-amber-200"}`}>
-                        {post.status === "published" ? "Đã xuất bản" : "Bản nháp"}
+                      <span className={`rounded-full px-3 py-1 font-semibold ${statusStyles[publicationState]}`}>
+                        {statusLabels[publicationState]}
                       </span>
                     </div>
                     <h2 className="mt-3 truncate text-lg font-semibold text-white">{localized.title}</h2>
                     <div className="mt-1 truncate text-sm text-slate-500">/insights/{post.slug}</div>
+                    {publicationState === "scheduled" && (
+                      <div className="mt-2 inline-flex items-center gap-1.5 text-xs font-medium text-violet-200">
+                        <CalendarClock size={14} /> Tự động đăng lúc {formatVietnamDateTime(post.published_at)} (UTC+7)
+                      </div>
+                    )}
                   </div>
                   <div className="flex items-center gap-2 md:justify-end">
                     <button type="button" onClick={() => duplicatePost(post)} className="flex h-10 w-10 items-center justify-center rounded-xl border border-white/10 text-slate-400 transition hover:border-cyan-200/30 hover:text-cyan-200" title="Nhân bản"><Copy size={17} /></button>

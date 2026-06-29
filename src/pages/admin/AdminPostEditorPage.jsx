@@ -1,10 +1,17 @@
 import { useEffect, useMemo, useState } from "react";
 import DOMPurify from "dompurify";
-import { ArrowLeft, Eye, ImagePlus, Loader2, Save, Send } from "lucide-react";
+import { ArrowLeft, CalendarClock, Eye, ImagePlus, Loader2, Save, Send } from "lucide-react";
 import { Link, useNavigate, useParams } from "react-router-dom";
 import AdminLayout from "../../components/admin/AdminLayout";
 import RichTextEditor from "../../components/admin/RichTextEditor";
 import { insightCategories, slugify } from "../../lib/insights";
+import {
+  formatVietnamDateTime,
+  getMinimumVietnamDateTimeInput,
+  getPublicationState,
+  isoToVietnamDateTimeInput,
+  vietnamDateTimeInputToIso,
+} from "../../lib/publication";
 import { supabase } from "../../lib/supabaseClient";
 
 const emptyForm = {
@@ -50,6 +57,7 @@ export default function AdminPostEditorPage() {
   const [uploading, setUploading] = useState(false);
   const [error, setError] = useState("");
   const [previewOpen, setPreviewOpen] = useState(false);
+  const [scheduleAt, setScheduleAt] = useState("");
 
   useEffect(() => {
     if (!isEditing) return;
@@ -60,6 +68,7 @@ export default function AdminPostEditorPage() {
         setError(`Không thể tải bài viết: ${fetchError.message}`);
       } else {
         setForm({ ...emptyForm, ...data });
+        setScheduleAt(isoToVietnamDateTimeInput(data.published_at));
         if (!data.title_vi && data.title_en) setActiveLanguage("en");
       }
       setLoading(false);
@@ -122,7 +131,7 @@ export default function AdminPostEditorPage() {
     setUploading(false);
   };
 
-  const savePost = async (nextStatus) => {
+  const savePost = async (action) => {
     setError("");
 
     const hasTitle = Boolean(form.title_vi.trim() || form.title_en.trim());
@@ -142,9 +151,29 @@ export default function AdminPostEditorPage() {
       return;
     }
 
+    let nextStatus = "draft";
+    let publishedAt = null;
+
+    if (action === "publish") {
+      nextStatus = "published";
+      publishedAt = new Date().toISOString();
+    }
+
+    if (action === "schedule") {
+      publishedAt = vietnamDateTimeInputToIso(scheduleAt);
+      if (!publishedAt) {
+        setError("Vui lòng chọn ngày và giờ đăng bài.");
+        return;
+      }
+      if (new Date(publishedAt).getTime() <= Date.now() + 30000) {
+        setError("Thời gian hẹn đăng phải muộn hơn thời điểm hiện tại ít nhất 1 phút.");
+        return;
+      }
+      nextStatus = "published";
+    }
+
     setSaving(true);
     const { data: authData } = await supabase.auth.getSession();
-    const publishedAt = nextStatus === "published" ? form.published_at || new Date().toISOString() : null;
     const payload = {
       ...form,
       slug: finalSlug,
@@ -192,8 +221,11 @@ export default function AdminPostEditorPage() {
           <button type="button" disabled={saving} onClick={() => savePost("draft")} className="inline-flex items-center gap-2 rounded-2xl border border-cyan-200/25 bg-white/[0.04] px-5 py-3 font-semibold text-cyan-100 transition hover:bg-white/[0.08] disabled:opacity-50">
             <Save size={18} /> Lưu nháp
           </button>
-          <button type="button" disabled={saving} onClick={() => savePost("published")} className="inline-flex items-center gap-2 rounded-2xl bg-cyan-300 px-5 py-3 font-bold text-[#071421] transition hover:-translate-y-0.5 hover:bg-cyan-200 disabled:opacity-50">
-            {saving ? <Loader2 size={18} className="animate-spin" /> : <Send size={18} />} Xuất bản
+          <button type="button" disabled={saving} onClick={() => savePost("schedule")} className="inline-flex items-center gap-2 rounded-2xl border border-violet-200/25 bg-violet-300/10 px-5 py-3 font-semibold text-violet-100 transition hover:bg-violet-300/15 disabled:opacity-50">
+            {saving ? <Loader2 size={18} className="animate-spin" /> : <CalendarClock size={18} />} Hẹn giờ đăng
+          </button>
+          <button type="button" disabled={saving} onClick={() => savePost("publish")} className="inline-flex items-center gap-2 rounded-2xl bg-cyan-300 px-5 py-3 font-bold text-[#071421] transition hover:-translate-y-0.5 hover:bg-cyan-200 disabled:opacity-50">
+            {saving ? <Loader2 size={18} className="animate-spin" /> : <Send size={18} />} Đăng ngay
           </button>
         </div>
       </div>
@@ -261,6 +293,32 @@ export default function AdminPostEditorPage() {
                 <input type="checkbox" checked={form.featured} onChange={(event) => updateField("featured", event.target.checked)} className="h-4 w-4 accent-cyan-300" />
                 <span><strong className="block text-sm">Đánh dấu bài nổi bật</strong><span className="mt-1 block text-xs text-slate-500">Dùng để ưu tiên bài viết trong các nâng cấp giao diện sau này.</span></span>
               </label>
+
+              <div className="rounded-2xl border border-violet-200/15 bg-violet-300/[0.055] p-4 md:col-span-2">
+                <div className="flex flex-col gap-4 lg:flex-row lg:items-end lg:justify-between">
+                  <label className="block flex-1">
+                    <span className="mb-2 block text-sm font-semibold text-violet-100">Ngày và giờ hẹn đăng</span>
+                    <input
+                      type="datetime-local"
+                      value={scheduleAt}
+                      min={getMinimumVietnamDateTimeInput(2)}
+                      onChange={(event) => setScheduleAt(event.target.value)}
+                      className="w-full rounded-2xl border border-white/10 bg-[#081321]/80 px-4 py-3.5 text-white outline-none focus:border-violet-300/40"
+                    />
+                    <span className="mt-2 block text-xs leading-relaxed text-slate-500">Thời gian được hiểu theo múi giờ Việt Nam (UTC+7). Sau khi chọn, bấm “Hẹn giờ đăng”.</span>
+                  </label>
+                  <div className="min-w-[250px] rounded-2xl border border-white/10 bg-[#081321]/55 px-4 py-3.5 text-sm">
+                    <div className="font-semibold text-slate-200">Trạng thái hiện tại</div>
+                    {getPublicationState(form) === "scheduled" ? (
+                      <div className="mt-1 text-violet-200">Đã lên lịch: {formatVietnamDateTime(form.published_at)}</div>
+                    ) : getPublicationState(form) === "published" ? (
+                      <div className="mt-1 text-emerald-200">Đã xuất bản: {formatVietnamDateTime(form.published_at)}</div>
+                    ) : (
+                      <div className="mt-1 text-amber-200">Bản nháp, chưa hiển thị công khai</div>
+                    )}
+                  </div>
+                </div>
+              </div>
             </div>
           </section>
 

@@ -38,14 +38,14 @@ export default function InsightsPage() {
   useEffect(() => {
     let active = true;
 
-    const fetchPosts = async () => {
+    const fetchPosts = async (showLoading = false) => {
       if (!supabase) {
         setPosts(fallbackPosts);
         setLoading(false);
         return;
       }
 
-      setLoading(true);
+      if (showLoading) setLoading(true);
       const { data, error } = await supabase
         .from("posts")
         .select("*")
@@ -57,16 +57,22 @@ export default function InsightsPage() {
       if (!active) return;
       if (error) {
         console.error("Unable to load Insights posts:", error);
-        setPosts(fallbackPosts);
+        if (showLoading) setPosts(fallbackPosts);
       } else {
         setPosts(data || []);
       }
       setLoading(false);
     };
 
-    fetchPosts();
+    const refreshOnFocus = () => fetchPosts(false);
+    fetchPosts(true);
+    const refreshTimer = window.setInterval(() => fetchPosts(false), 60000);
+    window.addEventListener("focus", refreshOnFocus);
+
     return () => {
       active = false;
+      window.clearInterval(refreshTimer);
+      window.removeEventListener("focus", refreshOnFocus);
     };
   }, []);
 

@@ -1,16 +1,45 @@
-# React + Vite
+# FACS Website v20.2
 
-This template provides a minimal setup to get React working in Vite with HMR and some ESLint rules.
+Production source for `facs.vn`.
 
-Currently, two official plugins are available:
+## Stack
 
-- [@vitejs/plugin-react](https://github.com/vitejs/vite-plugin-react/blob/main/packages/plugin-react) uses [Oxc](https://oxc.rs)
-- [@vitejs/plugin-react-swc](https://github.com/vitejs/vite-plugin-react/blob/main/packages/plugin-react-swc) uses [SWC](https://swc.rs/)
+- React + Vite
+- Tailwind CSS
+- Supabase Authentication, Database and Storage
+- Vercel deployment
 
-## React Compiler
+## Insights CMS
 
-The React Compiler is not enabled on this template because of its impact on dev & build performances. To add it, see [this documentation](https://react.dev/learn/react-compiler/installation).
+Admin routes:
 
-## Expanding the ESLint configuration
+- `/admin/login`
+- `/admin/posts`
+- `/admin/posts/new`
+- `/admin/posts/:id/edit`
 
-If you are developing a production application, we recommend using TypeScript with type-aware lint rules enabled. Check out the [TS template](https://github.com/vitejs/vite/tree/main/packages/create-vite/template-react-ts) for information on how to integrate TypeScript and [`typescript-eslint`](https://typescript-eslint.io) in your project.
+Publication options:
+
+- Save draft
+- Schedule publication in Vietnam time (UTC+7)
+- Publish immediately
+
+Scheduled articles use `status = 'published'` with a future `published_at` timestamp. Supabase RLS prevents public access until the scheduled time arrives.
+
+## Local commands
+
+```bash
+npm ci
+npm run dev
+npm run lint
+npm run build
+```
+
+## Supabase
+
+- Fresh setup: `supabase/setup.sql`
+- Upgrade from v20.1: `supabase/migrations/v20.2-scheduled-publishing.sql`
+
+## Deployment
+
+The production repository is deployed automatically by Vercel after changes are pushed to the `main` branch.
