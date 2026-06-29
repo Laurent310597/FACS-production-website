@@ -277,4 +277,19 @@ export const services = [
     whyFacs: "Our multidisciplinary advisory model allows us to handle non-standard assignments with structure and professional judgment, helping clients move from confusion to a clear and manageable action plan.",
     whyFacsVi: "Mô hình tư vấn đa chuyên môn của chúng tôi cho phép xử lý các yêu cầu không tiêu chuẩn bằng cấu trúc và xét đoán chuyên nghiệp, giúp khách hàng chuyển từ tình trạng rối sang kế hoạch hành động rõ ràng và có thể quản lý.",
   },
-];
+];export function getServiceContent(service, isVi = false) {
+  return {
+    ...service,
+    title: isVi ? service.titleVi || service.title : service.title,
+    desc: isVi ? service.descVi || service.desc : service.desc,
+    overview: isVi ? service.overviewVi || service.overview : service.overview,
+    details: isVi ? service.detailsVi || service.details : service.details,
+    typicalClients: isVi ? service.typicalClientsVi || service.typicalClients : service.typicalClients,
+    challenges: isVi ? service.challengesVi || service.challenges : service.challenges,
+    approach: isVi ? service.approachVi || service.approach : service.approach,
+    deliverables: isVi ? service.deliverablesVi || service.deliverables : service.deliverables,
+    whyChoose: isVi ? service.whyChooseVi || service.whyChoose : service.whyChoose,
+    facsValue: isVi ? service.facsValueVi || service.facsValue : service.facsValue,
+    whyFacs: isVi ? service.whyFacsVi || service.whyFacs : service.whyFacs,
+  };
+}
