@@ -7,13 +7,10 @@ import { BarChart3, Building2, CheckCircle2, ShieldCheck } from "lucide-react";
 
 import { Link, useLocation } from "react-router-dom";
 import { useEffect } from "react";
-import { getServiceContent, services } from "../data/services";
-import { useLanguage } from "../components/LanguageContext";
+import { services } from "../data/services";
 
 export default function ServicesPage() {
   const location = useLocation();
-  const { language } = useLanguage();
-  const isVi = language === "vi";
 
   useEffect(() => {
     if (!location.hash) return;
@@ -75,7 +72,7 @@ export default function ServicesPage() {
 
                 <p className="mt-10 text-slate-400 text-xl leading-relaxed">
 
-                  Comprehensive accounting, taxation, legal, audit, ERP and operational consulting solutions designed for modern enterprises.
+                  Comprehensive accounting, taxation, legal and operational consulting solutions designed for modern enterprises.
 
                 </p>
 
@@ -84,7 +81,7 @@ export default function ServicesPage() {
 
                   <div>
 
-                    <AnimatedCounter value="9" className="text-5xl font-bold" />
+                    <AnimatedCounter value="6" className="text-5xl font-bold" />
 
                     <div className="mt-2 text-slate-400">
                       Service Pillars
@@ -137,7 +134,7 @@ export default function ServicesPage() {
                         className="text-cyan-400"
                       />
 
-                      <AnimatedCounter value="9" className="mt-6 block text-4xl font-bold" />
+                      <AnimatedCounter value="6" className="mt-6 block text-4xl font-bold" />
 
                       <div className="mt-2 text-slate-400">
                         Service Pillars
@@ -241,7 +238,6 @@ export default function ServicesPage() {
 
               {services.map((service) => {
                 const Icon = service.icon;
-                const serviceContent = getServiceContent(service, isVi);
 
                 return (
                   <motion.div
@@ -270,11 +266,11 @@ export default function ServicesPage() {
                     </div>
 
                     <h3 className="mt-8 text-3xl font-semibold leading-snug">
-                      {serviceContent.title}
+                      {service.title}
                     </h3>
 
                     <p className="mt-6 text-slate-400 leading-relaxed text-lg">
-                      {serviceContent.desc}
+                      {service.desc}
                     </p>
 
                     <Link to={`/services/${service.slug}`} className="inline-block mt-10 text-cyan-400 hover:text-cyan-300 hover:translate-x-1 transition-all duration-300">

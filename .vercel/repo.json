@@ -1,0 +1,11 @@
+{
+  "remoteName": "origin",
+  "projects": [
+    {
+      "id": "prj_h4WkPzIajsh902wQQRM5UJIDaRVV",
+      "name": "facs-production-website",
+      "directory": ".",
+      "orgId": "team_m3EkPWFeCeovEO6FdvYaHpwl"
+    }
+  ]
+}

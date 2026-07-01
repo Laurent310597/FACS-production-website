@@ -148,7 +148,7 @@ export default function InsightsPage() {
                     whileHover={{ y: -9 }}
                     className="group overflow-hidden rounded-[32px] border border-white/10 bg-white/[0.045] transition-all duration-300 hover:border-cyan-300/25 hover:shadow-[0_0_48px_rgba(34,211,238,0.14)]"
                   >
-                    <Link to={`/insights/${post.slug}`} className="block h-full">
+                    <Link to={`/insights/${localized.slug}`} className="block h-full">
                       <div className="relative h-56 overflow-hidden bg-[#0d1726]">
                         {post.cover_image_url ? (
                           <img src={post.cover_image_url} alt={localized.coverAlt} loading="lazy" className="h-full w-full object-cover transition-all duration-700 group-hover:scale-105" />

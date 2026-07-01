@@ -13,11 +13,9 @@ import InsightDetailPage from "./pages/InsightDetailPage";
 import AdminLoginPage from "./pages/admin/AdminLoginPage";
 import AdminPostsPage from "./pages/admin/AdminPostsPage";
 import AdminPostEditorPage from "./pages/admin/AdminPostEditorPage";
-import AdminJobsPage from "./pages/admin/AdminJobsPage";
-import AdminJobEditorPage from "./pages/admin/AdminJobEditorPage";
+import AdminEmailPage from "./pages/admin/AdminEmailPage";
 import ProtectedAdminRoute from "./components/admin/ProtectedAdminRoute";
 import CareersPage from "./pages/CareersPage";
-import CareerDetailPage from "./pages/CareerDetailPage";
 import ApplicationPage from "./pages/ApplicationPage";
 import ContactPage from "./pages/ContactPage";
 import LegalPage from "./pages/LegalPage";
@@ -108,12 +106,9 @@ function AnimatedRoutes() {
         <Route path="/admin/posts" element={<ProtectedAdminRoute><AdminPostsPage /></ProtectedAdminRoute>} />
         <Route path="/admin/posts/new" element={<ProtectedAdminRoute><AdminPostEditorPage /></ProtectedAdminRoute>} />
         <Route path="/admin/posts/:id/edit" element={<ProtectedAdminRoute><AdminPostEditorPage /></ProtectedAdminRoute>} />
-        <Route path="/admin/jobs" element={<ProtectedAdminRoute><AdminJobsPage /></ProtectedAdminRoute>} />
-        <Route path="/admin/jobs/new" element={<ProtectedAdminRoute><AdminJobEditorPage /></ProtectedAdminRoute>} />
-        <Route path="/admin/jobs/:id/edit" element={<ProtectedAdminRoute><AdminJobEditorPage /></ProtectedAdminRoute>} />
+        <Route path="/admin/email" element={<ProtectedAdminRoute><AdminEmailPage /></ProtectedAdminRoute>} />
         <Route path="/careers" element={<PageTransition><CareersPage /></PageTransition>} />
         <Route path="/careers/apply" element={<PageTransition><ApplicationPage /></PageTransition>} />
-        <Route path="/careers/:slug" element={<PageTransition><CareerDetailPage /></PageTransition>} />
         <Route path="/contact" element={<PageTransition><ContactPage /></PageTransition>} />
         <Route path="/privacy" element={<LegalPage type="privacy" />} />
         <Route path="/terms" element={<LegalPage type="terms" />} />

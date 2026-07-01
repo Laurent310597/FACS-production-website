@@ -15,6 +15,8 @@ export const fallbackPosts = [
   {
     id: "demo-tax-2026",
     slug: "enterprise-tax-strategy-2026",
+    slug_vi: "enterprise-tax-strategy-2026",
+    slug_en: "enterprise-tax-strategy-2026",
     category: "tax",
     title_en: "Enterprise Tax Strategy In 2026",
     title_vi: "Chiến lược thuế doanh nghiệp năm 2026",
@@ -24,6 +26,8 @@ export const fallbackPosts = [
     content_vi: "<p>Đây là bài viết mẫu nhằm giữ nguyên giao diện Insights hiện tại trước khi cơ sở dữ liệu quản trị nội dung được kết nối.</p><p>Sau khi hoàn tất thiết lập Supabase, các bài viết được tạo trong Cổng quản trị FACS sẽ tự động thay thế các thẻ minh họa này.</p>",
     cover_image_url: taxImage,
     author_name: "FACS",
+    author_name_vi: "FACS",
+    author_name_en: "FACS",
     published_at: "2026-01-12T00:00:00.000Z",
     status: "published",
     is_demo: true,
@@ -31,6 +35,8 @@ export const fallbackPosts = [
   {
     id: "demo-finance",
     slug: "modern-financial-infrastructure",
+    slug_vi: "modern-financial-infrastructure",
+    slug_en: "modern-financial-infrastructure",
     category: "finance",
     title_en: "Modern Financial Infrastructure",
     title_vi: "Nền tảng tài chính hiện đại",
@@ -40,6 +46,8 @@ export const fallbackPosts = [
     content_vi: "<p>Bài viết mẫu này minh họa trang chi tiết công khai và trải nghiệm nội dung song ngữ.</p><p>Bài viết thực tế có thể được soạn, rà soát, xuất bản, cập nhật và xóa trong khu vực quản trị được bảo vệ.</p>",
     cover_image_url: financeImage,
     author_name: "FACS",
+    author_name_vi: "FACS",
+    author_name_en: "FACS",
     published_at: "2026-01-05T00:00:00.000Z",
     status: "published",
     is_demo: true,
@@ -47,6 +55,8 @@ export const fallbackPosts = [
   {
     id: "demo-legal",
     slug: "corporate-governance-transformation",
+    slug_vi: "corporate-governance-transformation",
+    slug_en: "corporate-governance-transformation",
     category: "legal",
     title_en: "Corporate Governance Transformation",
     title_vi: "Chuyển đổi quản trị doanh nghiệp",
@@ -56,6 +66,8 @@ export const fallbackPosts = [
     content_vi: "<p>Hệ thống CMS hoàn chỉnh hỗ trợ nội dung định dạng, ảnh bìa, chuyên mục, trạng thái xuất bản và các trường song ngữ.</p><p>Chỉ quản trị viên đã đăng nhập mới có thể tạo hoặc thay đổi bài viết.</p>",
     cover_image_url: legalImage,
     author_name: "FACS",
+    author_name_vi: "FACS",
+    author_name_en: "FACS",
     published_at: "2025-12-18T00:00:00.000Z",
     status: "published",
     is_demo: true,
@@ -77,6 +89,16 @@ export function getLocalizedPost(post, language = "en") {
     title: post[`title_${primary}`] || post[`title_${fallback}`] || "Untitled",
     excerpt: post[`excerpt_${primary}`] || post[`excerpt_${fallback}`] || "",
     content: post[`content_${primary}`] || post[`content_${fallback}`] || "",
+    authorName:
+      post[`author_name_${primary}`] ||
+      post[`author_name_${fallback}`] ||
+      post.author_name ||
+      "FACS",
+    slug:
+      post[`slug_${primary}`] ||
+      post[`slug_${fallback}`] ||
+      post.slug ||
+      "",
     coverAlt:
       post[`cover_image_alt_${primary}`] ||
       post[`cover_image_alt_${fallback}`] ||

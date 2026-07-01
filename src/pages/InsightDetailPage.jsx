@@ -1,7 +1,7 @@
 import { useEffect, useMemo, useState } from "react";
 import DOMPurify from "dompurify";
 import { ArrowLeft, CalendarDays, Check, Clock3, Copy, UserRound } from "lucide-react";
-import { Link, useParams } from "react-router-dom";
+import { Link, useNavigate, useParams } from "react-router-dom";
 import Footer from "../components/Footer";
 import Navbar from "../components/Navbar";
 import { useLanguage } from "../components/LanguageContext";
@@ -21,6 +21,7 @@ function readingMinutes(html = "") {
 
 export default function InsightDetailPage() {
   const { slug } = useParams();
+  const navigate = useNavigate();
   const { language } = useLanguage();
   const isVi = language === "vi";
   const [post, setPost] = useState(null);
@@ -32,7 +33,7 @@ export default function InsightDetailPage() {
 
     const fetchPost = async (showLoading = false) => {
       if (!supabase) {
-        const fallback = fallbackPosts.find((item) => item.slug === slug) || null;
+        const fallback = fallbackPosts.find((item) => [item.slug, item.slug_vi, item.slug_en].filter(Boolean).includes(slug)) || null;
         if (active) {
           setPost(fallback);
           setLoading(false);
@@ -44,7 +45,7 @@ export default function InsightDetailPage() {
       const { data, error } = await supabase
         .from("posts")
         .select("*")
-        .eq("slug", slug)
+        .or(`slug.eq.${slug},slug_vi.eq.${slug},slug_en.eq.${slug}`)
         .eq("status", "published")
         .lte("published_at", new Date().toISOString())
         .maybeSingle();
@@ -69,6 +70,11 @@ export default function InsightDetailPage() {
 
   const localized = useMemo(() => (post ? getLocalizedPost(post, language) : null), [post, language]);
   const safeContent = useMemo(() => DOMPurify.sanitize(localized?.content || ""), [localized?.content]);
+
+  useEffect(() => {
+    if (!localized?.slug || localized.slug === slug) return;
+    navigate(`/insights/${localized.slug}`, { replace: true });
+  }, [localized?.slug, navigate, slug]);
 
   useEffect(() => {
     if (!localized) return undefined;
@@ -140,7 +146,7 @@ export default function InsightDetailPage() {
               {localized.excerpt && <p className="mt-7 max-w-3xl text-lg leading-relaxed text-slate-400 md:text-xl">{localized.excerpt}</p>}
 
               <div className="mt-8 flex flex-wrap items-center gap-x-6 gap-y-3 text-sm text-slate-500">
-                <span className="inline-flex items-center gap-2"><UserRound size={16} /> {post.author_name || "FACS"}</span>
+                <span className="inline-flex items-center gap-2"><UserRound size={16} /> {localized.authorName}</span>
                 {post.published_at && <span className="inline-flex items-center gap-2"><CalendarDays size={16} /> {formatPostDate(post.published_at, language)}</span>}
                 <span className="inline-flex items-center gap-2"><Clock3 size={16} /> {readingMinutes(localized.content)} {isVi ? "phút đọc" : "min read"}</span>
                 <button type="button" onClick={copyLink} className="inline-flex items-center gap-2 transition hover:text-cyan-200">{copied ? <Check size={16} /> : <Copy size={16} />} {copied ? (isVi ? "Đã sao chép" : "Copied") : (isVi ? "Sao chép liên kết" : "Copy link")}</button>

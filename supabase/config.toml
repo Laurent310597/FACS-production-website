@@ -1,0 +1,5 @@
+[functions.insight-email]
+verify_jwt = false
+
+[functions.lark-oauth-callback]
+verify_jwt = false

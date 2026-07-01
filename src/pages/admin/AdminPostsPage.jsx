@@ -1,8 +1,9 @@
 import { useEffect, useMemo, useState } from "react";
-import { CalendarClock, Copy, Edit3, FilePlus2, Search, Trash2 } from "lucide-react";
+import { CalendarClock, Copy, Edit3, FilePlus2, Mail, Search, Trash2 } from "lucide-react";
 import { Link } from "react-router-dom";
 import AdminLayout from "../../components/admin/AdminLayout";
 import { getCategoryLabel, getLocalizedPost, slugify } from "../../lib/insights";
+import { emailStatusLabels, emailStatusStyles } from "../../lib/emailNotifications";
 import { formatVietnamDateTime, getPublicationState } from "../../lib/publication";
 import { supabase } from "../../lib/supabaseClient";
 
@@ -70,7 +71,7 @@ export default function AdminPostsPage() {
     return posts.filter((post) => {
       const publicationState = getPublicationState(post, now);
       const matchesStatus = status === "all" || publicationState === status;
-      const searchText = `${post.title_vi || ""} ${post.title_en || ""} ${post.slug || ""}`.toLowerCase();
+      const searchText = `${post.title_vi || ""} ${post.title_en || ""} ${post.slug_vi || ""} ${post.slug_en || ""} ${post.slug || ""}`.toLowerCase();
       return matchesStatus && (!normalized || searchText.includes(normalized));
     });
   }, [posts, query, status, now]);
@@ -88,16 +89,21 @@ export default function AdminPostsPage() {
   };
 
   const duplicatePost = async (post) => {
-    const baseTitle = post.title_vi || post.title_en || "Bản sao";
-    const baseSlug = `${slugify(baseTitle)}-copy`;
-    const copyNumbers = posts
-      .map((item) => item.slug?.match(new RegExp(`^${baseSlug}-(\\d+)$`)))
-      .filter(Boolean)
-      .map((match) => Number(match[1]));
-    const copyNumber = Math.max(0, ...copyNumbers) + 1;
+    const existingSlugs = new Set(posts.flatMap((item) => [item.slug, item.slug_vi, item.slug_en]).filter(Boolean));
+    const nextCopySlug = (title, fallback) => {
+      const base = `${slugify(title || fallback)}-copy`;
+      let copyNumber = 1;
+      while (existingSlugs.has(`${base}-${copyNumber}`)) copyNumber += 1;
+      existingSlugs.add(`${base}-${copyNumber}`);
+      return `${base}-${copyNumber}`;
+    };
+    const slugVi = nextCopySlug(post.title_vi || post.title_en, "ban-sao");
+    const slugEn = nextCopySlug(post.title_en || post.title_vi, "copy");
     const { data: sessionData } = await supabase.auth.getSession();
     const payload = {
-      slug: `${baseSlug}-${copyNumber}`,
+      slug: slugVi,
+      slug_vi: slugVi,
+      slug_en: slugEn,
       category: post.category,
       title_vi: post.title_vi ? `${post.title_vi} - Bản sao` : null,
       title_en: post.title_en ? `${post.title_en} - Copy` : null,
@@ -108,7 +114,9 @@ export default function AdminPostsPage() {
       cover_image_url: post.cover_image_url,
       cover_image_alt_vi: post.cover_image_alt_vi,
       cover_image_alt_en: post.cover_image_alt_en,
-      author_name: post.author_name,
+      author_name: post.author_name_vi || post.author_name_en || post.author_name || "FACS",
+      author_name_vi: post.author_name_vi || post.author_name || "FACS",
+      author_name_en: post.author_name_en || post.author_name || "FACS",
       featured: false,
       seo_title_vi: post.seo_title_vi,
       seo_title_en: post.seo_title_en,
@@ -117,6 +125,17 @@ export default function AdminPostsPage() {
       status: "draft",
       published_at: null,
       created_by: sessionData.session?.user?.id || null,
+      email_notification_enabled: false,
+      email_notification_status: "disabled",
+      email_notification_requested_at: null,
+      email_notification_cancelled_at: null,
+      email_notification_processing_at: null,
+      email_notification_sent_at: null,
+      email_notification_next_attempt_at: null,
+      email_notification_attempts: 0,
+      email_notification_last_error: null,
+      email_notification_message_id: null,
+      email_notification_thread_id: null,
     };
 
     const { error: duplicateError } = await supabase.from("posts").insert(payload);
@@ -181,12 +200,21 @@ export default function AdminPostsPage() {
                       </span>
                     </div>
                     <h2 className="mt-3 truncate text-lg font-semibold text-white">{localized.title}</h2>
-                    <div className="mt-1 truncate text-sm text-slate-500">/insights/{post.slug}</div>
+                    <div className="mt-1 space-y-0.5 text-xs text-slate-500">
+                      <div className="truncate"><span className="font-semibold text-slate-400">VI:</span> /insights/{post.slug_vi || post.slug}</div>
+                      <div className="truncate"><span className="font-semibold text-slate-400">EN:</span> /insights/{post.slug_en || post.slug}</div>
+                    </div>
                     {publicationState === "scheduled" && (
                       <div className="mt-2 inline-flex items-center gap-1.5 text-xs font-medium text-violet-200">
                         <CalendarClock size={14} /> Tự động đăng lúc {formatVietnamDateTime(post.published_at)} (UTC+7)
                       </div>
                     )}
+                    <div className="mt-2 flex flex-wrap items-center gap-2 text-xs">
+                      <span className={`inline-flex items-center gap-1.5 rounded-full px-3 py-1 font-semibold ${emailStatusStyles[post.email_notification_status || "disabled"]}`}>
+                        <Mail size={13} /> {emailStatusLabels[post.email_notification_status || "disabled"]}
+                      </span>
+                      {post.email_notification_sent_at && <span className="text-slate-500">{formatVietnamDateTime(post.email_notification_sent_at)}</span>}
+                    </div>
                   </div>
                   <div className="flex items-center gap-2 md:justify-end">
                     <button type="button" onClick={() => duplicatePost(post)} className="flex h-10 w-10 items-center justify-center rounded-xl border border-white/10 text-slate-400 transition hover:border-cyan-200/30 hover:text-cyan-200" title="Nhân bản"><Copy size={17} /></button>

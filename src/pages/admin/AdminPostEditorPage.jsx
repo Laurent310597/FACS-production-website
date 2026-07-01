@@ -1,10 +1,11 @@
 import { useEffect, useMemo, useState } from "react";
 import DOMPurify from "dompurify";
-import { ArrowLeft, CalendarClock, Eye, ImagePlus, Loader2, Save, Send } from "lucide-react";
+import { ArrowLeft, Ban, Bell, CalendarClock, Eye, ImagePlus, Loader2, MailCheck, Save, Send } from "lucide-react";
 import { Link, useNavigate, useParams } from "react-router-dom";
 import AdminLayout from "../../components/admin/AdminLayout";
 import RichTextEditor from "../../components/admin/RichTextEditor";
 import { insightCategories, slugify } from "../../lib/insights";
+import { deriveEmailStatus, emailStatusLabels, emailStatusStyles, invokeInsightEmail } from "../../lib/emailNotifications";
 import {
   formatVietnamDateTime,
   getMinimumVietnamDateTimeInput,
@@ -16,6 +17,8 @@ import { supabase } from "../../lib/supabaseClient";
 
 const emptyForm = {
   slug: "",
+  slug_vi: "",
+  slug_en: "",
   category: "business",
   title_en: "",
   title_vi: "",
@@ -27,6 +30,8 @@ const emptyForm = {
   cover_image_alt_en: "",
   cover_image_alt_vi: "",
   author_name: "FACS",
+  author_name_vi: "FACS",
+  author_name_en: "FACS",
   featured: false,
   seo_title_en: "",
   seo_title_vi: "",
@@ -34,6 +39,17 @@ const emptyForm = {
   seo_description_vi: "",
   status: "draft",
   published_at: null,
+  email_notification_enabled: false,
+  email_notification_status: "disabled",
+  email_notification_requested_at: null,
+  email_notification_cancelled_at: null,
+  email_notification_sent_at: null,
+  email_notification_processing_at: null,
+  email_notification_next_attempt_at: null,
+  email_notification_attempts: 0,
+  email_notification_last_error: null,
+  email_notification_message_id: null,
+  email_notification_thread_id: null,
 };
 
 function stripHtml(value = "") {
@@ -58,6 +74,8 @@ export default function AdminPostEditorPage() {
   const [error, setError] = useState("");
   const [previewOpen, setPreviewOpen] = useState(false);
   const [scheduleAt, setScheduleAt] = useState("");
+  const [emailActionLoading, setEmailActionLoading] = useState(false);
+  const [emailMessage, setEmailMessage] = useState("");
 
   useEffect(() => {
     if (!isEditing) return;
@@ -67,7 +85,14 @@ export default function AdminPostEditorPage() {
       if (fetchError) {
         setError(`Không thể tải bài viết: ${fetchError.message}`);
       } else {
-        setForm({ ...emptyForm, ...data });
+        setForm({
+          ...emptyForm,
+          ...data,
+          slug_vi: data.slug_vi || data.slug || "",
+          slug_en: data.slug_en || data.slug || "",
+          author_name_vi: data.author_name_vi || data.author_name || "FACS",
+          author_name_en: data.author_name_en || data.author_name || "FACS",
+        });
         setScheduleAt(isoToVietnamDateTimeInput(data.published_at));
         if (!data.title_vi && data.title_en) setActiveLanguage("en");
       }
@@ -86,13 +111,15 @@ export default function AdminPostEditorPage() {
   const safePreview = useMemo(() => DOMPurify.sanitize(activeContent), [activeContent]);
 
   const handleTitleChange = (value) => {
-    const field = `title_${activeLanguage}`;
+    const titleField = `title_${activeLanguage}`;
+    const slugField = `slug_${activeLanguage}`;
     setForm((current) => {
-      const shouldGenerateSlug = !current.slug || current.slug === slugify(current.title_vi || current.title_en || "");
+      const currentLocalizedSlug = current[slugField] || "";
+      const shouldGenerateSlug = !currentLocalizedSlug || currentLocalizedSlug === slugify(current[titleField] || "");
       return {
         ...current,
-        [field]: value,
-        slug: shouldGenerateSlug ? slugify(value) : current.slug,
+        [titleField]: value,
+        [slugField]: shouldGenerateSlug ? slugify(value) : currentLocalizedSlug,
       };
     });
   };
@@ -131,12 +158,84 @@ export default function AdminPostEditorPage() {
     setUploading(false);
   };
 
+  const toggleEmailNotification = (enabled) => {
+    setEmailMessage("");
+    setForm((current) => ({
+      ...current,
+      email_notification_enabled: enabled,
+      email_notification_status: current.email_notification_status === "sent"
+        ? "sent"
+        : enabled ? "pending" : "disabled",
+      email_notification_cancelled_at: enabled ? null : current.email_notification_cancelled_at,
+      email_notification_attempts: enabled ? 0 : current.email_notification_attempts,
+      email_notification_next_attempt_at: null,
+      email_notification_last_error: enabled ? null : current.email_notification_last_error,
+    }));
+  };
+
+  const cancelEmailNotification = async () => {
+    setEmailMessage("");
+    setError("");
+    const cancelledAt = new Date().toISOString();
+    if (!isEditing) {
+      setForm((current) => ({
+        ...current,
+        email_notification_enabled: false,
+        email_notification_status: "cancelled",
+        email_notification_cancelled_at: cancelledAt,
+      }));
+      setEmailMessage("Đã hủy gửi email cho bài viết này. Lịch đăng bài không bị thay đổi.");
+      return;
+    }
+
+    setEmailActionLoading(true);
+    const { error: cancelError } = await supabase.from("posts").update({
+      email_notification_enabled: false,
+      email_notification_status: "cancelled",
+      email_notification_cancelled_at: cancelledAt,
+      email_notification_next_attempt_at: null,
+      email_notification_processing_at: null,
+    }).eq("id", id);
+    setEmailActionLoading(false);
+    if (cancelError) {
+      setError(`Không thể hủy gửi email: ${cancelError.message}`);
+      return;
+    }
+    setForm((current) => ({
+      ...current,
+      email_notification_enabled: false,
+      email_notification_status: "cancelled",
+      email_notification_cancelled_at: cancelledAt,
+    }));
+    setEmailMessage("Đã hủy gửi email. Bài viết vẫn giữ nguyên trạng thái và lịch đăng.");
+  };
+
+  const sendTestEmail = async () => {
+    setEmailMessage("");
+    setError("");
+    if (!isEditing) {
+      setError("Vui lòng lưu bài viết trước khi gửi email thử.");
+      return;
+    }
+    setEmailActionLoading(true);
+    try {
+      const result = await invokeInsightEmail("test", { post_id: id });
+      setEmailMessage(`Đã gửi email thử đến ${result.to || "tunguyen@facs.vn"}.`);
+    } catch (testError) {
+      setError(`Không thể gửi email thử: ${testError.message}`);
+    } finally {
+      setEmailActionLoading(false);
+    }
+  };
+
   const savePost = async (action) => {
     setError("");
 
     const hasTitle = Boolean(form.title_vi.trim() || form.title_en.trim());
     const hasContent = Boolean(stripHtml(form.content_vi) || stripHtml(form.content_en));
-    const finalSlug = slugify(form.slug || form.title_vi || form.title_en);
+    const finalSlugVi = slugify(form.slug_vi || form.title_vi || form.title_en || form.slug);
+    const finalSlugEn = slugify(form.slug_en || form.title_en || form.title_vi || form.slug);
+    const legacySlug = slugify(form.slug || finalSlugVi || finalSlugEn);
 
     if (!hasTitle) {
       setError("Vui lòng nhập tiêu đề tiếng Việt hoặc tiếng Anh.");
@@ -146,8 +245,8 @@ export default function AdminPostEditorPage() {
       setError("Vui lòng nhập nội dung tiếng Việt hoặc tiếng Anh.");
       return;
     }
-    if (!finalSlug) {
-      setError("Không thể tạo đường dẫn bài viết. Vui lòng nhập lại tiêu đề hoặc slug.");
+    if (!finalSlugVi || !finalSlugEn || !legacySlug) {
+      setError("Không thể tạo đầy đủ đường dẫn tiếng Việt và tiếng Anh. Vui lòng kiểm tra lại tiêu đề hoặc slug.");
       return;
     }
 
@@ -173,26 +272,56 @@ export default function AdminPostEditorPage() {
     }
 
     setSaving(true);
+    setEmailMessage("");
     const { data: authData } = await supabase.auth.getSession();
+    const emailStatus = deriveEmailStatus({
+      enabled: form.email_notification_enabled,
+      currentStatus: form.email_notification_status,
+      action,
+    });
     const payload = {
       ...form,
-      slug: finalSlug,
+      author_name: form.author_name_vi || form.author_name_en || form.author_name || "FACS",
+      author_name_vi: form.author_name_vi || form.author_name_en || form.author_name || "FACS",
+      author_name_en: form.author_name_en || form.author_name_vi || form.author_name || "FACS",
+      slug: legacySlug,
+      slug_vi: finalSlugVi,
+      slug_en: finalSlugEn,
       status: nextStatus,
       published_at: publishedAt,
       created_by: authData.session?.user?.id || null,
+      email_notification_status: emailStatus,
+      email_notification_requested_at:
+        form.email_notification_enabled && emailStatus !== "sent"
+          ? (form.email_notification_requested_at || new Date().toISOString())
+          : form.email_notification_requested_at,
+      email_notification_cancelled_at: form.email_notification_enabled ? null : form.email_notification_cancelled_at,
+      email_notification_next_attempt_at: null,
+      email_notification_attempts: emailStatus === "pending" ? 0 : form.email_notification_attempts,
+      email_notification_last_error: emailStatus === "pending" ? null : form.email_notification_last_error,
     };
 
     const request = isEditing
-      ? supabase.from("posts").update(payload).eq("id", id)
-      : supabase.from("posts").insert(payload);
-    const { error: saveError } = await request;
+      ? supabase.from("posts").update(payload).eq("id", id).select("id").single()
+      : supabase.from("posts").insert(payload).select("id").single();
+    const { data: savedPost, error: saveError } = await request;
 
     setSaving(false);
 
     if (saveError) {
-      const message = saveError.code === "23505" ? "Đường dẫn bài viết đã tồn tại. Vui lòng đổi slug." : saveError.message;
+      const message = saveError.code === "23505" || saveError.code === "P0001"
+        ? "Một trong các đường dẫn bài viết đã tồn tại. Vui lòng đổi slug tiếng Việt hoặc tiếng Anh."
+        : saveError.message;
       setError(`Không thể lưu bài viết: ${message}`);
       return;
+    }
+
+    if (action === "publish" && form.email_notification_enabled && emailStatus !== "sent") {
+      try {
+        await invokeInsightEmail("process", { post_id: savedPost.id });
+      } catch (processError) {
+        console.warn("Email will be retried by cron:", processError);
+      }
     }
 
     navigate("/admin/posts", { replace: true });
@@ -231,6 +360,7 @@ export default function AdminPostEditorPage() {
       </div>
 
       {error && <div className="mt-6 rounded-2xl border border-red-300/20 bg-red-400/8 px-5 py-4 text-sm text-red-200">{error}</div>}
+      {emailMessage && <div className="mt-6 rounded-2xl border border-emerald-300/20 bg-emerald-300/8 px-5 py-4 text-sm text-emerald-200">{emailMessage}</div>}
 
       <div className={`mt-7 grid gap-6 ${previewOpen ? "2xl:grid-cols-[minmax(0,1fr)_500px]" : ""}`}>
         <div className="space-y-6">
@@ -269,11 +399,19 @@ export default function AdminPostEditorPage() {
           <section className="rounded-[28px] border border-white/10 bg-white/[0.035] p-5 md:p-7">
             <h2 className="text-xl font-semibold">Thiết lập bài viết</h2>
             <div className="mt-6 grid gap-5 md:grid-cols-2">
-              <label className="block md:col-span-2">
-                <span className="mb-2 block text-sm font-semibold text-slate-200">Đường dẫn bài viết (slug)</span>
+              <label className="block">
+                <span className="mb-2 block text-sm font-semibold text-slate-200">Đường dẫn bài viết (tiếng Việt)</span>
                 <div className="flex overflow-hidden rounded-2xl border border-white/10 bg-[#081321]/70 focus-within:border-cyan-300/35">
                   <span className="border-r border-white/10 px-4 py-3.5 text-sm text-slate-500">facs.vn/insights/</span>
-                  <input value={form.slug} onChange={(event) => updateField("slug", slugify(event.target.value))} className="min-w-0 flex-1 bg-transparent px-4 py-3.5 text-white outline-none" placeholder="duong-dan-bai-viet" />
+                  <input value={form.slug_vi} onChange={(event) => updateField("slug_vi", slugify(event.target.value))} className="min-w-0 flex-1 bg-transparent px-4 py-3.5 text-white outline-none" placeholder="duong-dan-tieng-viet" />
+                </div>
+              </label>
+
+              <label className="block">
+                <span className="mb-2 block text-sm font-semibold text-slate-200">Article URL slug (English)</span>
+                <div className="flex overflow-hidden rounded-2xl border border-white/10 bg-[#081321]/70 focus-within:border-cyan-300/35">
+                  <span className="border-r border-white/10 px-4 py-3.5 text-sm text-slate-500">facs.vn/insights/</span>
+                  <input value={form.slug_en} onChange={(event) => updateField("slug_en", slugify(event.target.value))} className="min-w-0 flex-1 bg-transparent px-4 py-3.5 text-white outline-none" placeholder="english-article-url" />
                 </div>
               </label>
 
@@ -285,8 +423,23 @@ export default function AdminPostEditorPage() {
               </label>
 
               <label className="block">
-                <span className="mb-2 block text-sm font-semibold text-slate-200">Tác giả</span>
-                <input value={form.author_name} onChange={(event) => updateField("author_name", event.target.value)} className="w-full rounded-2xl border border-white/10 bg-[#081321]/70 px-4 py-3.5 text-white outline-none focus:border-cyan-300/35" />
+                <span className="mb-2 block text-sm font-semibold text-slate-200">Tác giả (tiếng Việt)</span>
+                <input
+                  value={form.author_name_vi}
+                  onChange={(event) => updateField("author_name_vi", event.target.value)}
+                  className="w-full rounded-2xl border border-white/10 bg-[#081321]/70 px-4 py-3.5 text-white outline-none focus:border-cyan-300/35"
+                  placeholder="Ví dụ: Ông Nguyễn Hoàng Tú"
+                />
+              </label>
+
+              <label className="block">
+                <span className="mb-2 block text-sm font-semibold text-slate-200">Author (English)</span>
+                <input
+                  value={form.author_name_en}
+                  onChange={(event) => updateField("author_name_en", event.target.value)}
+                  className="w-full rounded-2xl border border-white/10 bg-[#081321]/70 px-4 py-3.5 text-white outline-none focus:border-cyan-300/35"
+                  placeholder="Example: Mr. Tu Hoang Nguyen"
+                />
               </label>
 
               <label className="flex items-center gap-3 rounded-2xl border border-white/10 bg-[#081321]/60 px-4 py-4 md:col-span-2">
@@ -316,6 +469,61 @@ export default function AdminPostEditorPage() {
                     ) : (
                       <div className="mt-1 text-amber-200">Bản nháp, chưa hiển thị công khai</div>
                     )}
+                  </div>
+                </div>
+              </div>
+
+              <div className="rounded-2xl border border-sky-200/15 bg-sky-300/[0.055] p-4 md:col-span-2">
+                <div className="flex flex-col gap-5 xl:flex-row xl:items-start xl:justify-between">
+                  <div className="flex-1">
+                    <div className="flex items-center gap-3">
+                      <Bell size={20} className="text-sky-300" />
+                      <h3 className="font-semibold text-sky-100">Email thông báo khách hàng</h3>
+                    </div>
+                    <label className="mt-4 flex items-start gap-3 rounded-2xl border border-white/10 bg-[#081321]/55 px-4 py-4">
+                      <input
+                        type="checkbox"
+                        checked={Boolean(form.email_notification_enabled)}
+                        disabled={form.email_notification_status === "sent"}
+                        onChange={(event) => toggleEmailNotification(event.target.checked)}
+                        className="mt-0.5 h-4 w-4 accent-cyan-300"
+                      />
+                      <span>
+                        <strong className="block text-sm text-white">Gửi email khi bài viết được xuất bản</strong>
+                        <span className="mt-1 block text-xs leading-relaxed text-slate-500">Mặc định tắt. Với bài hẹn giờ, email chỉ được gửi khi bài thực sự xuất hiện trên website.</span>
+                      </span>
+                    </label>
+
+                    <div className="mt-4 grid gap-2 text-xs text-slate-400 md:grid-cols-2">
+                      <div><strong className="text-slate-200">From:</strong> info@facs.vn</div>
+                      <div><strong className="text-slate-200">To:</strong> tunguyen@facs.vn</div>
+                      <div><strong className="text-slate-200">Cc:</strong> yendoan@facs.vn; thanhhuynh@facs.vn</div>
+                      <div><strong className="text-slate-200">Bcc:</strong> toàn bộ audience đang subscribed</div>
+                    </div>
+                    <div className="mt-4 rounded-xl border border-white/10 bg-[#081321]/55 p-3 text-xs leading-relaxed text-slate-400">
+                      <div><strong className="text-slate-200">Subject dự kiến:</strong> [FACS Insight] - {form.title_vi || "Tên bài viết tiếng Việt"} | {form.title_en || "English article title"}</div>
+                      <div className="mt-2">Chữ ký chuẩn của Phòng Thông tin &amp; Truyền thông sẽ tự động được nối vào cuối email.</div>
+                    </div>
+                  </div>
+
+                  <div className="min-w-[280px] rounded-2xl border border-white/10 bg-[#081321]/55 p-4">
+                    <div className="text-xs font-bold uppercase tracking-[0.14em] text-slate-500">Trạng thái email</div>
+                    <div className={`mt-3 inline-flex rounded-full px-3 py-1.5 text-xs font-semibold ${emailStatusStyles[form.email_notification_status] || emailStatusStyles.disabled}`}>
+                      {emailStatusLabels[form.email_notification_status] || "Không gửi email"}
+                    </div>
+                    {form.email_notification_sent_at && <div className="mt-3 text-xs text-emerald-200">Đã gửi: {formatVietnamDateTime(form.email_notification_sent_at)}</div>}
+                    {form.email_notification_last_error && <div className="mt-3 text-xs leading-relaxed text-red-200">Lỗi gần nhất: {form.email_notification_last_error}</div>}
+                    <div className="mt-4 flex flex-col gap-2">
+                      <button type="button" onClick={sendTestEmail} disabled={emailActionLoading || !isEditing} className="inline-flex items-center justify-center gap-2 rounded-xl border border-cyan-200/25 px-4 py-2.5 text-sm font-semibold text-cyan-100 transition hover:bg-cyan-300/10 disabled:cursor-not-allowed disabled:opacity-40">
+                        {emailActionLoading ? <Loader2 size={16} className="animate-spin" /> : <MailCheck size={16} />} Gửi thử cho tôi
+                      </button>
+                      {form.email_notification_status !== "sent" && (form.email_notification_enabled || form.email_notification_status === "pending" || form.email_notification_status === "failed") && (
+                        <button type="button" onClick={cancelEmailNotification} disabled={emailActionLoading} className="inline-flex items-center justify-center gap-2 rounded-xl border border-amber-200/25 px-4 py-2.5 text-sm font-semibold text-amber-100 transition hover:bg-amber-300/10 disabled:opacity-40">
+                          <Ban size={16} /> Hủy gửi email
+                        </button>
+                      )}
+                    </div>
+                    {!isEditing && <div className="mt-3 text-xs text-slate-600">Lưu bài viết trước khi dùng chức năng gửi thử.</div>}
                   </div>
                 </div>
               </div>
