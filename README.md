@@ -1,3 +1,7 @@
+# FACS Website v20.4
+
+> Baseline mới nhất: 9 dịch vụ + Careers CMS + Insights CMS hẹn giờ đăng bài. Bản v20.4 bổ sung tác giả/slug song ngữ và tối ưu bố cục Admin.
+
 # FACS Website v20.2
 
 Production source for `facs.vn`.

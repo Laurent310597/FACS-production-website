@@ -1,9 +1,8 @@
 import { useEffect, useMemo, useState } from "react";
-import { CalendarClock, Copy, Edit3, FilePlus2, Mail, Search, Trash2 } from "lucide-react";
+import { CalendarClock, Copy, Edit3, FilePlus2, Search, Trash2 } from "lucide-react";
 import { Link } from "react-router-dom";
 import AdminLayout from "../../components/admin/AdminLayout";
 import { getCategoryLabel, getLocalizedPost, slugify } from "../../lib/insights";
-import { emailStatusLabels, emailStatusStyles } from "../../lib/emailNotifications";
 import { formatVietnamDateTime, getPublicationState } from "../../lib/publication";
 import { supabase } from "../../lib/supabaseClient";
 
@@ -71,7 +70,16 @@ export default function AdminPostsPage() {
     return posts.filter((post) => {
       const publicationState = getPublicationState(post, now);
       const matchesStatus = status === "all" || publicationState === status;
-      const searchText = `${post.title_vi || ""} ${post.title_en || ""} ${post.slug_vi || ""} ${post.slug_en || ""} ${post.slug || ""}`.toLowerCase();
+      const searchText = [
+        post.title_vi,
+        post.title_en,
+        post.slug,
+        post.slug_vi,
+        post.slug_en,
+        post.author_name,
+        post.author_name_vi,
+        post.author_name_en,
+      ].filter(Boolean).join(" ").toLowerCase();
       return matchesStatus && (!normalized || searchText.includes(normalized));
     });
   }, [posts, query, status, now]);
@@ -89,19 +97,16 @@ export default function AdminPostsPage() {
   };
 
   const duplicatePost = async (post) => {
-    const existingSlugs = new Set(posts.flatMap((item) => [item.slug, item.slug_vi, item.slug_en]).filter(Boolean));
-    const nextCopySlug = (title, fallback) => {
-      const base = `${slugify(title || fallback)}-copy`;
-      let copyNumber = 1;
-      while (existingSlugs.has(`${base}-${copyNumber}`)) copyNumber += 1;
-      existingSlugs.add(`${base}-${copyNumber}`);
-      return `${base}-${copyNumber}`;
-    };
-    const slugVi = nextCopySlug(post.title_vi || post.title_en, "ban-sao");
-    const slugEn = nextCopySlug(post.title_en || post.title_vi, "copy");
+    const baseSlugVi = `${slugify(post.slug_vi || post.title_vi || post.title_en || "bai-viet")}-copy`;
+    const baseSlugEn = `${slugify(post.slug_en || post.title_en || post.title_vi || "article")}-copy`;
+    const usedSlugs = new Set(posts.flatMap((item) => [item.slug, item.slug_vi, item.slug_en]).filter(Boolean));
+    let copyNumber = 1;
+    while (usedSlugs.has(`${baseSlugVi}-${copyNumber}`) || usedSlugs.has(`${baseSlugEn}-${copyNumber}`)) copyNumber += 1;
+    const slugVi = `${baseSlugVi}-${copyNumber}`;
+    const slugEn = `${baseSlugEn}-${copyNumber}`;
     const { data: sessionData } = await supabase.auth.getSession();
     const payload = {
-      slug: slugVi,
+      slug: slugVi || slugEn,
       slug_vi: slugVi,
       slug_en: slugEn,
       category: post.category,
@@ -114,7 +119,7 @@ export default function AdminPostsPage() {
       cover_image_url: post.cover_image_url,
       cover_image_alt_vi: post.cover_image_alt_vi,
       cover_image_alt_en: post.cover_image_alt_en,
-      author_name: post.author_name_vi || post.author_name_en || post.author_name || "FACS",
+      author_name: post.author_name || post.author_name_vi || post.author_name_en || "FACS",
       author_name_vi: post.author_name_vi || post.author_name || "FACS",
       author_name_en: post.author_name_en || post.author_name || "FACS",
       featured: false,
@@ -125,17 +130,6 @@ export default function AdminPostsPage() {
       status: "draft",
       published_at: null,
       created_by: sessionData.session?.user?.id || null,
-      email_notification_enabled: false,
-      email_notification_status: "disabled",
-      email_notification_requested_at: null,
-      email_notification_cancelled_at: null,
-      email_notification_processing_at: null,
-      email_notification_sent_at: null,
-      email_notification_next_attempt_at: null,
-      email_notification_attempts: 0,
-      email_notification_last_error: null,
-      email_notification_message_id: null,
-      email_notification_thread_id: null,
     };
 
     const { error: duplicateError } = await supabase.from("posts").insert(payload);
@@ -162,7 +156,7 @@ export default function AdminPostsPage() {
       <div className="mt-7 grid gap-3 rounded-[26px] border border-white/10 bg-white/[0.035] p-4 md:grid-cols-[1fr_auto]">
         <label className="flex items-center rounded-2xl border border-white/10 bg-[#081321]/70 px-4 focus-within:border-cyan-300/35">
           <Search size={18} className="text-slate-500" />
-          <input value={query} onChange={(event) => setQuery(event.target.value)} placeholder="Tìm theo tiêu đề hoặc đường dẫn..." className="w-full bg-transparent px-3 py-3 text-sm text-white outline-none placeholder:text-slate-600" />
+          <input value={query} onChange={(event) => setQuery(event.target.value)} placeholder="Tìm theo tiêu đề, tác giả hoặc đường dẫn..." className="w-full bg-transparent px-3 py-3 text-sm text-white outline-none placeholder:text-slate-600" />
         </label>
         <select value={status} onChange={(event) => setStatus(event.target.value)} className="rounded-2xl border border-white/10 bg-[#081321] px-4 py-3 text-sm text-white outline-none">
           <option value="all">Tất cả trạng thái</option>
@@ -200,21 +194,13 @@ export default function AdminPostsPage() {
                       </span>
                     </div>
                     <h2 className="mt-3 truncate text-lg font-semibold text-white">{localized.title}</h2>
-                    <div className="mt-1 space-y-0.5 text-xs text-slate-500">
-                      <div className="truncate"><span className="font-semibold text-slate-400">VI:</span> /insights/{post.slug_vi || post.slug}</div>
-                      <div className="truncate"><span className="font-semibold text-slate-400">EN:</span> /insights/{post.slug_en || post.slug}</div>
-                    </div>
+                    <div className="mt-1 truncate text-sm text-slate-500">/insights/{localized.slug}</div>
+                    <div className="mt-1 truncate text-xs text-slate-600">{localized.author}</div>
                     {publicationState === "scheduled" && (
                       <div className="mt-2 inline-flex items-center gap-1.5 text-xs font-medium text-violet-200">
                         <CalendarClock size={14} /> Tự động đăng lúc {formatVietnamDateTime(post.published_at)} (UTC+7)
                       </div>
                     )}
-                    <div className="mt-2 flex flex-wrap items-center gap-2 text-xs">
-                      <span className={`inline-flex items-center gap-1.5 rounded-full px-3 py-1 font-semibold ${emailStatusStyles[post.email_notification_status || "disabled"]}`}>
-                        <Mail size={13} /> {emailStatusLabels[post.email_notification_status || "disabled"]}
-                      </span>
-                      {post.email_notification_sent_at && <span className="text-slate-500">{formatVietnamDateTime(post.email_notification_sent_at)}</span>}
-                    </div>
                   </div>
                   <div className="flex items-center gap-2 md:justify-end">
                     <button type="button" onClick={() => duplicatePost(post)} className="flex h-10 w-10 items-center justify-center rounded-xl border border-white/10 text-slate-400 transition hover:border-cyan-200/30 hover:text-cyan-200" title="Nhân bản"><Copy size={17} /></button>

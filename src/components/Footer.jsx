@@ -100,7 +100,7 @@ export default function Footer() {
               {services.map((service) => (
                 <Link key={service.slug} to={`/services/${service.slug}`} className={footerLinkClass}>
                   <span className="inline-block h-px w-0 bg-cyan-300 align-middle transition-all duration-300 group-hover:mr-2 group-hover:w-5" />
-                  {service.title}
+                  {isVi ? service.titleVi : service.title}
                 </Link>
               ))}
             </div>
@@ -109,7 +109,7 @@ export default function Footer() {
           <div>
             <div className="mb-5 text-sm font-semibold uppercase tracking-[0.18em] text-white">{isVi ? "Lĩnh vực" : "Industries"}</div>
             <div className="space-y-3 text-slate-400">
-              {industries.slice(0, 6).map((industry) => (
+              {industries.map((industry) => (
                 <Link key={industry.slug} to={`/industries/${industry.slug}`} className={footerLinkClass}>
                   <span className="inline-block h-px w-0 bg-cyan-300 align-middle transition-all duration-300 group-hover:mr-2 group-hover:w-5" />
                   {isVi ? industry.titleVi : industry.title}

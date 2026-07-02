@@ -15,7 +15,7 @@ export const fallbackPosts = [
   {
     id: "demo-tax-2026",
     slug: "enterprise-tax-strategy-2026",
-    slug_vi: "enterprise-tax-strategy-2026",
+    slug_vi: "chien-luoc-thue-doanh-nghiep-2026",
     slug_en: "enterprise-tax-strategy-2026",
     category: "tax",
     title_en: "Enterprise Tax Strategy In 2026",
@@ -35,7 +35,7 @@ export const fallbackPosts = [
   {
     id: "demo-finance",
     slug: "modern-financial-infrastructure",
-    slug_vi: "modern-financial-infrastructure",
+    slug_vi: "nen-tang-tai-chinh-hien-dai",
     slug_en: "modern-financial-infrastructure",
     category: "finance",
     title_en: "Modern Financial Infrastructure",
@@ -55,7 +55,7 @@ export const fallbackPosts = [
   {
     id: "demo-legal",
     slug: "corporate-governance-transformation",
-    slug_vi: "corporate-governance-transformation",
+    slug_vi: "chuyen-doi-quan-tri-doanh-nghiep",
     slug_en: "corporate-governance-transformation",
     category: "legal",
     title_en: "Corporate Governance Transformation",
@@ -80,6 +80,22 @@ export function getCategoryLabel(category, language = "en") {
   return item[language] || item.en;
 }
 
+export function getPostSlug(post, language = "en") {
+  const primary = language === "vi" ? "vi" : "en";
+  const fallback = primary === "vi" ? "en" : "vi";
+  return post?.[`slug_${primary}`] || post?.[`slug_${fallback}`] || post?.slug || "";
+}
+
+export function getPostAuthor(post, language = "en") {
+  const primary = language === "vi" ? "vi" : "en";
+  const fallback = primary === "vi" ? "en" : "vi";
+  return post?.[`author_name_${primary}`] || post?.[`author_name_${fallback}`] || post?.author_name || "FACS";
+}
+
+export function matchesPostSlug(post, slug = "") {
+  return Boolean(slug) && [post?.slug, post?.slug_vi, post?.slug_en].filter(Boolean).includes(slug);
+}
+
 export function getLocalizedPost(post, language = "en") {
   const primary = language === "vi" ? "vi" : "en";
   const fallback = primary === "vi" ? "en" : "vi";
@@ -89,16 +105,8 @@ export function getLocalizedPost(post, language = "en") {
     title: post[`title_${primary}`] || post[`title_${fallback}`] || "Untitled",
     excerpt: post[`excerpt_${primary}`] || post[`excerpt_${fallback}`] || "",
     content: post[`content_${primary}`] || post[`content_${fallback}`] || "",
-    authorName:
-      post[`author_name_${primary}`] ||
-      post[`author_name_${fallback}`] ||
-      post.author_name ||
-      "FACS",
-    slug:
-      post[`slug_${primary}`] ||
-      post[`slug_${fallback}`] ||
-      post.slug ||
-      "",
+    slug: getPostSlug(post, language),
+    author: getPostAuthor(post, language),
     coverAlt:
       post[`cover_image_alt_${primary}`] ||
       post[`cover_image_alt_${fallback}`] ||

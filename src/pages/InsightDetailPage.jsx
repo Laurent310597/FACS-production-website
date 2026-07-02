@@ -10,6 +10,7 @@ import {
   formatPostDate,
   getCategoryLabel,
   getLocalizedPost,
+  matchesPostSlug,
 } from "../lib/insights";
 import { supabase } from "../lib/supabaseClient";
 
@@ -33,7 +34,7 @@ export default function InsightDetailPage() {
 
     const fetchPost = async (showLoading = false) => {
       if (!supabase) {
-        const fallback = fallbackPosts.find((item) => [item.slug, item.slug_vi, item.slug_en].filter(Boolean).includes(slug)) || null;
+        const fallback = fallbackPosts.find((item) => matchesPostSlug(item, slug)) || null;
         if (active) {
           setPost(fallback);
           setLoading(false);
@@ -146,7 +147,7 @@ export default function InsightDetailPage() {
               {localized.excerpt && <p className="mt-7 max-w-3xl text-lg leading-relaxed text-slate-400 md:text-xl">{localized.excerpt}</p>}
 
               <div className="mt-8 flex flex-wrap items-center gap-x-6 gap-y-3 text-sm text-slate-500">
-                <span className="inline-flex items-center gap-2"><UserRound size={16} /> {localized.authorName}</span>
+                <span className="inline-flex items-center gap-2"><UserRound size={16} /> {localized.author}</span>
                 {post.published_at && <span className="inline-flex items-center gap-2"><CalendarDays size={16} /> {formatPostDate(post.published_at, language)}</span>}
                 <span className="inline-flex items-center gap-2"><Clock3 size={16} /> {readingMinutes(localized.content)} {isVi ? "phút đọc" : "min read"}</span>
                 <button type="button" onClick={copyLink} className="inline-flex items-center gap-2 transition hover:text-cyan-200">{copied ? <Check size={16} /> : <Copy size={16} />} {copied ? (isVi ? "Đã sao chép" : "Copied") : (isVi ? "Sao chép liên kết" : "Copy link")}</button>
