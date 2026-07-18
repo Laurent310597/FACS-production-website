@@ -119,7 +119,7 @@ export default function CareerDetailPage() {
                     {isVi ? "Gửi hồ sơ để đội ngũ FACS xem xét và liên hệ với bạn về quy trình tuyển dụng." : "Submit your profile for the FACS team to review and contact you regarding the recruitment process."}
                   </p>
                   <Link
-                    to={`/careers/apply?position=${encodeURIComponent(localized.title)}`}
+                    to={`/careers/apply?job=${encodeURIComponent(job.id)}&position=${encodeURIComponent(localized.title)}`}
                     className="mt-7 inline-flex w-full items-center justify-center gap-2 rounded-2xl bg-cyan-300 px-5 py-3.5 font-bold text-[#071421] transition hover:-translate-y-0.5 hover:bg-cyan-200"
                   >
                     {isVi ? "Ứng tuyển vị trí này" : "Apply For This Position"} <ArrowRight size={17} />

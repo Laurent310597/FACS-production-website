@@ -3,3 +3,12 @@ verify_jwt = false
 
 [functions.lark-oauth-callback]
 verify_jwt = false
+
+[functions.form-submissions]
+verify_jwt = false
+
+[functions.form-email-admin]
+verify_jwt = false
+
+[functions.form-lark-oauth-callback]
+verify_jwt = false
