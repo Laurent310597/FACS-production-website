@@ -13,14 +13,14 @@
 
 ## Thứ tự kích hoạt ngắn nhất
 
-### 1. Kiểm tra hai địa chỉ gửi trong Lark
+### 1. Kiểm tra hai Public Mailbox trong Lark
 
-Trong Lark Mail Admin, xác nhận cả hai địa chỉ sau là địa chỉ gửi thay mặt/alias của tài khoản `tunguyen@facs.vn`:
+Trong Lark Mail Admin, xác nhận cả hai địa chỉ sau là Public Mailbox và `tunguyen@facs.vn` là thành viên:
 
 - `hr@facs.vn`
 - `contact@facs.vn`
 
-Nếu chúng mới chỉ là mail group nhận thư, hãy thêm chúng làm alias/send-as của `tunguyen@facs.vn`. Bước kiểm tra gửi thử ở cuối sẽ xác nhận cấu hình này.
+Không chuyển hai hộp thư này thành alias và không xóa thành viên. Website sẽ kết nối bằng tài khoản thành viên `tunguyen@facs.vn`, sau đó gửi trực tiếp từ đúng Public Mailbox.
 
 ### 2. Cấu hình ứng dụng Lark
 
@@ -72,7 +72,7 @@ Sau khi Vercel Preview đã sẵn sàng:
 4. Đăng nhập Lark bằng `tunguyen@facs.vn` và bấm cho phép.
 5. Quay lại Admin, bấm gửi thử từ `hr@facs.vn` và `contact@facs.vn`.
 
-Chỉ tiếp tục khi cả hai email thử đều đến hộp thư `tunguyen@facs.vn` và trường From hiển thị đúng alias.
+Chỉ tiếp tục khi cả hai email thử đều đến hộp thư `tunguyen@facs.vn` và trường From hiển thị đúng Public Mailbox.
 
 ### 7. Kiểm tra trước khi merge
 
@@ -88,7 +88,7 @@ Chỉ tiếp tục khi cả hai email thử đều đến hộp thư `tunguyen@f
 
 - `/admin/applications`: hồ sơ ứng tuyển và tải CV.
 - `/admin/inquiries`: yêu cầu liên hệ.
-- `/admin/form-email`: kết nối Lark, gửi thử và kiểm tra alias.
+- `/admin/form-email`: kết nối Lark, gửi thử và kiểm tra Public Mailbox.
 
 ## Lưu ý bảo mật
 

@@ -64,7 +64,11 @@ export async function sendFormLarkMail(params: {
   senderName: string;
   dedupeKey: string;
 }) {
-  const mailbox = encodeURIComponent(FORM_MAILBOX);
+  // hr@facs.vn and contact@facs.vn are Public Mailboxes. The connected
+  // tunguyen@facs.vn user is a member of both, so each message must be
+  // created inside the matching public mailbox instead of impersonating an
+  // alias from the user's personal mailbox.
+  const mailbox = encodeURIComponent(params.senderEmail);
   const response = await fetch(`https://open.larksuite.com/open-apis/mail/v1/user_mailboxes/${mailbox}/messages/send`, {
     method: "POST",
     headers: {

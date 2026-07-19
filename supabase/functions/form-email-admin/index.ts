@@ -4,7 +4,7 @@ import { buildRawEmail } from "../_shared/mime-message.ts";
 import { FORM_MAILBOX, getValidFormLarkToken, sendFormLarkMail } from "../_shared/form-lark.ts";
 import { sendSubmissionEmails } from "../_shared/submission-mailer.ts";
 
-const ALIASES = ["hr@facs.vn", "contact@facs.vn"];
+const PUBLIC_MAILBOXES = ["hr@facs.vn", "contact@facs.vn"];
 
 function json(body: unknown, status = 200) {
   return new Response(JSON.stringify(body), {
@@ -82,7 +82,7 @@ Deno.serve(async (req) => {
         .eq("id", true)
         .maybeSingle();
       if (error) throw new Error(error.message);
-      return json({ connected: Boolean(data), mailbox_email: data?.mailbox_email || FORM_MAILBOX, aliases: ALIASES, updated_at: data?.updated_at || null });
+      return json({ connected: Boolean(data), mailbox_email: data?.mailbox_email || FORM_MAILBOX, public_mailboxes: PUBLIC_MAILBOXES, updated_at: data?.updated_at || null });
     }
 
     if (action === "oauth_disconnect") {
@@ -93,7 +93,7 @@ Deno.serve(async (req) => {
 
     if (action === "test") {
       const senderEmail = String(body.sender_email || "").toLowerCase();
-      if (!ALIASES.includes(senderEmail)) return json({ error: "Địa chỉ gửi thử không hợp lệ." }, 400);
+      if (!PUBLIC_MAILBOXES.includes(senderEmail)) return json({ error: "Hộp thư công khai gửi thử không hợp lệ." }, 400);
       const senderName = senderEmail === "hr@facs.vn" ? "FACS Careers" : "FACS Contact";
       const token = await getValidFormLarkToken(admin);
       const testTime = new Date().toLocaleString("vi-VN", { timeZone: "Asia/Ho_Chi_Minh" });
