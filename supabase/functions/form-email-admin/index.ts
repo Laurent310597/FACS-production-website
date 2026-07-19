@@ -24,6 +24,20 @@ function base64Url(bytes: Uint8Array) {
   return btoa(binary).replaceAll("+", "-").replaceAll("/", "_").replaceAll("=", "");
 }
 
+function allowedSiteOrigin(candidate: string | null, fallback: string) {
+  try {
+    const url = new URL(candidate || fallback);
+    const hostname = url.hostname.toLowerCase();
+    const allowedHost = hostname === "facs.vn"
+      || hostname === "www.facs.vn"
+      || hostname.endsWith(".vercel.app");
+    if (url.protocol === "https:" && allowedHost) return url.origin;
+  } catch {
+    // Fall back to the configured production site URL.
+  }
+  return fallback;
+}
+
 async function requireAdmin(req: Request, admin: ReturnType<typeof createClient>) {
   const token = (req.headers.get("authorization") || "").replace(/^Bearer\s+/i, "").trim();
   if (!token) throw new Error("UNAUTHORIZED");
@@ -32,19 +46,20 @@ async function requireAdmin(req: Request, admin: ReturnType<typeof createClient>
   return data.user;
 }
 
-async function oauthUrl(admin: ReturnType<typeof createClient>) {
+async function oauthUrl(admin: ReturnType<typeof createClient>, returnUrl: string) {
   const appId = Deno.env.get("LARK_APP_ID")?.trim();
   const supabaseUrl = Deno.env.get("SUPABASE_URL")?.trim();
   if (!appId || !supabaseUrl) throw new Error("Thiếu LARK_APP_ID hoặc SUPABASE_URL.");
 
-  const state = crypto.randomUUID().replaceAll("-", "") + crypto.randomUUID().replaceAll("-", "");
+  const encodedReturnUrl = base64Url(new TextEncoder().encode(returnUrl));
+  const state = `${encodedReturnUrl}.${crypto.randomUUID().replaceAll("-", "")}${crypto.randomUUID().replaceAll("-", "")}`;
   const verifierBytes = crypto.getRandomValues(new Uint8Array(48));
   const codeVerifier = base64Url(verifierBytes);
   const challengeBytes = new Uint8Array(await crypto.subtle.digest("SHA-256", new TextEncoder().encode(codeVerifier)));
   const { error } = await admin.from("form_lark_oauth_states").insert({
     state_hash: await sha256(state),
     code_verifier: codeVerifier,
-    expires_at: new Date(Date.now() + 10 * 60 * 1000).toISOString(),
+    expires_at: new Date(Date.now() + 15 * 60 * 1000).toISOString(),
   });
   if (error) throw new Error(`Không thể tạo phiên kết nối Lark: ${error.message}`);
 
@@ -73,7 +88,10 @@ Deno.serve(async (req) => {
     const body = await req.json().catch(() => ({}));
     const action = String(body.action || "");
 
-    if (action === "oauth_url") return json({ url: await oauthUrl(admin) });
+    if (action === "oauth_url") {
+      const returnUrl = allowedSiteOrigin(req.headers.get("origin"), siteUrl);
+      return json({ url: await oauthUrl(admin, returnUrl) });
+    }
 
     if (action === "oauth_status") {
       const { data, error } = await admin
