@@ -10,17 +10,17 @@ const content = {
       title: "Privacy Policy",
       intro:
         "This Privacy Policy explains how FACS collects, uses, stores and protects personal information when you visit our website, contact our team or engage with our professional services.",
-      updated: "Effective date: May 2026",
+      updated: "Effective date: July 2026",
       sections: [
         {
           heading: "1. Information we may collect",
           body:
-            "We may collect information you provide directly, including your name, company, job title, email address, phone number, service interests and any information included in inquiry forms, emails or consultation requests. We may also collect limited technical information such as browser type, device information, pages viewed and general website usage data to maintain website performance and security.",
+            "We may collect information you provide directly, including your name, company, job title, email address, phone number, service interests, career application details, CV documents and any information included in inquiry forms, emails or consultation requests. We may also collect limited technical information to maintain website performance, prevent spam and protect our systems.",
         },
         {
           heading: "2. How we use information",
           body:
-            "FACS uses personal information to respond to inquiries, provide professional services, manage client relationships, prepare proposals, improve our website, maintain internal records and comply with applicable legal, tax, accounting and professional obligations. We do not sell personal information.",
+            "FACS uses personal information to respond to inquiries, review career applications, contact suitable candidates, provide professional services, manage client relationships, improve our website, maintain internal records and comply with applicable obligations. We do not sell personal information.",
         },
         {
           heading: "3. Disclosure and professional confidentiality",
@@ -44,17 +44,17 @@ const content = {
       title: "Chính sách bảo mật",
       intro:
         "Chính sách bảo mật này giải thích cách FACS thu thập, sử dụng, lưu trữ và bảo vệ thông tin cá nhân khi Quý khách truy cập website, liên hệ với đội ngũ của chúng tôi hoặc sử dụng các dịch vụ chuyên nghiệp của FACS.",
-      updated: "Ngày hiệu lực: Tháng 05/2026",
+      updated: "Ngày hiệu lực: Tháng 07/2026",
       sections: [
         {
           heading: "1. Thông tin chúng tôi có thể thu thập",
           body:
-            "FACS có thể thu thập các thông tin do Quý khách trực tiếp cung cấp, bao gồm họ tên, doanh nghiệp, chức danh, địa chỉ email, số điện thoại, nhu cầu dịch vụ và các thông tin được gửi qua biểu mẫu liên hệ, email hoặc yêu cầu tư vấn. Chúng tôi cũng có thể thu thập một số thông tin kỹ thuật giới hạn như loại trình duyệt, thiết bị, trang đã truy cập và dữ liệu sử dụng website nhằm duy trì hiệu năng và an toàn hệ thống.",
+            "FACS có thể thu thập các thông tin do người dùng trực tiếp cung cấp, bao gồm họ tên, doanh nghiệp, chức danh, địa chỉ email, số điện thoại, nhu cầu dịch vụ, thông tin ứng tuyển, tài liệu CV và các thông tin được gửi qua biểu mẫu liên hệ, email hoặc yêu cầu tư vấn. Chúng tôi cũng có thể thu thập một số thông tin kỹ thuật giới hạn nhằm duy trì hiệu năng, ngăn chặn spam và bảo vệ hệ thống.",
         },
         {
           heading: "2. Mục đích sử dụng thông tin",
           body:
-            "FACS sử dụng thông tin cá nhân để phản hồi yêu cầu, cung cấp dịch vụ chuyên nghiệp, quản lý quan hệ khách hàng, chuẩn bị đề xuất dịch vụ, cải thiện website, duy trì hồ sơ nội bộ và đáp ứng các nghĩa vụ pháp lý, thuế, kế toán và chuẩn mực nghề nghiệp có liên quan. FACS không bán thông tin cá nhân.",
+            "FACS sử dụng thông tin cá nhân để phản hồi yêu cầu, xem xét hồ sơ ứng tuyển, liên hệ ứng viên phù hợp, cung cấp dịch vụ chuyên nghiệp, quản lý quan hệ khách hàng, cải thiện website, duy trì hồ sơ nội bộ và đáp ứng các nghĩa vụ có liên quan. FACS không bán thông tin cá nhân.",
         },
         {
           heading: "3. Chia sẻ thông tin và bảo mật nghề nghiệp",

@@ -1,5 +1,5 @@
 import { Link, NavLink, useNavigate } from "react-router-dom";
-import { Briefcase, ExternalLink, FilePlus2, LayoutDashboard, LogOut, Newspaper } from "lucide-react";
+import { Briefcase, ExternalLink, FilePlus2, LayoutDashboard, LogOut, MailCheck, MessagesSquare, Newspaper, UserRoundSearch } from "lucide-react";
 import { supabase } from "../../lib/supabaseClient";
 
 const navClass = ({ isActive }) =>
@@ -56,6 +56,19 @@ export default function AdminLayout({ children }) {
             </NavLink>
             <NavLink to="/admin/jobs/new" end className={navClass}>
               <FilePlus2 size={18} /> Tạo JD mới
+            </NavLink>
+            <NavLink to="/admin/applications" end className={navClass}>
+              <UserRoundSearch size={18} /> Hồ sơ ứng tuyển
+            </NavLink>
+
+            <div className="mt-2 border-t border-white/10 px-4 pb-1 pt-5 text-[11px] font-bold uppercase tracking-[0.18em] text-slate-600 sm:col-span-2 lg:col-span-1">Contact</div>
+            <NavLink to="/admin/inquiries" end className={navClass}>
+              <MessagesSquare size={18} /> Yêu cầu liên hệ
+            </NavLink>
+
+            <div className="mt-2 border-t border-white/10 px-4 pb-1 pt-5 text-[11px] font-bold uppercase tracking-[0.18em] text-slate-600 sm:col-span-2 lg:col-span-1">Automation</div>
+            <NavLink to="/admin/form-email" end className={navClass}>
+              <MailCheck size={18} /> Email biểu mẫu
             </NavLink>
           </nav>
         </aside>
