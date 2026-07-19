@@ -56,7 +56,7 @@ function shell(content: string, siteUrl: string) {
 function signature(email: string, signoff: string, department: string) {
   return `<p style="margin:20px 0 0;">${signoff}</p>
   <p style="margin:15px 0 0;font-weight:700;color:#0f315a;">${department}</p>
-  <p style="margin:14px 0 0;font-weight:700;">FACS (VIETNAM) ENTERPRISES CONSULTING &amp; TRAINING SERVICES COMPANY LIMITED</p>
+  <p style="margin:14px 0 0;font-weight:700;">FACS (VIETNAM) TEAM</p>
   <p style="margin:7px 0 0;">Email: <a href="mailto:${email}" style="color:#067a98;">${email}</a><br>Website: <a href="https://facs.vn" style="color:#067a98;">www.facs.vn</a><br>Hotline: (+84) 972 798 424</p>`;
 }
 
