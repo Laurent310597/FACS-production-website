@@ -28,6 +28,7 @@ import TeamMemberDetailPage from "./pages/TeamMemberDetailPage";
 import ScrollToTop from "./components/ScrollToTop";
 import PageTransition from "./components/PageTransition";
 import MouseGlow from "./components/MouseGlow";
+import FacsAssistant from "./components/FacsAssistant";
 import { LanguageProvider } from "./components/LanguageContext";
 
 function HomeIntroOverlay() {
@@ -136,6 +137,7 @@ export default function App() {
         <MouseGlow />
         <HomeIntroOverlay />
         <AnimatedRoutes />
+        <FacsAssistant />
       </LanguageProvider>
     </BrowserRouter>
   );

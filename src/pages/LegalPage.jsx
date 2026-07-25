@@ -23,17 +23,22 @@ const content = {
             "FACS uses personal information to respond to inquiries, review career applications, contact suitable candidates, provide professional services, manage client relationships, improve our website, maintain internal records and comply with applicable obligations. We do not sell personal information.",
         },
         {
-          heading: "3. Disclosure and professional confidentiality",
+          heading: "3. AI assistant and technology providers",
+          body:
+            "Questions submitted to the FACS AI Assistant may be processed by technology providers to generate responses and search public sources. FACS configures the assistant not to store chat content in the FACS website database unless a user separately submits a contact form. Users must not enter confidential, privileged, sensitive personal or client information. Technology providers may process technical request data under their applicable terms and safeguards.",
+        },
+        {
+          heading: "4. Disclosure and professional confidentiality",
           body:
             "Information may be shared with FACS personnel, professional advisers, technology providers or competent authorities where required by law or necessary for service delivery. We apply a professional-services standard of confidentiality and require appropriate safeguards where third parties support our operations.",
         },
         {
-          heading: "4. Data security and retention",
+          heading: "5. Data security and retention",
           body:
             "We maintain reasonable administrative, technical and organizational measures to protect information from unauthorized access, loss or misuse. Information is retained only for as long as necessary for the purposes described in this Policy, for legitimate business needs, or as required by law and professional record-keeping requirements.",
         },
         {
-          heading: "5. Your choices and contact",
+          heading: "6. Your choices and contact",
           body:
             "You may contact FACS to request access, correction or deletion of your personal information, subject to applicable legal and professional limitations. For privacy-related requests, please contact us through the details provided on the Contact page.",
         },
@@ -57,17 +62,22 @@ const content = {
             "FACS sử dụng thông tin cá nhân để phản hồi yêu cầu, xem xét hồ sơ ứng tuyển, liên hệ ứng viên phù hợp, cung cấp dịch vụ chuyên nghiệp, quản lý quan hệ khách hàng, cải thiện website, duy trì hồ sơ nội bộ và đáp ứng các nghĩa vụ có liên quan. FACS không bán thông tin cá nhân.",
         },
         {
-          heading: "3. Chia sẻ thông tin và bảo mật nghề nghiệp",
+          heading: "3. Trợ lý AI và nhà cung cấp công nghệ",
+          body:
+            "Câu hỏi gửi đến Trợ lý AI FACS có thể được các nhà cung cấp công nghệ xử lý nhằm tạo phản hồi và tra cứu các nguồn công khai. FACS cấu hình để nội dung trao đổi không được lưu trong cơ sở dữ liệu website của FACS, trừ khi người dùng chủ động gửi biểu mẫu liên hệ riêng. Người dùng không được nhập thông tin mật, thông tin được bảo vệ theo quan hệ nghề nghiệp, dữ liệu cá nhân nhạy cảm hoặc thông tin khách hàng. Nhà cung cấp công nghệ có thể xử lý dữ liệu kỹ thuật của yêu cầu theo các điều khoản và biện pháp bảo vệ áp dụng.",
+        },
+        {
+          heading: "4. Chia sẻ thông tin và bảo mật nghề nghiệp",
           body:
             "Thông tin có thể được chia sẻ với nhân sự FACS, cố vấn chuyên môn, nhà cung cấp công nghệ hoặc cơ quan có thẩm quyền khi pháp luật yêu cầu hoặc khi cần thiết để cung cấp dịch vụ. Chúng tôi áp dụng tiêu chuẩn bảo mật của lĩnh vực dịch vụ chuyên nghiệp và yêu cầu các biện pháp bảo vệ phù hợp đối với bên thứ ba hỗ trợ hoạt động của FACS.",
         },
         {
-          heading: "4. An toàn dữ liệu và thời hạn lưu trữ",
+          heading: "5. An toàn dữ liệu và thời hạn lưu trữ",
           body:
             "FACS duy trì các biện pháp quản trị, kỹ thuật và tổ chức hợp lý để bảo vệ thông tin khỏi truy cập trái phép, thất lạc hoặc sử dụng sai mục đích. Thông tin được lưu trữ trong thời hạn cần thiết cho các mục đích nêu tại Chính sách này, cho nhu cầu kinh doanh hợp pháp hoặc theo yêu cầu của pháp luật và quy định lưu trữ hồ sơ nghề nghiệp.",
         },
         {
-          heading: "5. Quyền lựa chọn và liên hệ",
+          heading: "6. Quyền lựa chọn và liên hệ",
           body:
             "Quý khách có thể liên hệ FACS để yêu cầu truy cập, chỉnh sửa hoặc xóa thông tin cá nhân, tùy thuộc vào các giới hạn pháp lý và nghề nghiệp có liên quan. Đối với các yêu cầu về bảo mật thông tin, vui lòng liên hệ với chúng tôi thông qua thông tin tại trang Liên hệ.",
         },
@@ -80,7 +90,7 @@ const content = {
       title: "Terms of Use",
       intro:
         "These Terms of Use govern access to and use of the FACS website. By using this website, you agree to these terms. If you do not agree, please discontinue use of the website.",
-      updated: "Effective date: May 2026",
+      updated: "Effective date: July 2026",
       sections: [
         {
           heading: "1. Website content",
@@ -88,22 +98,27 @@ const content = {
             "The information on this website is provided for general information only. It is not intended to constitute accounting, tax, legal, audit or other professional advice. Professional advice should be obtained before making decisions based on specific facts and circumstances.",
         },
         {
-          heading: "2. No client relationship",
+          heading: "2. AI-generated reference content",
+          body:
+            "The FACS AI Assistant provides automatically generated summaries based on selected public sources. Outputs may be incomplete, inaccurate or outdated and must be checked against the linked source and the user’s specific circumstances. The assistant is not a substitute for professional review, and users must not submit confidential, privileged, sensitive personal or client information through the chat function.",
+        },
+        {
+          heading: "3. No client relationship",
           body:
             "Use of this website, submission of an inquiry or receipt of general information does not create a client, adviser, fiduciary or professional relationship with FACS. A professional engagement is established only when FACS and the client agree separate engagement terms in writing.",
         },
         {
-          heading: "3. Intellectual property",
+          heading: "4. Intellectual property",
           body:
             "All website content, including text, layout, graphics, logos and visual elements, belongs to FACS or its licensors unless otherwise stated. You may view and download content for internal reference only and may not reproduce, distribute or modify it for commercial purposes without prior written consent.",
         },
         {
-          heading: "4. External links and availability",
+          heading: "5. External links and availability",
           body:
             "This website may include links to third-party websites for convenience. FACS is not responsible for third-party content, security or privacy practices. We aim to maintain website availability but do not guarantee uninterrupted, error-free or fully secure access.",
         },
         {
-          heading: "5. Limitation and changes",
+          heading: "6. Limitation and changes",
           body:
             "To the extent permitted by law, FACS is not liable for losses arising from reliance on general website information or from website access issues. FACS may update these Terms of Use from time to time, and the updated version will apply once published on this website.",
         },
@@ -114,7 +129,7 @@ const content = {
       title: "Điều khoản sử dụng",
       intro:
         "Điều khoản sử dụng này điều chỉnh việc truy cập và sử dụng website của FACS. Khi sử dụng website này, Quý khách đồng ý với các điều khoản dưới đây. Nếu không đồng ý, vui lòng ngừng sử dụng website.",
-      updated: "Ngày hiệu lực: Tháng 05/2026",
+      updated: "Ngày hiệu lực: Tháng 07/2026",
       sections: [
         {
           heading: "1. Nội dung trên website",
@@ -122,22 +137,27 @@ const content = {
             "Thông tin trên website này chỉ nhằm mục đích tham khảo chung. Nội dung không được xem là tư vấn kế toán, thuế, pháp lý, kiểm toán hoặc bất kỳ tư vấn chuyên môn nào khác. Quý khách nên tìm kiếm tư vấn chuyên môn phù hợp trước khi đưa ra quyết định dựa trên tình huống và dữ kiện cụ thể.",
         },
         {
-          heading: "2. Không hình thành quan hệ khách hàng",
+          heading: "2. Nội dung tham khảo do AI tạo",
+          body:
+            "Trợ lý AI FACS cung cấp nội dung tổng hợp tự động dựa trên một số nguồn công khai được lựa chọn. Kết quả có thể chưa đầy đủ, chưa chính xác hoặc chưa được cập nhật và cần được đối chiếu với nguồn liên kết cũng như tình huống cụ thể của người dùng. Trợ lý không thay thế việc rà soát chuyên môn; người dùng không được gửi thông tin mật, thông tin được bảo vệ theo quan hệ nghề nghiệp, dữ liệu cá nhân nhạy cảm hoặc thông tin khách hàng qua chức năng chat.",
+        },
+        {
+          heading: "3. Không hình thành quan hệ khách hàng",
           body:
             "Việc sử dụng website, gửi yêu cầu liên hệ hoặc tiếp nhận thông tin chung không tạo lập quan hệ khách hàng, tư vấn, ủy thác hoặc quan hệ nghề nghiệp với FACS. Quan hệ dịch vụ chuyên nghiệp chỉ được xác lập khi FACS và khách hàng thống nhất các điều khoản dịch vụ riêng bằng văn bản.",
         },
         {
-          heading: "3. Quyền sở hữu trí tuệ",
+          heading: "4. Quyền sở hữu trí tuệ",
           body:
             "Toàn bộ nội dung website, bao gồm văn bản, bố cục, đồ họa, logo và các yếu tố nhận diện, thuộc quyền sở hữu của FACS hoặc bên cấp phép, trừ khi có quy định khác. Quý khách có thể xem và tải nội dung cho mục đích tham khảo nội bộ, nhưng không được sao chép, phân phối hoặc chỉnh sửa cho mục đích thương mại nếu chưa có sự đồng ý trước bằng văn bản.",
         },
         {
-          heading: "4. Liên kết bên ngoài và khả năng truy cập",
+          heading: "5. Liên kết bên ngoài và khả năng truy cập",
           body:
             "Website có thể bao gồm liên kết đến các trang của bên thứ ba nhằm tạo thuận tiện cho người dùng. FACS không chịu trách nhiệm đối với nội dung, bảo mật hoặc chính sách riêng tư của các website bên thứ ba. Chúng tôi nỗ lực duy trì khả năng truy cập website nhưng không bảo đảm việc truy cập luôn liên tục, không có lỗi hoặc hoàn toàn an toàn.",
         },
         {
-          heading: "5. Giới hạn trách nhiệm và cập nhật",
+          heading: "6. Giới hạn trách nhiệm và cập nhật",
           body:
             "Trong phạm vi pháp luật cho phép, FACS không chịu trách nhiệm đối với các tổn thất phát sinh từ việc dựa vào thông tin tham khảo chung trên website hoặc từ sự cố truy cập website. FACS có thể cập nhật Điều khoản sử dụng này theo từng thời điểm; phiên bản cập nhật sẽ có hiệu lực khi được công bố trên website.",
         },

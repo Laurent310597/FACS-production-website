@@ -1,0 +1,78 @@
+# FACS Website v20.6 — AI Assistant & Contact Widget
+
+## 1. Phạm vi cập nhật
+
+Phiên bản v20.6 bổ sung một pop-up dùng chung trên toàn bộ website công khai, gồm:
+
+- **Tra cứu bằng AI:** tìm thông tin trên `facs.vn` và danh sách nguồn chính thức đã giới hạn;
+- **Nguồn tham khảo:** hiển thị liên kết có thể bấm trực tiếp;
+- **Nhắn FACS:** gửi yêu cầu qua luồng Contact hiện có, lưu vào Supabase và gửi email theo cấu hình v20.5;
+- **Liên hệ nhanh:** email, điện thoại, Facebook Messenger và Zalo;
+- **Song ngữ:** tiếng Việt và tiếng Anh theo ngôn ngữ hiện tại của website.
+
+Widget không hiển thị trong khu vực `/admin`.
+
+## 2. Kiểm soát rủi ro đã tích hợp
+
+- OpenAI API key chỉ được lưu dưới dạng **Supabase Edge Function Secret**;
+- câu hỏi AI không được lưu vào cơ sở dữ liệu FACS;
+- OpenAI Responses API được gọi với `store: false`;
+- giới hạn 12 lượt tra cứu/IP/60 phút;
+- kiểm duyệt đầu vào bằng Moderation API;
+- giới hạn độ dài câu hỏi, số lượt lịch sử và độ dài phản hồi;
+- tìm kiếm bắt buộc trong danh sách domain được phê duyệt;
+- hiển thị nguồn bấm được;
+- nội dung AI được xác định rõ là thông tin tham khảo, không phải tư vấn chuyên môn;
+- yêu cầu người dùng đồng ý trước lần tra cứu đầu tiên và không nhập dữ liệu mật/nhạy cảm;
+- cập nhật Chính sách bảo mật và Điều khoản sử dụng.
+
+## 3. Cấu hình bắt buộc trước khi kích hoạt
+
+Tại Supabase Dashboard → Edge Functions → Secrets, thêm:
+
+```text
+OPENAI_API_KEY=<OpenAI Project API Key>
+OPENAI_MODEL=gpt-5.6-luna
+FACS_ASSISTANT_ALLOWED_ORIGINS=https://facs.vn,https://www.facs.vn,https://facs-production-website.vercel.app
+FACS_ASSISTANT_ALLOWED_DOMAINS=facs.vn,chinhphu.vn,vbpl.vn,moj.gov.vn,mof.gov.vn,gdt.gov.vn,customs.gov.vn,baohiemxahoi.gov.vn,dangkykinhdoanh.gov.vn,sbv.gov.vn,moit.gov.vn
+```
+
+Không đưa `OPENAI_API_KEY` vào `.env`, source code, GitHub hoặc biến `VITE_*`.
+
+## 4. Thứ tự triển khai
+
+1. Xác nhận migration v20.5 đã được áp dụng vì trợ lý dùng chung hàm giới hạn tần suất `check_form_submission_rate_limit`.
+2. Thêm các Supabase Edge Function Secrets nêu trên.
+3. Deploy Edge Function:
+
+   ```bash
+   supabase functions deploy website-assistant
+   ```
+
+4. Kiểm tra Edge Function hoạt động trên môi trường preview.
+5. Deploy source website lên Vercel.
+6. Kiểm tra tối thiểu:
+
+   - mở/đóng widget trên desktop và mobile;
+   - đổi ngôn ngữ Việt/Anh;
+   - hỏi về dịch vụ FACS;
+   - hỏi một vấn đề thuế/pháp lý cần nguồn chính thức;
+   - kiểm tra mọi nguồn mở đúng trang;
+   - gửi biểu mẫu “Nhắn FACS”;
+   - xác nhận inquiry xuất hiện tại `/admin/inquiries`;
+   - xác nhận email nội bộ và email xác nhận được gửi;
+   - xác nhận widget không xuất hiện tại `/admin`.
+
+## 5. Vận hành chi phí
+
+- Model mặc định: `gpt-5.6-luna`, phù hợp tác vụ có lưu lượng và yêu cầu tối ưu chi phí;
+- mỗi câu hỏi bắt buộc thực hiện web search để có nguồn;
+- `search_context_size` đặt ở mức `low`;
+- giới hạn phản hồi 700 output tokens;
+- nên cấu hình cảnh báo và hạn mức chi tiêu trong OpenAI Project trước khi mở production.
+
+## 6. Tắt nhanh hoặc hoàn nguyên
+
+- Tắt riêng AI nhưng vẫn giữ widget liên hệ: xóa hoặc vô hiệu hóa `OPENAI_API_KEY`; tab AI sẽ hướng người dùng sang “Nhắn FACS”.
+- Gỡ toàn bộ widget: bỏ `<FacsAssistant />` và import tương ứng trong `src/App.jsx`.
+- Không cần rollback database vì v20.6 không tạo thêm bảng hoặc thay đổi dữ liệu hiện hữu.
