@@ -1,5 +1,24 @@
 # FACS Website v20.6 — AI Assistant & Contact Widget
 
+## 0. Baseline đã xác minh
+
+V20.6 được phát triển trực tiếp trên phiên bản website mới nhất tại thời điểm
+xác minh ngày 25/07/2026:
+
+- Repository: `Laurent310597/FACS-production-website`;
+- nhánh production: `main`;
+- commit production mới nhất: `d2231f109a125777f088b270e18ce5114972b378`;
+- nội dung baseline: v20.5 — Form Email Automation và Admin Submissions;
+- Vercel status của commit baseline: `success`;
+- parent và merge-base của commit v20.6
+  `0b6731df9a2db0afb1be49db24b845d5e699bab2` đều là đúng commit production
+  `d2231f109a125777f088b270e18ce5114972b378`.
+
+Do đó, v20.6 đã kế thừa đầy đủ v20.5 và không được tạo từ baseline v20.4 cũ.
+Nếu `main` phát sinh commit mới trước khi mở Pull Request hoặc merge, phải cập
+nhật nhánh v20.6 từ `main`, chạy lại toàn bộ kiểm thử và xác minh merge-base
+trước khi triển khai.
+
 ## 1. Phạm vi cập nhật
 
 Phiên bản v20.6 bổ sung một pop-up dùng chung trên toàn bộ website công khai, gồm:
