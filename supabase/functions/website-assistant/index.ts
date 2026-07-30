@@ -176,33 +176,33 @@ function extractAssistantResult(
   payload: Record<string, unknown>,
   domains: string[],
 ) {
-  const steps = Array.isArray(payload.steps) ? payload.steps : [];
-  const textBlocks = steps.flatMap((item: any) =>
-    item?.type === "model_output" && Array.isArray(item.content)
-      ? item.content.filter((block: any) => block?.type === "text")
-      : []
-  );
-  const blockTexts = textBlocks.map((block: any) =>
-    String(block.text || "").replaceAll("\u0000", "").slice(0, 10_000)
-  );
-  const untrimmedAnswer = blockTexts.join("\n");
-  const leadingWhitespace = untrimmedAnswer.length -
-    untrimmedAnswer.trimStart().length;
-  const answer = untrimmedAnswer.trim();
+  const candidate = Array.isArray(payload.candidates) ? payload.candidates[0] : null;
+  const parts = Array.isArray(candidate?.content?.parts)
+    ? candidate.content.parts
+    : [];
+  const answer = parts
+    .map((part: any) => cleanText(part?.text, 10_000))
+    .filter(Boolean)
+    .join("\n")
+    .trim();
+  const grounding = candidate?.groundingMetadata;
+  const chunks = Array.isArray(grounding?.groundingChunks)
+    ? grounding.groundingChunks
+    : [];
+  const supports = Array.isArray(grounding?.groundingSupports)
+    ? grounding.groundingSupports
+    : [];
 
   const citations: Citation[] = [];
-  let blockOffset = 0;
-  textBlocks.forEach((block: any, blockIndex: number) => {
-    const annotations = Array.isArray(block.annotations)
-      ? block.annotations
+  supports.forEach((support: any) => {
+    const startIndex = Number(support?.segment?.startIndex);
+    const endIndex = Number(support?.segment?.endIndex);
+    const chunkIndexes = Array.isArray(support?.groundingChunkIndices)
+      ? support.groundingChunkIndices
       : [];
-    annotations.forEach((annotation: any) => {
-      if (annotation?.type !== "url_citation") return;
-      const url = sourceUrlAllowed(annotation.url, domains);
-      const startIndex = blockOffset + Number(annotation.start_index) -
-        leadingWhitespace;
-      const endIndex = blockOffset + Number(annotation.end_index) -
-        leadingWhitespace;
+    chunkIndexes.forEach((chunkIndex: unknown) => {
+      const chunk = Number.isInteger(chunkIndex) ? chunks[Number(chunkIndex)] : null;
+      const url = sourceUrlAllowed(chunk?.web?.uri, domains);
       if (
         !url ||
         !Number.isInteger(startIndex) ||
@@ -217,13 +217,21 @@ function extractAssistantResult(
         start_index: startIndex,
         end_index: endIndex,
         url,
-        title: cleanText(annotation.title, 300),
+        title: cleanText(chunk?.web?.title, 300),
       });
     });
-    blockOffset += blockTexts[blockIndex].length + 1;
   });
 
   const sourcesByUrl = new Map<string, Source>();
+  chunks.forEach((chunk: any) => {
+    const url = sourceUrlAllowed(chunk?.web?.uri, domains);
+    if (url && !sourcesByUrl.has(url)) {
+      sourcesByUrl.set(url, {
+        url,
+        title: cleanText(chunk?.web?.title, 300),
+      });
+    }
+  });
   citations.forEach((citation) => {
     if (!sourcesByUrl.has(citation.url)) {
       sourcesByUrl.set(citation.url, {
@@ -237,7 +245,9 @@ function extractAssistantResult(
     answer,
     citations: citations.slice(0, 12),
     sources: [...sourcesByUrl.values()].slice(0, 12),
-    searched: steps.some((item: any) => item?.type === "google_search_call"),
+    searched: chunks.length > 0 ||
+      (Array.isArray(grounding?.webSearchQueries) &&
+        grounding.webSearchQueries.length > 0),
   };
 }
 
@@ -335,13 +345,18 @@ Deno.serve(async (req) => {
       Deno.env.get("GEMINI_MODEL") || "gemini-2.5-flash-lite",
       80,
     );
-    const input = [
-      ...history,
-      { role: "user", content: message },
-    ].map((item) => `${item.role.toUpperCase()}: ${item.content}`).join("\n\n");
+    const contents = [
+      ...history.map((item) => ({
+        role: item.role === "assistant" ? "model" : "user",
+        parts: [{ text: item.content }],
+      })),
+      { role: "user", parts: [{ text: message }] },
+    ];
 
     const geminiResponse = await fetch(
-      "https://generativelanguage.googleapis.com/v1beta/interactions",
+      `https://generativelanguage.googleapis.com/v1beta/models/${
+        encodeURIComponent(model)
+      }:generateContent`,
       {
       method: "POST",
       headers: {
@@ -349,16 +364,15 @@ Deno.serve(async (req) => {
         "Content-Type": "application/json",
       },
       body: JSON.stringify({
-        model,
-        system_instruction: buildInstructions(language, domains),
-        input,
-        tools: [{ type: "google_search" }],
-        generation_config: {
-          max_output_tokens: 700,
-          thinking_level: "low",
-          thinking_summaries: "none",
+        systemInstruction: {
+          parts: [{ text: buildInstructions(language, domains) }],
         },
-        store: false,
+        contents,
+        tools: [{ googleSearch: {} }],
+        generationConfig: {
+          maxOutputTokens: 700,
+          temperature: 0.2,
+        },
       }),
       signal: AbortSignal.timeout(28_000),
       },
