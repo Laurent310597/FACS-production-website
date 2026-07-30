@@ -33,11 +33,11 @@ Widget không hiển thị trong khu vực `/admin`.
 
 ## 2. Kiểm soát rủi ro đã tích hợp
 
-- OpenAI API key chỉ được lưu dưới dạng **Supabase Edge Function Secret**;
+- Gemini API key chỉ được lưu dưới dạng **Supabase Edge Function Secret**;
 - câu hỏi AI không được lưu vào cơ sở dữ liệu FACS;
-- OpenAI Responses API được gọi với `store: false`;
+- Gemini Interactions API được gọi với `store: false`;
 - giới hạn 12 lượt tra cứu/IP/60 phút;
-- kiểm duyệt đầu vào bằng Moderation API;
+- kiểm soát nội dung bằng cơ chế safety tích hợp của Gemini;
 - giới hạn độ dài câu hỏi, số lượt lịch sử và độ dài phản hồi;
 - tìm kiếm bắt buộc trong danh sách domain được phê duyệt;
 - hiển thị nguồn bấm được;
@@ -50,13 +50,13 @@ Widget không hiển thị trong khu vực `/admin`.
 Tại Supabase Dashboard → Edge Functions → Secrets, thêm:
 
 ```text
-OPENAI_API_KEY=<OpenAI Project API Key>
-OPENAI_MODEL=gpt-5.6-luna
+GEMINI_API_KEY=<Google AI Studio API Key>
+GEMINI_MODEL=gemini-2.5-flash-lite
 FACS_ASSISTANT_ALLOWED_ORIGINS=https://facs.vn,https://www.facs.vn,https://facs-production-website.vercel.app
 FACS_ASSISTANT_ALLOWED_DOMAINS=facs.vn,chinhphu.vn,vbpl.vn,moj.gov.vn,mof.gov.vn,gdt.gov.vn,customs.gov.vn,baohiemxahoi.gov.vn,dangkykinhdoanh.gov.vn,sbv.gov.vn,moit.gov.vn
 ```
 
-Không đưa `OPENAI_API_KEY` vào `.env`, source code, GitHub hoặc biến `VITE_*`.
+Không đưa `GEMINI_API_KEY` vào `.env`, source code, GitHub hoặc biến `VITE_*`.
 
 ## 4. Thứ tự triển khai
 
@@ -84,14 +84,13 @@ Không đưa `OPENAI_API_KEY` vào `.env`, source code, GitHub hoặc biến `VI
 
 ## 5. Vận hành chi phí
 
-- Model mặc định: `gpt-5.6-luna`, phù hợp tác vụ có lưu lượng và yêu cầu tối ưu chi phí;
+- Model mặc định: `gemini-2.5-flash-lite`, có Free Tier và phù hợp tác vụ có lưu lượng;
 - mỗi câu hỏi bắt buộc thực hiện web search để có nguồn;
-- `search_context_size` đặt ở mức `low`;
 - giới hạn phản hồi 700 output tokens;
-- nên cấu hình cảnh báo và hạn mức chi tiêu trong OpenAI Project trước khi mở production.
+- Free Tier có giới hạn tốc độ và số lượt; cần theo dõi quota trong Google AI Studio trước khi mở production.
 
 ## 6. Tắt nhanh hoặc hoàn nguyên
 
-- Tắt riêng AI nhưng vẫn giữ widget liên hệ: xóa hoặc vô hiệu hóa `OPENAI_API_KEY`; tab AI sẽ hướng người dùng sang “Nhắn FACS”.
+- Tắt riêng AI nhưng vẫn giữ widget liên hệ: xóa hoặc vô hiệu hóa `GEMINI_API_KEY`; tab AI sẽ hướng người dùng sang “Nhắn FACS”.
 - Gỡ toàn bộ widget: bỏ `<FacsAssistant />` và import tương ứng trong `src/App.jsx`.
 - Không cần rollback database vì v20.6 không tạo thêm bảng hoặc thay đổi dữ liệu hiện hữu.

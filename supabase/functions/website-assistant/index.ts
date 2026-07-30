@@ -136,9 +136,10 @@ function sourceUrlAllowed(value: unknown, domains: string[]) {
   }
 }
 
-function buildInstructions(language: string) {
+function buildInstructions(language: string, domains: string[]) {
   const responseLanguage = language === "en" ? "English" : "Vietnamese";
   const currentDate = new Date().toISOString().slice(0, 10);
+  const approvedDomains = domains.join(", ");
 
   return `
 You are the public FACS Reference Assistant on facs.vn. Today is ${currentDate}.
@@ -149,6 +150,8 @@ Purpose
 
 Source and accuracy rules
 - Use web search for every substantive answer and base factual claims on the returned sources.
+- Search and cite only these approved domains: ${approvedDomains}.
+- If Google Search returns other domains, ignore them and do not use their claims.
 - Prioritize the competent issuing authority and official legal text. FACS pages may explain FACS services or provide general commentary, but are not a substitute for official legal instruments.
 - Clearly distinguish an effective rule, a proposal or draft, FACS commentary, and your own limited summary.
 - If reliable current sources are insufficient or conflict, say that the point could not be verified and recommend contacting FACS.
@@ -169,42 +172,14 @@ Security and style
 `.trim();
 }
 
-async function moderateInput(apiKey: string, input: string) {
-  const response = await fetch("https://api.openai.com/v1/moderations", {
-    method: "POST",
-    headers: {
-      "Authorization": `Bearer ${apiKey}`,
-      "Content-Type": "application/json",
-    },
-    body: JSON.stringify({
-      model: "omni-moderation-latest",
-      input,
-    }),
-    signal: AbortSignal.timeout(12_000),
-  });
-
-  if (!response.ok) {
-    const requestId = response.headers.get("x-request-id") || "unavailable";
-    console.error(
-      "FACS assistant moderation failed",
-      response.status,
-      requestId,
-    );
-    throw new Error("moderation_unavailable");
-  }
-
-  const payload = await response.json();
-  return Boolean(payload?.results?.[0]?.flagged);
-}
-
 function extractAssistantResult(
   payload: Record<string, unknown>,
   domains: string[],
 ) {
-  const output = Array.isArray(payload.output) ? payload.output : [];
-  const textBlocks = output.flatMap((item: any) =>
-    item?.type === "message" && Array.isArray(item.content)
-      ? item.content.filter((block: any) => block?.type === "output_text")
+  const steps = Array.isArray(payload.steps) ? payload.steps : [];
+  const textBlocks = steps.flatMap((item: any) =>
+    item?.type === "model_output" && Array.isArray(item.content)
+      ? item.content.filter((block: any) => block?.type === "text")
       : []
   );
   const blockTexts = textBlocks.map((block: any) =>
@@ -249,18 +224,6 @@ function extractAssistantResult(
   });
 
   const sourcesByUrl = new Map<string, Source>();
-  output.forEach((item: any) => {
-    if (item?.type !== "web_search_call") return;
-    const sources = Array.isArray(item?.action?.sources)
-      ? item.action.sources
-      : [];
-    sources.forEach((source: any) => {
-      const url = sourceUrlAllowed(source?.url, domains);
-      if (!url || sourcesByUrl.has(url)) return;
-      sourcesByUrl.set(url, { url, title: cleanText(source?.title, 300) });
-    });
-  });
-
   citations.forEach((citation) => {
     if (!sourcesByUrl.has(citation.url)) {
       sourcesByUrl.set(citation.url, {
@@ -274,7 +237,7 @@ function extractAssistantResult(
     answer,
     citations: citations.slice(0, 12),
     sources: [...sourcesByUrl.values()].slice(0, 12),
-    searched: output.some((item: any) => item?.type === "web_search_call"),
+    searched: steps.some((item: any) => item?.type === "google_search_call"),
   };
 }
 
@@ -295,7 +258,7 @@ Deno.serve(async (req) => {
 
   const supabaseUrl = Deno.env.get("SUPABASE_URL");
   const serviceKey = Deno.env.get("SUPABASE_SERVICE_ROLE_KEY");
-  const apiKey = Deno.env.get("OPENAI_API_KEY");
+  const apiKey = Deno.env.get("GEMINI_API_KEY");
 
   if (!supabaseUrl || !serviceKey) {
     console.error("FACS assistant is missing Supabase server configuration");
@@ -367,75 +330,64 @@ Deno.serve(async (req) => {
       }, 503);
     }
 
-    const flagged = await moderateInput(apiKey, message);
-    if (flagged) {
-      return json(req, {
-        error: localized(
-          language,
-          "Nội dung này không phù hợp với chức năng tra cứu của trợ lý FACS.",
-          "This content is outside the permitted use of the FACS Assistant.",
-        ),
-      }, 400);
-    }
-
     const domains = sourceDomains();
-    const safetyIdentifier = `facs_${(await sha256(sessionId)).slice(0, 32)}`;
-    const model = cleanText(Deno.env.get("OPENAI_MODEL") || "gpt-5.6-luna", 80);
+    const model = cleanText(
+      Deno.env.get("GEMINI_MODEL") || "gemini-2.5-flash-lite",
+      80,
+    );
     const input = [
       ...history,
       { role: "user", content: message },
-    ];
+    ].map((item) => `${item.role.toUpperCase()}: ${item.content}`).join("\n\n");
 
-    const openAIResponse = await fetch("https://api.openai.com/v1/responses", {
+    const geminiResponse = await fetch(
+      "https://generativelanguage.googleapis.com/v1beta/interactions",
+      {
       method: "POST",
       headers: {
-        "Authorization": `Bearer ${apiKey}`,
+        "x-goog-api-key": apiKey,
         "Content-Type": "application/json",
       },
       body: JSON.stringify({
         model,
-        reasoning: { effort: "low" },
-        instructions: buildInstructions(language),
+        system_instruction: buildInstructions(language, domains),
         input,
-        tools: [
-          {
-            type: "web_search",
-            search_context_size: "low",
-            external_web_access: true,
-            filters: { allowed_domains: domains },
-            user_location: {
-              type: "approximate",
-              country: "VN",
-              city: "Ho Chi Minh City",
-              region: "Ho Chi Minh City",
-            },
-          },
+        tools: [{ type: "google_search" }],
+        safety_settings: [
+          { type: "hate_speech", threshold: "block_medium_and_above" },
+          { type: "dangerous_content", threshold: "block_medium_and_above" },
+          { type: "harassment", threshold: "block_medium_and_above" },
+          { type: "sexually_explicit", threshold: "block_medium_and_above" },
+          { type: "jailbreak", threshold: "block_medium_and_above" },
         ],
-        tool_choice: "required",
-        include: ["web_search_call.action.sources"],
-        max_output_tokens: 700,
+        generation_config: {
+          max_output_tokens: 700,
+          tool_choice: "any",
+          thinking_level: "low",
+          thinking_summaries: "none",
+        },
         store: false,
-        safety_identifier: safetyIdentifier,
       }),
       signal: AbortSignal.timeout(28_000),
-    });
+      },
+    );
 
-    if (!openAIResponse.ok) {
-      const requestId = openAIResponse.headers.get("x-request-id") ||
+    if (!geminiResponse.ok) {
+      const requestId = geminiResponse.headers.get("x-request-id") ||
         "unavailable";
       let errorCode = "unknown";
       try {
-        const errorPayload = await openAIResponse.json();
+        const errorPayload = await geminiResponse.json();
         errorCode = cleanText(
-          errorPayload?.error?.code || errorPayload?.error?.type,
+          errorPayload?.error?.status || errorPayload?.error?.code,
           120,
         ) || "unknown";
       } catch {
         // The status and request id are sufficient for server logs.
       }
       console.error(
-        "FACS assistant response failed",
-        openAIResponse.status,
+        "FACS assistant Gemini response failed",
+        geminiResponse.status,
         errorCode,
         requestId,
       );
@@ -448,7 +400,7 @@ Deno.serve(async (req) => {
       }, 502);
     }
 
-    const payload = await openAIResponse.json();
+    const payload = await geminiResponse.json();
     const result = extractAssistantResult(payload, domains);
     if (!result.answer || !result.searched || !result.sources.length) {
       console.error(
