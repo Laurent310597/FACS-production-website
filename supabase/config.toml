@@ -12,3 +12,6 @@ verify_jwt = false
 
 [functions.form-lark-oauth-callback]
 verify_jwt = false
+
+[functions.website-assistant]
+verify_jwt = false

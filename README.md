@@ -1,6 +1,29 @@
-# FACS Website v20.4
+# FACS Website v20.6
 
-> Baseline mới nhất: 9 dịch vụ + Careers CMS + Insights CMS hẹn giờ đăng bài. Bản v20.4 bổ sung tác giả/slug song ngữ và tối ưu bố cục Admin.
+> Nhánh `feature/ai-assistant-v20.6` được phát triển trực tiếp từ `main`
+> tại commit `d2231f109a125777f088b270e18ce5114972b378` — bản production v20.5
+> đã tích hợp Form Email Automation và Admin Submissions. V20.6 bổ sung AI
+> Assistant & Contact Widget mà không loại bỏ các chức năng v20.5.
+
+## Current baseline
+
+- Repository: `Laurent310597/FACS-production-website`
+- Production branch: `main`
+- Verified production baseline: `d2231f109a125777f088b270e18ce5114972b378`
+- V20.6 base/parent commit: `d2231f109a125777f088b270e18ce5114972b378`
+- V20.6 core feature commit: `0b6731df9a2db0afb1be49db24b845d5e699bab2`
+- Deployment: Vercel status `success` for the verified production baseline
+
+## Included website capabilities
+
+- 9 service pillars
+- Careers CMS and recruitment publishing workflow
+- Insights CMS with scheduled publishing and bilingual author/slug support
+- Contact and Careers form email automation
+- Admin applications, inquiries and email delivery management
+- Supabase Authentication, Database, Storage and Edge Functions
+- Bilingual Vietnamese/English public website
+- AI Assistant & Contact Widget on the v20.6 feature branch
 
 # FACS Website v20.2
 
