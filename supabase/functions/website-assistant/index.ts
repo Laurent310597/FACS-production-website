@@ -353,13 +353,6 @@ Deno.serve(async (req) => {
         system_instruction: buildInstructions(language, domains),
         input,
         tools: [{ type: "google_search" }],
-        safety_settings: [
-          { type: "hate_speech", threshold: "block_medium_and_above" },
-          { type: "dangerous_content", threshold: "block_medium_and_above" },
-          { type: "harassment", threshold: "block_medium_and_above" },
-          { type: "sexually_explicit", threshold: "block_medium_and_above" },
-          { type: "jailbreak", threshold: "block_medium_and_above" },
-        ],
         generation_config: {
           max_output_tokens: 700,
           tool_choice: "any",
