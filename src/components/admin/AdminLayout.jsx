@@ -1,5 +1,5 @@
 import { Link, NavLink, useNavigate } from "react-router-dom";
-import { Briefcase, ExternalLink, FilePlus2, LayoutDashboard, LogOut, MailCheck, MessagesSquare, Newspaper, UserRoundSearch } from "lucide-react";
+import { Briefcase, CalendarRange, ExternalLink, FilePlus2, LayoutDashboard, LogOut, MailCheck, MessagesSquare, Newspaper, Radar, UserRoundSearch } from "lucide-react";
 import { supabase } from "../../lib/supabaseClient";
 
 const navClass = ({ isActive }) =>
@@ -31,6 +31,9 @@ export default function AdminLayout({ children }) {
             </Link>
             <Link to="/careers" target="_blank" className="hidden items-center gap-2 rounded-xl border border-white/10 px-4 py-2 text-sm text-slate-300 transition hover:border-cyan-200/30 hover:text-white md:flex">
               Careers <ExternalLink size={15} />
+            </Link>
+            <Link to="/legal-calendar" target="_blank" className="hidden items-center gap-2 rounded-xl border border-white/10 px-4 py-2 text-sm text-slate-300 transition hover:border-cyan-200/30 hover:text-white xl:flex">
+              Legal Calendar <ExternalLink size={15} />
             </Link>
             <button type="button" onClick={handleLogout} className="flex items-center gap-2 rounded-xl border border-white/10 px-4 py-2 text-sm text-slate-300 transition hover:border-red-300/30 hover:text-red-200">
               <LogOut size={15} /> Đăng xuất
@@ -64,6 +67,14 @@ export default function AdminLayout({ children }) {
             <div className="mt-2 border-t border-white/10 px-4 pb-1 pt-5 text-[11px] font-bold uppercase tracking-[0.18em] text-slate-600 sm:col-span-2 lg:col-span-1">Contact</div>
             <NavLink to="/admin/inquiries" end className={navClass}>
               <MessagesSquare size={18} /> Yêu cầu liên hệ
+            </NavLink>
+
+            <div className="mt-2 border-t border-white/10 px-4 pb-1 pt-5 text-[11px] font-bold uppercase tracking-[0.18em] text-slate-600 sm:col-span-2 lg:col-span-1">Legal Calendar</div>
+            <NavLink to="/admin/legal-calendar" end className={navClass}>
+              <CalendarRange size={18} /> Mốc pháp lý
+            </NavLink>
+            <NavLink to="/admin/legal-sources" end className={navClass}>
+              <Radar size={18} /> Nguồn & cập nhật
             </NavLink>
 
             <div className="mt-2 border-t border-white/10 px-4 pb-1 pt-5 text-[11px] font-bold uppercase tracking-[0.18em] text-slate-600 sm:col-span-2 lg:col-span-1">Automation</div>

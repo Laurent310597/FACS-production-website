@@ -10,6 +10,7 @@ import IndustriesPage from "./pages/IndustriesPage";
 import IndustryDetailPage from "./pages/IndustryDetailPage";
 import InsightsPage from "./pages/InsightsPage";
 import InsightDetailPage from "./pages/InsightDetailPage";
+import LegalCalendarPage from "./pages/LegalCalendarPage";
 import AdminLoginPage from "./pages/admin/AdminLoginPage";
 import AdminPostsPage from "./pages/admin/AdminPostsPage";
 import AdminPostEditorPage from "./pages/admin/AdminPostEditorPage";
@@ -18,6 +19,9 @@ import AdminJobEditorPage from "./pages/admin/AdminJobEditorPage";
 import AdminApplicationsPage from "./pages/admin/AdminApplicationsPage";
 import AdminInquiriesPage from "./pages/admin/AdminInquiriesPage";
 import AdminFormEmailPage from "./pages/admin/AdminFormEmailPage";
+import AdminLegalCalendarPage from "./pages/admin/AdminLegalCalendarPage";
+import AdminLegalCalendarEditorPage from "./pages/admin/AdminLegalCalendarEditorPage";
+import AdminLegalSourcesPage from "./pages/admin/AdminLegalSourcesPage";
 import ProtectedAdminRoute from "./components/admin/ProtectedAdminRoute";
 import CareersPage from "./pages/CareersPage";
 import CareerDetailPage from "./pages/CareerDetailPage";
@@ -106,6 +110,7 @@ function AnimatedRoutes() {
         <Route path="/industries/:slug" element={<IndustryDetailPage />} />
         <Route path="/insights" element={<PageTransition><InsightsPage /></PageTransition>} />
         <Route path="/insights/:slug" element={<PageTransition><InsightDetailPage /></PageTransition>} />
+        <Route path="/legal-calendar" element={<PageTransition><LegalCalendarPage /></PageTransition>} />
         <Route path="/admin" element={<Navigate to="/admin/posts" replace />} />
         <Route path="/admin/login" element={<AdminLoginPage />} />
         <Route path="/admin/posts" element={<ProtectedAdminRoute><AdminPostsPage /></ProtectedAdminRoute>} />
@@ -117,6 +122,10 @@ function AnimatedRoutes() {
         <Route path="/admin/applications" element={<ProtectedAdminRoute><AdminApplicationsPage /></ProtectedAdminRoute>} />
         <Route path="/admin/inquiries" element={<ProtectedAdminRoute><AdminInquiriesPage /></ProtectedAdminRoute>} />
         <Route path="/admin/form-email" element={<ProtectedAdminRoute><AdminFormEmailPage /></ProtectedAdminRoute>} />
+        <Route path="/admin/legal-calendar" element={<ProtectedAdminRoute><AdminLegalCalendarPage /></ProtectedAdminRoute>} />
+        <Route path="/admin/legal-calendar/new" element={<ProtectedAdminRoute><AdminLegalCalendarEditorPage /></ProtectedAdminRoute>} />
+        <Route path="/admin/legal-calendar/:id/edit" element={<ProtectedAdminRoute><AdminLegalCalendarEditorPage /></ProtectedAdminRoute>} />
+        <Route path="/admin/legal-sources" element={<ProtectedAdminRoute><AdminLegalSourcesPage /></ProtectedAdminRoute>} />
         <Route path="/careers" element={<PageTransition><CareersPage /></PageTransition>} />
         <Route path="/careers/apply" element={<PageTransition><ApplicationPage /></PageTransition>} />
         <Route path="/careers/:slug" element={<PageTransition><CareerDetailPage /></PageTransition>} />
