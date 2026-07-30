@@ -355,7 +355,6 @@ Deno.serve(async (req) => {
         tools: [{ type: "google_search" }],
         generation_config: {
           max_output_tokens: 700,
-          tool_choice: "any",
           thinking_level: "low",
           thinking_summaries: "none",
         },
@@ -369,12 +368,15 @@ Deno.serve(async (req) => {
       const requestId = geminiResponse.headers.get("x-request-id") ||
         "unavailable";
       let errorCode = "unknown";
+      let errorMessage = "unavailable";
       try {
         const errorPayload = await geminiResponse.json();
         errorCode = cleanText(
           errorPayload?.error?.status || errorPayload?.error?.code,
           120,
         ) || "unknown";
+        errorMessage = cleanText(errorPayload?.error?.message, 500) ||
+          "unavailable";
       } catch {
         // The status and request id are sufficient for server logs.
       }
@@ -383,6 +385,7 @@ Deno.serve(async (req) => {
         geminiResponse.status,
         errorCode,
         requestId,
+        errorMessage,
       );
       return json(req, {
         error: localized(
