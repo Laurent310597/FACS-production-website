@@ -1,4 +1,4 @@
-import { supabase } from "./supabaseClient";
+import { supabase, supabaseKey, supabaseUrl } from "./supabaseClient";
 
 export const legalCalendarCategories = [
   { value: "tax", vi: "Thuế", en: "Tax", color: "#22d3ee" },
@@ -241,24 +241,61 @@ export async function invokeLegalCalendarSync() {
   if (!supabase) throw new Error("Website chưa kết nối Supabase.");
 
   const { data: sessionData, error: sessionError } = await supabase.auth.getSession();
-  const accessToken = sessionData.session?.access_token;
-  if (sessionError || !accessToken) {
+  let session = sessionData.session;
+  if (sessionError || !session?.access_token) {
     throw new Error("Phiên đăng nhập quản trị đã hết hạn. Vui lòng đăng nhập lại rồi thử quét nguồn.");
   }
 
-  const { data, error } = await supabase.functions.invoke("legal-calendar-sync", {
-    body: { action: "sync" },
-    headers: { Authorization: `Bearer ${accessToken}` },
-  });
-  if (error) {
-    const message = error.message || "Không thể quét nguồn pháp lý.";
-    if (/failed to send a request|fetch failed|network/i.test(message)) {
-      throw new Error("Tác vụ quét nguồn chưa được triển khai hoặc chưa thể kết nối. Cần triển khai Edge Function legal-calendar-sync trên Supabase rồi thử lại.");
+  const { data: userData, error: userError } = await supabase.auth.getUser(session.access_token);
+  if (userError || !userData.user) {
+    const { data: refreshData, error: refreshError } = await supabase.auth.refreshSession();
+    session = refreshData.session;
+    if (refreshError || !session?.access_token) {
+      throw new Error("Phiên đăng nhập quản trị không còn hợp lệ. Vui lòng đăng xuất, đăng nhập lại rồi thử quét nguồn.");
     }
-    if (/non-2xx|not found|404/i.test(message)) {
-      throw new Error("Không tìm thấy tác vụ legal-calendar-sync trên Supabase. Vui lòng triển khai Edge Function trước khi quét.");
+  }
+
+  const controller = new AbortController();
+  const timeout = window.setTimeout(() => controller.abort(), 90_000);
+  let response;
+  try {
+    response = await fetch(`${supabaseUrl}/functions/v1/legal-calendar-sync`, {
+      method: "POST",
+      headers: {
+        Authorization: `Bearer ${session.access_token}`,
+        apikey: supabaseKey,
+        Accept: "application/json",
+        "Content-Type": "application/json",
+      },
+      body: JSON.stringify({ action: "sync" }),
+      signal: controller.signal,
+    });
+  } catch (requestError) {
+    if (requestError?.name === "AbortError") {
+      throw new Error("Tác vụ quét nguồn mất quá nhiều thời gian phản hồi. Vui lòng thử lại sau ít phút.", { cause: requestError });
     }
-    throw new Error(message);
+    throw new Error("Không thể kết nối tới tác vụ quét nguồn trên Supabase. Vui lòng kiểm tra kết nối và thử lại.", { cause: requestError });
+  } finally {
+    window.clearTimeout(timeout);
+  }
+
+  const responseText = await response.text();
+  let data;
+  try {
+    data = responseText ? JSON.parse(responseText) : {};
+  } catch {
+    data = { error: responseText };
+  }
+
+  if (!response.ok) {
+    const detail = data?.error || data?.message || `HTTP ${response.status}`;
+    if (response.status === 401 || response.status === 403) {
+      throw new Error("Supabase từ chối phiên quản trị hiện tại. Vui lòng đăng xuất, đăng nhập lại rồi thử quét nguồn.");
+    }
+    if (response.status === 404) {
+      throw new Error("Không tìm thấy tác vụ legal-calendar-sync trên đúng dự án Supabase đang kết nối.");
+    }
+    throw new Error(`Tác vụ quét nguồn trả lỗi máy chủ (${response.status}): ${detail}`);
   }
   if (data?.error) throw new Error(data.error);
   return data;
