@@ -28,7 +28,7 @@ export default function Navbar() {
     ["/services", isVi ? "Dịch vụ" : "Services", "services"],
     ["/industries", isVi ? "Lĩnh vực" : "Industries", "industries"],
     ["/insights", isVi ? "Góc nhìn" : "Insights"],
-    ["/legal-calendar", isVi ? "Tiện ích" : "Resources", "resources"],
+    ["/tools", isVi ? "Tiện ích" : "Resources", "resources"],
     ["/careers", isVi ? "Tuyển dụng" : "Careers"],
     ["/contact", isVi ? "Liên hệ" : "Contact"],
   ];
@@ -146,15 +146,14 @@ export default function Navbar() {
                           : "Track tax, accounting, labour, insurance and HSE deadlines.",
                         Icon: CalendarRange,
                       })}
-                      <div className="mx-4 my-2 border-t border-white/10" />
                       {[
-                        ["/tools/gross-net", isVi ? "Tính lương Gross – Net" : "Gross – Net Salary", Banknote],
-                        ["/tools/personal-income-tax", isVi ? "Tính thuế TNCN" : "Personal Income Tax", Calculator],
-                        ["/tools/unemployment-benefit", isVi ? "Tính BHTN" : "Unemployment Benefit", ShieldCheck],
-                        ["/tools/one-time-social-insurance", isVi ? "Tính BHXH một lần" : "One-time Social Insurance", Landmark],
-                        ["/tools/savings-plan", isVi ? "Kế hoạch tiết kiệm" : "Savings Planner", PiggyBank],
-                        ["/tools/rates-and-gold", isVi ? "Tỷ giá & giá vàng" : "FX & Gold Monitor", Coins],
-                      ].map(([itemTo, title, Icon]) => renderDropdownItem({ to: itemTo, title, Icon }))}
+                        ["/tools/gross-net", isVi ? "Tính lương Gross – Net" : "Gross – Net Salary", isVi ? "Ước tính lương thực nhận, bảo hiểm và thuế TNCN." : "Estimate take-home pay, insurance and PIT.", Banknote],
+                        ["/tools/personal-income-tax", isVi ? "Tính thuế TNCN" : "Personal Income Tax", isVi ? "Tính thuế tiền lương theo biểu lũy tiến 5 bậc." : "Calculate salary tax using the five-band schedule.", Calculator],
+                        ["/tools/unemployment-benefit", isVi ? "Tính BHTN" : "Unemployment Benefit", isVi ? "Ước tính mức hưởng và thời gian hưởng trợ cấp." : "Estimate benefit amount and entitlement duration.", ShieldCheck],
+                        ["/tools/one-time-social-insurance", isVi ? "Tính BHXH một lần" : "One-time Social Insurance", isVi ? "Ước tính quyền lợi theo quá trình đóng BHXH." : "Estimate benefits from contribution history.", Landmark],
+                        ["/tools/savings-plan", isVi ? "Kế hoạch tiết kiệm" : "Savings Planner", isVi ? "Mô phỏng lãi kép và khoản tiết kiệm định kỳ." : "Model compound growth and recurring savings.", PiggyBank],
+                        ["/tools/rates-and-gold", isVi ? "Tỷ giá & giá vàng" : "FX & Gold Monitor", isVi ? "Tra cứu tỷ giá, giá vàng và quy đổi tham khảo." : "Check reference FX, gold prices and conversions.", Coins],
+                      ].map(([itemTo, title, desc, Icon]) => renderDropdownItem({ to: itemTo, title, desc, Icon }))}
                     </div>
                   </div>
                 );

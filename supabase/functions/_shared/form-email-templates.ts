@@ -19,6 +19,28 @@ type ContactInquiry = {
   submitted_at: string;
 };
 
+export type EditableReceiptTemplate = {
+  template_key: "career_receipt" | "contact_receipt";
+  subject: string;
+  body_vi: string;
+  body_en: string;
+};
+
+export const DEFAULT_RECEIPT_TEMPLATES: Record<EditableReceiptTemplate["template_key"], EditableReceiptTemplate> = {
+  career_receipt: {
+    template_key: "career_receipt",
+    subject: "FACS đã nhận được hồ sơ của bạn | We have received your application",
+    body_vi: "Xin chào Anh/Chị {{full_name}},\n\nFACS chân thành cảm ơn Anh/Chị đã quan tâm và gửi hồ sơ ứng tuyển cho vị trí {{position}}.\n\nQua email này, FACS xác nhận đã nhận được thông tin và hồ sơ ứng tuyển của Anh/Chị. FACS sẽ sớm liên hệ lại trong thời gian gần nhất.\n\nNếu cần cung cấp thêm thông tin, Anh/Chị có thể phản hồi trực tiếp email này hoặc liên hệ hr@facs.vn.",
+    body_en: "Dear {{full_name}},\n\nThank you for your interest in FACS and for submitting your application for the position of {{position}}.\n\nThis email confirms that FACS has successfully received your information and application documents. FACS will get back to you as soon as possible.\n\nIf you would like to provide additional information, please reply directly to this email or contact hr@facs.vn.",
+  },
+  contact_receipt: {
+    template_key: "contact_receipt",
+    subject: "FACS đã nhận được yêu cầu của bạn | We have received your inquiry",
+    body_vi: "Xin chào Anh/Chị {{full_name}},\n\nFACS chân thành cảm ơn Anh/Chị đã quan tâm và liên hệ với chúng tôi.\n\nQua email này, FACS xác nhận đã nhận được thông tin và nội dung yêu cầu của Anh/Chị. FACS sẽ sớm liên hệ lại trong thời gian gần nhất.\n\nNếu cần bổ sung hoặc điều chỉnh thông tin, Anh/Chị có thể phản hồi trực tiếp email này hoặc liên hệ contact@facs.vn.",
+    body_en: "Dear {{full_name}},\n\nThank you for your interest in FACS and for contacting us.\n\nThis email confirms that FACS has successfully received your information and inquiry. FACS will get back to you as soon as possible.\n\nIf you would like to provide or amend any information, please reply directly to this email or contact contact@facs.vn.",
+  },
+};
+
 function escapeHtml(value: string | null | undefined) {
   return String(value || "")
     .replaceAll("&", "&amp;")
@@ -58,6 +80,39 @@ function signature(email: string, signoff: string, department: string) {
   <p style="margin:15px 0 0;font-weight:700;color:#0f315a;">${department}</p>
   <p style="margin:14px 0 0;font-weight:700;">FACS (VIETNAM) TEAM</p>
   <p style="margin:7px 0 0;">Email: <a href="mailto:${email}" style="color:#067a98;">${email}</a><br>Website: <a href="https://facs.vn" style="color:#067a98;">www.facs.vn</a><br>Hotline: (+84) 972 798 424</p>`;
+}
+
+function replaceVariables(value: string, variables: Record<string, string>) {
+  return Object.entries(variables).reduce((result, [key, replacement]) => result.replaceAll(`{{${key}}}`, replacement), value);
+}
+
+function bodyToHtml(value: string) {
+  return value.split(/\n\s*\n/).map((paragraph) => `<p style="margin:0 0 16px;white-space:pre-line;">${escapeHtml(paragraph)}</p>`).join("");
+}
+
+export function buildEditableReceipt(
+  type: "career" | "contact",
+  row: CareerApplication | ContactInquiry,
+  siteUrl: string,
+  configured?: Partial<EditableReceiptTemplate> | null,
+) {
+  const key = type === "career" ? "career_receipt" : "contact_receipt";
+  const template = { ...DEFAULT_RECEIPT_TEMPLATES[key], ...(configured || {}) };
+  const senderEmail = type === "career" ? "hr@facs.vn" : "contact@facs.vn";
+  const variables = {
+    full_name: String(row.full_name || "Anh/Chị"),
+    position: type === "career" ? String((row as CareerApplication).position || "Ứng tuyển chung") : "",
+    company_name: type === "contact" ? String((row as ContactInquiry).company_name || "") : "",
+    service_interest: type === "contact" ? String((row as ContactInquiry).service_interest || "") : "",
+  };
+  const subject = replaceVariables(template.subject, variables);
+  const bodyVi = replaceVariables(template.body_vi, variables);
+  const bodyEn = replaceVariables(template.body_en, variables);
+  const departmentVi = type === "career" ? "BỘ PHẬN NHÂN SỰ" : "BỘ PHẬN TƯ VẤN VÀ CHĂM SÓC KHÁCH HÀNG";
+  const departmentEn = type === "career" ? "HUMAN RESOURCES DEPARTMENT" : "CLIENT ADVISORY AND RELATIONS DEPARTMENT";
+  const html = shell(`${bodyToHtml(bodyVi)}${signature(senderEmail, "Trân trọng,", departmentVi)}<div style="margin:30px 0;text-align:center;color:#a3acb9;letter-spacing:1px;">-------------------</div>${bodyToHtml(bodyEn)}${signature(senderEmail, "Sincerely,", departmentEn)}`, siteUrl);
+  const plainText = `${bodyVi}\n\nTrân trọng,\n${departmentVi} – FACS\n\n-------------------\n\n${bodyEn}\n\nSincerely,\n${departmentEn} – FACS`;
+  return { subject, html, plainText };
 }
 
 export function buildCareerInternalEmail(application: CareerApplication, adminUrl: string) {

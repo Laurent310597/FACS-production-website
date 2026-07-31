@@ -6,6 +6,7 @@ import {
   buildCareerReceipt,
   buildContactInternalEmail,
   buildContactReceipt,
+  buildEditableReceipt,
 } from "./form-email-templates.ts";
 
 const INTERNAL_RECIPIENTS = [
@@ -58,7 +59,15 @@ async function sendOne(params: {
     ? INTERNAL_RECIPIENTS
     : [{ mail_address: String(params.row.email), name: String(params.row.full_name) }];
   const replyTo = params.delivery === "internal" ? String(params.row.email) : senderEmail;
-  const template = isCareer
+  let configuredTemplate = null;
+  if (params.delivery === "receipt") {
+    const templateKey = isCareer ? "career_receipt" : "contact_receipt";
+    const { data } = await params.admin.from("form_email_templates").select("template_key,subject,body_vi,body_en").eq("template_key", templateKey).maybeSingle();
+    configuredTemplate = data;
+  }
+  const template = configuredTemplate
+    ? buildEditableReceipt(params.type, params.row, params.siteUrl, configuredTemplate)
+    : isCareer
     ? params.delivery === "internal"
       ? buildCareerInternalEmail(params.row, `${params.siteUrl}/admin/applications`)
       : buildCareerReceipt(params.row, params.siteUrl)

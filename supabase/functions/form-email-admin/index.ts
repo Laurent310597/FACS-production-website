@@ -3,6 +3,7 @@ import { corsHeaders } from "../_shared/cors.ts";
 import { buildRawEmail } from "../_shared/mime-message.ts";
 import { FORM_MAILBOX, getValidFormLarkToken, sendFormLarkMail } from "../_shared/form-lark.ts";
 import { sendSubmissionEmails } from "../_shared/submission-mailer.ts";
+import { DEFAULT_RECEIPT_TEMPLATES } from "../_shared/form-email-templates.ts";
 
 const PUBLIC_MAILBOXES = ["hr@facs.vn", "contact@facs.vn"];
 
@@ -107,6 +108,43 @@ Deno.serve(async (req) => {
       const { error } = await admin.from("form_lark_oauth_credentials").delete().eq("id", true);
       if (error) throw new Error(error.message);
       return json({ ok: true });
+    }
+
+    if (action === "get_templates") {
+      const { data, error } = await admin.from("form_email_templates").select("template_key,subject,body_vi,body_en,updated_at");
+      if (error) throw new Error(error.message);
+      const saved = new Map((data || []).map((item) => [item.template_key, item]));
+      return json({
+        templates: Object.values(DEFAULT_RECEIPT_TEMPLATES).map((item) => ({ ...item, ...(saved.get(item.template_key) || {}), is_custom: saved.has(item.template_key) })),
+      });
+    }
+
+    if (action === "save_template") {
+      const templateKey = String(body.template_key || "") as keyof typeof DEFAULT_RECEIPT_TEMPLATES;
+      if (!DEFAULT_RECEIPT_TEMPLATES[templateKey]) return json({ error: "Mẫu email không hợp lệ." }, 400);
+      const subject = String(body.subject || "").trim();
+      const bodyVi = String(body.body_vi || "").trim();
+      const bodyEn = String(body.body_en || "").trim();
+      if (!subject || !bodyVi || !bodyEn) return json({ error: "Tiêu đề và nội dung song ngữ không được để trống." }, 400);
+      if (subject.length > 300 || bodyVi.length > 12000 || bodyEn.length > 12000) return json({ error: "Nội dung email vượt quá giới hạn cho phép." }, 400);
+      const { data, error } = await admin.from("form_email_templates").upsert({
+        template_key: templateKey,
+        subject,
+        body_vi: bodyVi,
+        body_en: bodyEn,
+        updated_by: (await admin.auth.getUser((req.headers.get("authorization") || "").replace(/^Bearer\s+/i, "").trim())).data.user?.id || null,
+        updated_at: new Date().toISOString(),
+      }).select("template_key,subject,body_vi,body_en,updated_at").single();
+      if (error) throw new Error(error.message);
+      return json({ template: { ...data, is_custom: true } });
+    }
+
+    if (action === "reset_template") {
+      const templateKey = String(body.template_key || "") as keyof typeof DEFAULT_RECEIPT_TEMPLATES;
+      if (!DEFAULT_RECEIPT_TEMPLATES[templateKey]) return json({ error: "Mẫu email không hợp lệ." }, 400);
+      const { error } = await admin.from("form_email_templates").delete().eq("template_key", templateKey);
+      if (error) throw new Error(error.message);
+      return json({ template: { ...DEFAULT_RECEIPT_TEMPLATES[templateKey], is_custom: false } });
     }
 
     if (action === "test") {
