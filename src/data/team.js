@@ -1,6 +1,6 @@
 import tuPhoto from "../assets/team-tu.png";
 import thanhPhoto from "../assets/team-thanh.png";
-import yenPhoto from "../assets/team-yen.png";
+import yenPhoto from "../assets/team-yen-new.jpg";
 
 export const leadership = [
   {

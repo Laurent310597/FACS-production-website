@@ -1,30 +1,80 @@
 import { useEffect, useState } from "react";
-import { CheckCircle2, Link2, Loader2, MailCheck, RefreshCw, Send, XCircle } from "lucide-react";
+import { CheckCircle2, Eye, Link2, Loader2, MailCheck, RefreshCw, RotateCcw, Save, Send, X, XCircle } from "lucide-react";
 import AdminLayout from "../../components/admin/AdminLayout";
 import { invokeFormEmailAdmin } from "../../lib/formSubmissions";
 
 const publicMailboxes = [
-  { email: "hr@facs.vn", name: "FACS Careers" },
-  { email: "contact@facs.vn", name: "FACS Contact" },
+  { email: "hr@facs.vn", name: "FACS Careers", templateKey: "career_receipt", description: "Email xác nhận tự động gửi cho ứng viên sau khi nộp hồ sơ." },
+  { email: "contact@facs.vn", name: "FACS Contact", templateKey: "contact_receipt", description: "Email xác nhận tự động gửi cho khách hàng sau khi gửi yêu cầu liên hệ." },
 ];
+
+const sampleVariables = { "{{full_name}}": "Nguyễn Văn A", "{{position}}": "Tax Consultant", "{{company_name}}": "ABC Company", "{{service_interest}}": "Tax Advisory" };
+const previewText = (value = "") => Object.entries(sampleVariables).reduce((result, [key, replacement]) => result.replaceAll(key, replacement), value);
 
 export default function AdminFormEmailPage() {
   const [connection, setConnection] = useState({ loading: true, connected: false });
+  const [templates, setTemplates] = useState([]);
   const [working, setWorking] = useState("");
   const [message, setMessage] = useState("");
   const [error, setError] = useState("");
+  const [editing, setEditing] = useState(null);
+  const [preview, setPreview] = useState(false);
 
-  const load = async () => { setError(""); try { const data = await invokeFormEmailAdmin("oauth_status"); setConnection({ ...data, loading: false }); } catch (loadError) { setConnection({ loading: false, connected: false }); setError(loadError.message); } };
-  useEffect(() => { let active = true; invokeFormEmailAdmin("oauth_status").then((data) => { if (active) setConnection({ ...data, loading: false }); }).catch((loadError) => { if (active) { setConnection({ loading: false, connected: false }); setError(loadError.message); } }); return () => { active = false; }; }, []);
+  const loadConnection = async () => {
+    try {
+      const status = await invokeFormEmailAdmin("oauth_status");
+      setConnection({ ...status, loading: false });
+      return null;
+    } catch (loadError) {
+      setConnection({ loading: false, connected: false });
+      return `Kết nối Lark: ${loadError.message}`;
+    }
+  };
+
+  const loadTemplates = async () => {
+    try {
+      const templateData = await invokeFormEmailAdmin("get_templates");
+      setTemplates(templateData.templates || []);
+      return null;
+    } catch (loadError) {
+      return `Mẫu email: ${loadError.message}`;
+    }
+  };
+
+  const load = async () => {
+    setError("");
+    const issues = (await Promise.all([loadConnection(), loadTemplates()])).filter(Boolean);
+    setError(issues.join(" · "));
+  };
+
+  useEffect(() => {
+    let active = true;
+    Promise.allSettled([invokeFormEmailAdmin("oauth_status"), invokeFormEmailAdmin("get_templates")]).then(([statusResult, templatesResult]) => {
+      if (!active) return;
+      const issues = [];
+      if (statusResult.status === "fulfilled") setConnection({ ...statusResult.value, loading: false });
+      else { setConnection({ loading: false, connected: false }); issues.push(`Kết nối Lark: ${statusResult.reason.message}`); }
+      if (templatesResult.status === "fulfilled") setTemplates(templatesResult.value.templates || []);
+      else issues.push(`Mẫu email: ${templatesResult.reason.message}`);
+      setError(issues.join(" · "));
+    });
+    return () => { active = false; };
+  }, []);
+
   const connect = async () => { setWorking("connect"); setError(""); try { const data = await invokeFormEmailAdmin("oauth_url"); window.location.href = data.url; } catch (connectError) { setError(connectError.message); setWorking(""); } };
   const testAlias = async (email) => { setWorking(email); setMessage(""); setError(""); try { await invokeFormEmailAdmin("test", { sender_email: email }); setMessage(`Đã gửi email thử từ ${email} đến tunguyen@facs.vn. Hãy kiểm tra From trong hộp thư.`); } catch (testError) { setError(testError.message); } finally { setWorking(""); } };
+  const openEditor = (templateKey) => { const item = templates.find((template) => template.template_key === templateKey); if (item) { setEditing({ ...item }); setPreview(false); } };
+  const saveTemplate = async () => { setWorking("save-template"); setError(""); try { const data = await invokeFormEmailAdmin("save_template", editing); setTemplates((items) => items.map((item) => item.template_key === data.template.template_key ? data.template : item)); setEditing(data.template); setMessage("Đã cập nhật mẫu email. Nội dung mới sẽ được dùng cho các email gửi tiếp theo."); } catch (saveError) { setError(saveError.message); } finally { setWorking(""); } };
+  const resetTemplate = async () => { if (!window.confirm("Khôi phục nội dung mặc định của FACS cho mẫu email này?")) return; setWorking("reset-template"); setError(""); try { const data = await invokeFormEmailAdmin("reset_template", { template_key: editing.template_key }); setTemplates((items) => items.map((item) => item.template_key === data.template.template_key ? data.template : item)); setEditing(data.template); setMessage("Đã khôi phục mẫu email mặc định."); } catch (resetError) { setError(resetError.message); } finally { setWorking(""); } };
 
   return (
     <AdminLayout>
-      <div><div className="text-xs font-bold uppercase tracking-[.18em] text-cyan-300">Email automation</div><h1 className="mt-2 text-3xl font-bold md:text-4xl">Email biểu mẫu</h1><p className="mt-2 max-w-3xl text-sm leading-relaxed text-slate-400">Kết nối một lần bằng thành viên tunguyen@facs.vn, sau đó gửi trực tiếp từ Public Mailbox hr@facs.vn hoặc contact@facs.vn.</p></div>
+      <div><div className="text-xs font-bold uppercase tracking-[.18em] text-cyan-300">Email automation</div><h1 className="mt-2 text-3xl font-bold md:text-4xl">Email biểu mẫu</h1><p className="mt-2 max-w-3xl text-sm leading-relaxed text-slate-400">Kết nối hộp thư gửi, xem trước và trực tiếp cập nhật nội dung email xác nhận tự động.</p></div>
       {(message || error) && <div className={`mt-6 rounded-2xl border px-5 py-4 text-sm ${error ? "border-red-300/20 bg-red-400/8 text-red-200" : "border-emerald-300/20 bg-emerald-300/8 text-emerald-200"}`}>{error || message}</div>}
       <section className="mt-7 rounded-[28px] border border-white/10 bg-white/[0.035] p-6 md:p-8"><div className="flex flex-col gap-5 md:flex-row md:items-center md:justify-between"><div><div className="flex items-center gap-3"><MailCheck className="text-cyan-300" /><h2 className="text-xl font-semibold">Tài khoản Lark chính</h2></div><div className="mt-4 flex items-center gap-2 text-sm">{connection.loading ? <><Loader2 size={17} className="animate-spin" /> Đang kiểm tra...</> : connection.connected ? <><CheckCircle2 size={18} className="text-emerald-300" /><span className="text-emerald-200">Đã kết nối {connection.mailbox_email}</span></> : <><XCircle size={18} className="text-amber-300" /><span className="text-amber-200">Chưa kết nối tunguyen@facs.vn</span></>}</div></div><div className="flex gap-3"><button onClick={load} className="inline-flex items-center gap-2 rounded-2xl border border-white/10 px-4 py-3 text-sm"><RefreshCw size={17} /> Kiểm tra</button><button disabled={working === "connect"} onClick={connect} className="inline-flex items-center gap-2 rounded-2xl bg-cyan-300 px-5 py-3 font-bold text-[#071421]"><Link2 size={18} /> {connection.connected ? "Kết nối lại" : "Kết nối Lark"}</button></div></div></section>
-      <section className="mt-6 rounded-[28px] border border-white/10 bg-white/[0.035] p-6 md:p-8"><h2 className="text-xl font-semibold">Kiểm tra Public Mailbox</h2><p className="mt-2 text-sm text-slate-500">Sau khi kết nối, gửi thử từng hộp thư công khai và kiểm tra email nhận được hiển thị đúng trường From.</p><div className="mt-5 grid gap-4 md:grid-cols-2">{publicMailboxes.map((mailbox) => <div key={mailbox.email} className="rounded-2xl border border-white/10 bg-[#081321]/60 p-5"><div className="font-semibold">{mailbox.name}</div><div className="mt-1 text-sm text-cyan-200">{mailbox.email}</div><button disabled={!connection.connected || working === mailbox.email} onClick={() => testAlias(mailbox.email)} className="mt-5 inline-flex items-center gap-2 rounded-xl border border-white/10 px-4 py-2.5 text-sm font-semibold disabled:opacity-40">{working === mailbox.email ? <Loader2 size={16} className="animate-spin" /> : <Send size={16} />} Gửi thử</button></div>)}</div></section>
+      <section className="mt-6 rounded-[28px] border border-white/10 bg-white/[0.035] p-6 md:p-8"><h2 className="text-xl font-semibold">Public Mailbox & nội dung email</h2><p className="mt-2 text-sm text-slate-500">Xem trước hoặc chỉnh sửa email xác nhận gửi cho người điền biểu mẫu; email nội bộ thông báo hồ sơ mới vẫn được hệ thống tạo từ dữ liệu biểu mẫu.</p><div className="mt-5 grid gap-4 md:grid-cols-2">{publicMailboxes.map((mailbox) => { const template = templates.find((item) => item.template_key === mailbox.templateKey); return <div key={mailbox.email} className="rounded-2xl border border-white/10 bg-[#081321]/60 p-5"><div className="flex items-start justify-between gap-3"><div><div className="font-semibold">{mailbox.name}</div><div className="mt-1 text-sm text-cyan-200">{mailbox.email}</div></div>{template?.is_custom && <span className="rounded-full bg-violet-300/10 px-2.5 py-1 text-[10px] font-bold uppercase tracking-wide text-violet-200">Đã tùy chỉnh</span>}</div><p className="mt-3 text-xs leading-relaxed text-slate-500">{mailbox.description}</p><div className="mt-5 flex flex-wrap gap-2"><button disabled={!template} onClick={() => openEditor(mailbox.templateKey)} className="inline-flex items-center gap-2 rounded-xl border border-cyan-200/20 px-4 py-2.5 text-sm font-semibold text-cyan-100 disabled:opacity-40"><Eye size={16} /> Xem & chỉnh nội dung</button><button disabled={!connection.connected || working === mailbox.email} onClick={() => testAlias(mailbox.email)} className="inline-flex items-center gap-2 rounded-xl border border-white/10 px-4 py-2.5 text-sm font-semibold disabled:opacity-40">{working === mailbox.email ? <Loader2 size={16} className="animate-spin" /> : <Send size={16} />} Gửi thử</button></div></div>; })}</div></section>
+
+      {editing && <div className="fixed inset-0 z-[100] flex items-center justify-center bg-[#020812]/80 p-4 backdrop-blur-md" role="dialog" aria-modal="true"><div className="max-h-[92vh] w-full max-w-5xl overflow-y-auto rounded-[30px] border border-cyan-200/20 bg-[#0d1726] p-5 shadow-2xl md:p-7"><div className="flex items-start justify-between gap-4"><div><div className="text-xs font-bold uppercase tracking-[.18em] text-cyan-300">Email template editor</div><h2 className="mt-2 text-2xl font-bold">{editing.template_key === "career_receipt" ? "Email xác nhận ứng tuyển" : "Email xác nhận liên hệ"}</h2></div><button onClick={() => setEditing(null)} className="flex h-10 w-10 items-center justify-center rounded-xl border border-white/10 text-slate-300"><X size={19} /></button></div><div className="mt-5 flex gap-2"><button onClick={() => setPreview(false)} className={`rounded-xl px-4 py-2 text-sm font-semibold ${!preview ? "bg-cyan-300 text-[#071421]" : "border border-white/10 text-slate-300"}`}>Chỉnh sửa</button><button onClick={() => setPreview(true)} className={`rounded-xl px-4 py-2 text-sm font-semibold ${preview ? "bg-cyan-300 text-[#071421]" : "border border-white/10 text-slate-300"}`}>Xem trước</button></div>{preview ? <div className="mt-5 rounded-2xl bg-[#eef1f4] p-5 text-[#243044]"><div className="mx-auto max-w-2xl border border-slate-300 border-t-4 border-t-cyan-400 bg-white p-7"><div className="mb-5 text-sm"><strong>Tiêu đề:</strong> {previewText(editing.subject)}</div><div className="whitespace-pre-line text-sm leading-7">{previewText(editing.body_vi)}</div><div className="my-6 text-center text-slate-400">-------------------</div><div className="whitespace-pre-line text-sm leading-7">{previewText(editing.body_en)}</div></div></div> : <div className="mt-5 grid gap-5"><label className="text-sm font-semibold text-slate-300">Tiêu đề email<input value={editing.subject} onChange={(event) => setEditing({ ...editing, subject: event.target.value })} className="mt-2 w-full rounded-2xl border border-white/10 bg-[#081321] px-4 py-3 text-white outline-none focus:border-cyan-300/40" /></label><div className="grid gap-5 lg:grid-cols-2"><label className="text-sm font-semibold text-slate-300">Nội dung tiếng Việt<textarea value={editing.body_vi} onChange={(event) => setEditing({ ...editing, body_vi: event.target.value })} rows="14" className="mt-2 w-full resize-y rounded-2xl border border-white/10 bg-[#081321] px-4 py-3 leading-relaxed text-white outline-none focus:border-cyan-300/40" /></label><label className="text-sm font-semibold text-slate-300">English content<textarea value={editing.body_en} onChange={(event) => setEditing({ ...editing, body_en: event.target.value })} rows="14" className="mt-2 w-full resize-y rounded-2xl border border-white/10 bg-[#081321] px-4 py-3 leading-relaxed text-white outline-none focus:border-cyan-300/40" /></label></div><p className="text-xs leading-relaxed text-slate-500">Có thể dùng biến: <code>{"{{full_name}}"}</code>, <code>{"{{position}}"}</code>, <code>{"{{company_name}}"}</code>, <code>{"{{service_interest}}"}</code>. Chữ ký FACS và thông tin mailbox được hệ thống tự thêm.</p></div>}<div className="mt-6 flex flex-wrap justify-between gap-3 border-t border-white/10 pt-5"><button disabled={!editing.is_custom || working === "reset-template"} onClick={resetTemplate} className="inline-flex items-center gap-2 rounded-xl border border-white/10 px-4 py-3 text-sm font-semibold text-slate-300 disabled:opacity-35"><RotateCcw size={16} /> Khôi phục mặc định</button><div className="flex gap-3"><button onClick={() => setEditing(null)} className="rounded-xl border border-white/10 px-4 py-3 text-sm font-semibold text-slate-300">Đóng</button><button disabled={working === "save-template"} onClick={saveTemplate} className="inline-flex items-center gap-2 rounded-xl bg-cyan-300 px-5 py-3 text-sm font-bold text-[#071421] disabled:opacity-50">{working === "save-template" ? <Loader2 size={16} className="animate-spin" /> : <Save size={16} />} Lưu & cập nhật</button></div></div></div></div>}
     </AdminLayout>
   );
 }

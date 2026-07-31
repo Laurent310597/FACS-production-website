@@ -1,7 +1,7 @@
 import { useState } from "react";
 import { Link, NavLink, useLocation } from "react-router-dom";
 import { motion } from "framer-motion";
-import { ChevronDown, Menu, X } from "lucide-react";
+import { Banknote, Calculator, CalendarRange, ChevronDown, Coins, Landmark, Menu, PiggyBank, ShieldCheck, X } from "lucide-react";
 import { useLanguage } from "./LanguageContext";
 import { getServiceContent, services } from "../data/services";
 import { industries } from "../data/industries";
@@ -28,6 +28,7 @@ export default function Navbar() {
     ["/services", isVi ? "Dịch vụ" : "Services", "services"],
     ["/industries", isVi ? "Lĩnh vực" : "Industries", "industries"],
     ["/insights", isVi ? "Góc nhìn" : "Insights"],
+    ["/tools", isVi ? "Tiện ích" : "Resources", "resources"],
     ["/careers", isVi ? "Tuyển dụng" : "Careers"],
     ["/contact", isVi ? "Liên hệ" : "Contact"],
   ];
@@ -84,7 +85,7 @@ export default function Navbar() {
             </motion.div>
           </div>
 
-          <nav className="hidden flex-1 items-center justify-center gap-4 text-[14.5px] font-bold tracking-[0.01em] text-slate-200 lg:flex xl:gap-7 xl:text-[15.5px]">
+          <nav className="hidden flex-1 items-center justify-center gap-3 text-[14px] font-bold tracking-[0.01em] text-slate-200 lg:flex xl:gap-5 xl:text-[15px]">
             {navItems.map(([to, label, type]) => {
               if (type === "services") {
                 return (
@@ -121,6 +122,38 @@ export default function Navbar() {
                         desc: isVi ? industry.descVi : industry.desc,
                         Icon: industry.icon,
                       }))}
+                    </div>
+                  </div>
+                );
+              }
+
+              if (type === "resources") {
+                return (
+                  <div key={to} className="group relative">
+                    <NavLink to={to} className={`${linkBase} flex items-center gap-1.5 ${isActive(to) ? "text-white after:w-full" : ""}`}>
+                      {label}<ChevronDown size={15} className="opacity-70" />
+                    </NavLink>
+                    <div className={`${dropdownClass} w-[360px]`}>
+                      <div className="absolute -top-4 left-0 right-0 h-4" />
+                      <div className="px-4 pb-2 pt-1 text-xs font-bold uppercase tracking-[0.18em] text-cyan-300/80">
+                        {isVi ? "Tiện ích tuân thủ" : "Compliance resources"}
+                      </div>
+                      {renderDropdownItem({
+                        to: "/legal-calendar",
+                        title: isVi ? "Lịch pháp lý doanh nghiệp" : "Corporate Legal Calendar",
+                        desc: isVi
+                          ? "Theo dõi các mốc thuế, kế toán, lao động, bảo hiểm và HSE."
+                          : "Track tax, accounting, labour, insurance and HSE deadlines.",
+                        Icon: CalendarRange,
+                      })}
+                      {[
+                        ["/tools/gross-net", isVi ? "Tính lương Gross – Net" : "Gross – Net Salary", isVi ? "Ước tính lương thực nhận, bảo hiểm và thuế TNCN." : "Estimate take-home pay, insurance and PIT.", Banknote],
+                        ["/tools/personal-income-tax", isVi ? "Tính thuế TNCN" : "Personal Income Tax", isVi ? "Tính thuế tiền lương theo biểu lũy tiến 5 bậc." : "Calculate salary tax using the five-band schedule.", Calculator],
+                        ["/tools/unemployment-benefit", isVi ? "Tính BHTN" : "Unemployment Benefit", isVi ? "Ước tính mức hưởng và thời gian hưởng trợ cấp." : "Estimate benefit amount and entitlement duration.", ShieldCheck],
+                        ["/tools/one-time-social-insurance", isVi ? "Tính BHXH một lần" : "One-time Social Insurance", isVi ? "Ước tính quyền lợi theo quá trình đóng BHXH." : "Estimate benefits from contribution history.", Landmark],
+                        ["/tools/savings-plan", isVi ? "Kế hoạch tiết kiệm" : "Savings Planner", isVi ? "Mô phỏng lãi kép và khoản tiết kiệm định kỳ." : "Model compound growth and recurring savings.", PiggyBank],
+                        ["/tools/rates-and-gold", isVi ? "Thị trường tài chính" : "Financial Markets", isVi ? "Theo dõi tỷ giá, vàng và các chỉ số chứng khoán." : "Monitor FX, gold and securities market indices.", Coins],
+                      ].map(([itemTo, title, desc, Icon]) => renderDropdownItem({ to: itemTo, title, desc, Icon }))}
                     </div>
                   </div>
                 );

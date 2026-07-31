@@ -121,7 +121,7 @@ export default function Footer() {
           <div>
             <div className="mb-5 text-sm font-semibold uppercase tracking-[0.18em] text-white">{isVi ? "Điều hướng" : "Navigation"}</div>
             <div className="space-y-3 text-slate-400">
-              {[["/about", isVi ? "Giới thiệu" : "About"], ["/services", isVi ? "Dịch vụ" : "Services"], ["/industries", isVi ? "Lĩnh vực" : "Industries"], ["/insights", isVi ? "Góc nhìn" : "Insights"], ["/careers", isVi ? "Tuyển dụng" : "Careers"], ["/contact", isVi ? "Liên hệ" : "Contact"]].map(([to, label]) => (
+              {[["/about", isVi ? "Giới thiệu" : "About"], ["/services", isVi ? "Dịch vụ" : "Services"], ["/industries", isVi ? "Lĩnh vực" : "Industries"], ["/insights", isVi ? "Góc nhìn" : "Insights"], ["/legal-calendar", isVi ? "Lịch pháp lý" : "Legal Calendar"], ["/tools", isVi ? "Công cụ tiện ích" : "Practical Tools"], ["/careers", isVi ? "Tuyển dụng" : "Careers"], ["/contact", isVi ? "Liên hệ" : "Contact"]].map(([to, label]) => (
                 <Link key={to} to={to} className={footerLinkClass}>
                   <span className="inline-block h-px w-0 bg-cyan-300 align-middle transition-all duration-300 group-hover:mr-2 group-hover:w-5" />
                   {label}

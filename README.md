@@ -2,7 +2,7 @@
 
 > Baseline mới nhất: 9 dịch vụ + Careers CMS + Insights CMS hẹn giờ đăng bài. Bản v20.4 bổ sung tác giả/slug song ngữ và tối ưu bố cục Admin.
 
-# FACS Website v20.2
+# FACS Website v20.6
 
 Production source for `facs.vn`.
 
@@ -30,6 +30,23 @@ Publication options:
 
 Scheduled articles use `status = 'published'` with a future `published_at` timestamp. Supabase RLS prevents public access until the scheduled time arrives.
 
+## Legal Calendar
+
+Public route:
+
+- `/legal-calendar`
+
+Admin routes:
+
+- `/admin/legal-calendar`
+- `/admin/legal-calendar/new`
+- `/admin/legal-calendar/:id/edit`
+- `/admin/legal-sources`
+
+The source monitor creates review candidates only. A deadline becomes public
+only after an authenticated FACS administrator verifies it against a P1
+official source and publishes it.
+
 ## Local commands
 
 ```bash
@@ -43,6 +60,7 @@ npm run build
 
 - Fresh setup: `supabase/setup.sql`
 - Upgrade from v20.1: `supabase/migrations/v20.2-scheduled-publishing.sql`
+- Legal Calendar: `supabase/migrations/v20.6-legal-calendar.sql`
 
 ## Deployment
 

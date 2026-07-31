@@ -4,7 +4,7 @@
 
 - Hồ sơ ứng tuyển và CV được lưu trong khu vực Admin.
 - Yêu cầu liên hệ được lưu trong khu vực Admin.
-- Email nội bộ được gửi đồng thời đến `tunguyen@facs.vn`, `thanhuynh@facs.vn` và `yendoan@facs.vn` bằng trường **To**.
+- Email nội bộ được gửi đồng thời đến `tunguyen@facs.vn`, `thanhhuynh@facs.vn` và `yendoan@facs.vn` bằng trường **To**.
 - Email ứng tuyển được gửi từ `hr@facs.vn` và đính kèm CV.
 - Email liên hệ được gửi từ `contact@facs.vn`.
 - Người gửi nhận email xác nhận song ngữ: tiếng Việt, dòng `-------------------`, rồi tiếng Anh.
