@@ -138,13 +138,13 @@ export default function AdminLegalCalendarPage() {
 
   const publishFiltered = async () => {
     if (publishableEvents.length === 0) {
-      setError("Không có mốc nào trong kết quả lọc đáp ứng đủ căn cứ pháp lý và nguồn chính thức P1 để xuất bản.");
+      setError("Không có mốc nào trong kết quả lọc đáp ứng đủ căn cứ pháp lý và đường dẫn nguồn để xuất bản.");
       return;
     }
 
     const confirmation = [
       `Xuất bản ngay ${publishableEvents.length} mốc đủ điều kiện trong kết quả đang lọc?`,
-      blockedDrafts.length > 0 ? `${blockedDrafts.length} mốc chưa đủ nguồn P1/căn cứ sẽ tự động được giữ lại để bổ sung.` : "",
+      blockedDrafts.length > 0 ? `${blockedDrafts.length} mốc chưa đủ nguồn hoặc căn cứ sẽ tự động được giữ lại để bổ sung.` : "",
     ].filter(Boolean).join("\n\n");
     if (!window.confirm(confirmation)) return;
 
@@ -245,7 +245,7 @@ export default function AdminLegalCalendarPage() {
           <div>
             <div className="font-semibold text-cyan-100">Xuất bản theo toàn bộ kết quả lọc — không cần tick từng dòng</div>
             <div className="mt-1 text-sm text-slate-400">
-              {visibleEvents.length} kết quả · {publishableEvents.length} mốc đủ căn cứ và nguồn P1
+              {visibleEvents.length} kết quả · {publishableEvents.length} mốc đủ căn cứ và đường dẫn nguồn
               {blockedDrafts.length > 0 ? ` · ${blockedDrafts.length} mốc cần bổ sung` : ""}
             </div>
           </div>
@@ -285,6 +285,11 @@ export default function AdminLegalCalendarPage() {
                       <span className="rounded-full border px-3 py-1 text-xs font-bold" style={{ color: eventCategory.color, borderColor: `${eventCategory.color}45`, backgroundColor: `${eventCategory.color}10` }}>{eventCategory.vi}</span>
                       <span className={`rounded-full border px-3 py-1 text-xs font-semibold ${event.status === "published" ? "border-emerald-300/15 bg-emerald-300/[0.06] text-emerald-200" : event.status === "archived" ? "border-slate-400/15 bg-slate-400/[0.06] text-slate-400" : "border-amber-300/15 bg-amber-300/[0.06] text-amber-200"}`}>{publicationLabels[event.status] || event.status}</span>
                       <span className={`rounded-full border px-3 py-1 text-xs font-semibold ${event.verification_status === "verified" ? "border-cyan-300/15 bg-cyan-300/[0.06] text-cyan-200" : "border-orange-300/15 bg-orange-300/[0.06] text-orange-200"}`}>{verificationLabels[event.verification_status] || event.verification_status}</span>
+                      {event.preparation_status && (
+                        <span className={`rounded-full border px-3 py-1 text-xs font-semibold ${event.preparation_status === "ready" ? "border-violet-300/15 bg-violet-300/[0.06] text-violet-200" : "border-amber-300/15 bg-amber-300/[0.06] text-amber-200"}`}>
+                          {event.preparation_status === "ready" ? "Đã soạn đủ VI–EN" : event.preparation_status === "ai_unavailable" ? "Chưa biên soạn AI" : "Cần bổ sung dữ liệu"}
+                        </span>
+                      )}
                     </div>
                     <h2 className="mt-3 text-xl font-semibold leading-snug">{event.title_vi || event.title_en}</h2>
                     <div className="mt-2 text-sm text-slate-500">

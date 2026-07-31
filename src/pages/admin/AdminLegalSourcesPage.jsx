@@ -2,17 +2,27 @@ import { useCallback, useEffect, useMemo, useState } from "react";
 import {
   Ban,
   CheckCircle2,
+  Download,
   ExternalLink,
   FilePlus2,
+  FileSpreadsheet,
   Loader2,
   Radar,
   RefreshCw,
   Rss,
   ShieldCheck,
+  UploadCloud,
+  WandSparkles,
 } from "lucide-react";
 import { Link } from "react-router-dom";
 import AdminLayout from "../../components/admin/AdminLayout";
-import { formatLegalDateTime, invokeLegalCalendarSync, sourceTiers } from "../../lib/legalCalendar";
+import {
+  formatLegalDateTime,
+  invokeLegalCalendarImport,
+  invokeLegalCalendarSync,
+  sourceTiers,
+} from "../../lib/legalCalendar";
+import { readLegalCalendarImportFile } from "../../lib/legalCalendarImport";
 import { supabase } from "../../lib/supabaseClient";
 
 const emptySource = {
@@ -36,6 +46,11 @@ function domainFromUrl(value) {
   }
 }
 
+function currentYearRange() {
+  const year = new Date().getFullYear();
+  return { start: `${year}-01-01`, end: `${year}-12-31` };
+}
+
 export default function AdminLegalSourcesPage() {
   const [sources, setSources] = useState([]);
   const [candidates, setCandidates] = useState([]);
@@ -44,6 +59,9 @@ export default function AdminLegalSourcesPage() {
   const [working, setWorking] = useState("");
   const [error, setError] = useState("");
   const [message, setMessage] = useState("");
+  const [startDate, setStartDate] = useState(() => currentYearRange().start);
+  const [endDate, setEndDate] = useState(() => currentYearRange().end);
+  const [importFile, setImportFile] = useState(null);
 
   const load = useCallback(async () => {
     setError("");
@@ -117,21 +135,49 @@ export default function AdminLegalSourcesPage() {
   };
 
   const syncNow = async () => {
+    if (!startDate || !endDate || endDate < startDate) {
+      setError("Vui lòng chọn khoảng ngày hợp lệ; ngày kết thúc phải bằng hoặc sau ngày bắt đầu.");
+      return;
+    }
     setWorking("sync");
     setError("");
     setMessage("");
     try {
-      const result = await invokeLegalCalendarSync();
+      const result = await invokeLegalCalendarSync({ startDate, endDate });
       const failedSources = (result.results || []).filter((item) => item.status === "error");
       if (failedSources.length > 0) {
         const failedNames = failedSources.map((item) => item.source).filter(Boolean).join(", ");
-        setError(`Đã quét ${result.sources_checked || 0} nguồn; ${failedSources.length} nguồn không thể truy cập${failedNames ? `: ${failedNames}` : ""}. Chi tiết được lưu tại từng nguồn.`);
+        setError(`Đã quét ${result.sources_checked || 0} nguồn và tạo ${result.drafts_created || 0} thẻ; ${failedSources.length} nguồn không thể truy cập${failedNames ? `: ${failedNames}` : ""}. Chi tiết được lưu tại từng nguồn.`);
+      } else if (!result.ai_configured) {
+        setError(`Đã quét ${result.sources_checked || 0} nguồn nhưng chưa thể biên soạn thẻ song ngữ vì Supabase chưa có OPENAI_API_KEY. ${result.candidates_created || 0} kết quả thô đã được giữ lại.`);
       } else {
-        setMessage(`Đã quét ${result.sources_checked || 0} nguồn và ghi nhận ${result.candidates_created || 0} cập nhật mới.`);
+        setMessage(`Đã quét ${result.sources_checked || 0} nguồn trong khoảng ${startDate} – ${endDate}; tạo ${result.drafts_created || 0} thẻ đã phân loại và biên soạn song ngữ, bỏ qua ${result.duplicates_skipped || 0} mục trùng.`);
       }
       await load();
     } catch (syncError) {
       setError(`Không thể quét nguồn: ${syncError.message}`);
+    } finally {
+      setWorking("");
+    }
+  };
+
+  const importCalendarFile = async () => {
+    setError("");
+    setMessage("");
+    setWorking("import");
+    try {
+      const parsed = await readLegalCalendarImportFile(importFile);
+      if (parsed.errors.length > 0) {
+        setError(`Không thể nhập file:\n${parsed.errors.slice(0, 8).join("\n")}${parsed.errors.length > 8 ? `\n... và ${parsed.errors.length - 8} lỗi khác.` : ""}`);
+        return;
+      }
+      const result = await invokeLegalCalendarImport(parsed.rows, importFile.name);
+      const warning = (result.warnings || []).join(" ");
+      setMessage(`Đã đọc ${result.rows_received || 0} dòng; tạo ${result.drafts_created || 0} thẻ, bỏ qua ${result.duplicates_skipped || 0} mục trùng. ${result.ready || 0} thẻ đã đủ nội dung tối thiểu.${warning ? ` Lưu ý: ${warning}` : ""}`);
+      setImportFile(null);
+      await load();
+    } catch (importError) {
+      setError(`Không thể nhập lịch: ${importError.message}`);
     } finally {
       setWorking("");
     }
@@ -155,22 +201,75 @@ export default function AdminLegalSourcesPage() {
       <div className="flex flex-col gap-5 xl:flex-row xl:items-end xl:justify-between">
         <div>
           <div className="text-xs font-bold uppercase tracking-[0.18em] text-cyan-300/80">Source Governance</div>
-          <h1 className="mt-3 text-3xl font-bold md:text-4xl">Nguồn & hàng đợi cập nhật</h1>
-          <p className="mt-2 max-w-3xl text-sm leading-relaxed text-slate-400">Hệ thống chỉ phát hiện thay đổi và bài viết liên quan. Nội dung phải được rà soát, đối chiếu nguồn P1 và duyệt thủ công trước khi công khai.</p>
+          <h1 className="mt-3 text-3xl font-bold md:text-4xl">Nguồn & nhập lịch pháp lý</h1>
+          <p className="mt-2 max-w-3xl text-sm leading-relaxed text-slate-400">Quét theo khoảng ngày hoặc nhập Excel/CSV. Kết quả hợp lệ được tự phân loại và tạo sẵn thẻ nội dung Việt–Anh trong CMS.</p>
         </div>
-        <button type="button" disabled={working === "sync"} onClick={syncNow} className="inline-flex items-center justify-center gap-2 rounded-2xl bg-cyan-300 px-5 py-3 font-bold text-[#071421] transition hover:-translate-y-0.5 hover:bg-cyan-200 disabled:opacity-50">
-          {working === "sync" ? <Loader2 size={18} className="animate-spin" /> : <RefreshCw size={18} />} Quét nguồn ngay
-        </button>
+        <Link to="/admin/legal-calendar" className="inline-flex items-center justify-center gap-2 rounded-2xl border border-cyan-200/20 bg-cyan-300/[0.06] px-5 py-3 font-semibold text-cyan-100 transition hover:bg-cyan-300/10">
+          <FilePlus2 size={18} /> Xem các thẻ đã tạo
+        </Link>
       </div>
 
-      {error && <div className="mt-6 rounded-2xl border border-red-300/20 bg-red-400/8 px-5 py-4 text-sm text-red-200">{error}</div>}
+      {error && <div className="mt-6 whitespace-pre-line rounded-2xl border border-red-300/20 bg-red-400/8 px-5 py-4 text-sm text-red-200">{error}</div>}
       {message && <div className="mt-6 rounded-2xl border border-emerald-300/20 bg-emerald-400/8 px-5 py-4 text-sm text-emerald-200">{message}</div>}
+
+      <div className="mt-7 grid gap-5 xl:grid-cols-2">
+        <section className="rounded-[28px] border border-cyan-300/15 bg-cyan-300/[0.045] p-5 md:p-7">
+          <div className="flex items-start gap-4">
+            <div className="flex h-11 w-11 shrink-0 items-center justify-center rounded-2xl bg-cyan-300/10 text-cyan-200"><WandSparkles size={21} /></div>
+            <div>
+              <h2 className="text-xl font-semibold">Quét và biên soạn theo khoảng ngày</h2>
+              <p className="mt-2 text-sm leading-relaxed text-slate-400">Phạm vi áp dụng cho ngày đến hạn của nghĩa vụ, tối đa 371 ngày mỗi lần. Kết quả được tạo trực tiếp thành thẻ bản nháp, không cần duyệt từng kết quả thô rồi tạo lại.</p>
+            </div>
+          </div>
+          <div className="mt-6 grid gap-4 sm:grid-cols-2">
+            <label className="block">
+              <span className="mb-2 block text-sm font-semibold text-slate-200">Từ ngày</span>
+              <input type="date" value={startDate} onChange={(event) => setStartDate(event.target.value)} className="w-full rounded-2xl border border-white/10 bg-[#081321]/70 px-4 py-3 text-white outline-none focus:border-cyan-300/35" />
+            </label>
+            <label className="block">
+              <span className="mb-2 block text-sm font-semibold text-slate-200">Đến ngày</span>
+              <input type="date" value={endDate} min={startDate} onChange={(event) => setEndDate(event.target.value)} className="w-full rounded-2xl border border-white/10 bg-[#081321]/70 px-4 py-3 text-white outline-none focus:border-cyan-300/35" />
+            </label>
+          </div>
+          <button type="button" disabled={working === "sync" || working === "import"} onClick={syncNow} className="mt-5 inline-flex w-full items-center justify-center gap-2 rounded-2xl bg-cyan-300 px-5 py-3 font-bold text-[#071421] transition hover:-translate-y-0.5 hover:bg-cyan-200 disabled:opacity-50 sm:w-auto">
+            {working === "sync" ? <Loader2 size={18} className="animate-spin" /> : <RefreshCw size={18} />} Quét & tạo thẻ song ngữ
+          </button>
+        </section>
+
+        <section className="rounded-[28px] border border-violet-300/15 bg-violet-300/[0.04] p-5 md:p-7">
+          <div className="flex items-start gap-4">
+            <div className="flex h-11 w-11 shrink-0 items-center justify-center rounded-2xl bg-violet-300/10 text-violet-200"><FileSpreadsheet size={21} /></div>
+            <div>
+              <h2 className="text-xl font-semibold">Nhập lịch từ Excel hoặc CSV</h2>
+              <p className="mt-2 text-sm leading-relaxed text-slate-400">Hệ thống ghi nhận ngày, nội dung, đối tượng và cơ sở pháp lý riêng cho tiếng Việt và tiếng Anh; các ô còn thiếu được biên soạn bổ sung khi có dữ liệu nguồn.</p>
+            </div>
+          </div>
+          <div className="mt-6 rounded-2xl border border-dashed border-white/15 bg-[#081321]/45 p-4">
+            <input
+              key={importFile?.name || "empty-import"}
+              type="file"
+              accept=".xlsx,.csv,application/vnd.openxmlformats-officedocument.spreadsheetml.sheet,text/csv"
+              onChange={(event) => setImportFile(event.target.files?.[0] || null)}
+              className="block w-full text-sm text-slate-400 file:mr-4 file:rounded-xl file:border-0 file:bg-violet-300/10 file:px-4 file:py-2.5 file:font-semibold file:text-violet-100 hover:file:bg-violet-300/15"
+            />
+            <div className="mt-3 text-xs text-slate-500">Tối đa 500 dòng và 5 MB mỗi lần nhập.</div>
+          </div>
+          <div className="mt-5 flex flex-wrap gap-3">
+            <button type="button" disabled={!importFile || working === "import" || working === "sync"} onClick={importCalendarFile} className="inline-flex items-center justify-center gap-2 rounded-2xl bg-violet-300 px-5 py-3 font-bold text-[#151029] transition hover:-translate-y-0.5 hover:bg-violet-200 disabled:opacity-40">
+              {working === "import" ? <Loader2 size={18} className="animate-spin" /> : <UploadCloud size={18} />} Upload & tạo thẻ
+            </button>
+            <a href="/templates/facs-legal-calendar-import-template.xlsx" download className="inline-flex items-center justify-center gap-2 rounded-2xl border border-white/10 px-5 py-3 font-semibold text-slate-300 transition hover:border-violet-200/25 hover:text-violet-100">
+              <Download size={17} /> Tải file Excel mẫu
+            </a>
+          </div>
+        </section>
+      </div>
 
       <div className="mt-7 grid gap-4 md:grid-cols-3">
         {[
           [ShieldCheck, "Nguồn đang hoạt động", counts.active, "text-emerald-300"],
           [Radar, "Nguồn quét tự động", counts.syncing, "text-cyan-300"],
-          [Rss, "Cập nhật chờ duyệt", counts.queue, "text-amber-300"],
+          [Rss, "Kết quả chưa đủ dữ liệu", counts.queue, "text-amber-300"],
         ].map(([Icon, label, value, iconClass]) => (
           <div key={label} className="rounded-[24px] border border-white/10 bg-white/[0.035] p-5">
             <Icon size={20} className={iconClass} />
@@ -275,8 +374,8 @@ export default function AdminLegalSourcesPage() {
 
       <section className="mt-10 border-t border-white/10 pt-10">
         <div>
-          <h2 className="text-2xl font-bold">Hàng đợi cập nhật</h2>
-          <p className="mt-1 text-sm text-slate-500">Tạo bản nháp để rà soát hoặc loại khỏi hàng đợi. Không có mục nào được tự động công khai.</p>
+          <h2 className="text-2xl font-bold">Kết quả chưa đủ dữ liệu</h2>
+          <p className="mt-1 text-sm text-slate-500">Chỉ hiển thị các mục mà hệ thống chưa xác định được ngày hoặc nội dung cần thiết. Các mục đã biên soạn nằm trực tiếp tại “Mốc pháp lý”; phần này không bắt buộc phải xử lý từng dòng.</p>
         </div>
         {candidates.length === 0 ? (
           <div className="mt-5 rounded-[26px] border border-white/10 bg-white/[0.03] px-6 py-14 text-center">

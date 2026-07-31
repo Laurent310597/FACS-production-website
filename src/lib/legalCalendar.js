@@ -237,7 +237,7 @@ export function downloadLegalEventIcs(event, language) {
   URL.revokeObjectURL(url);
 }
 
-export async function invokeLegalCalendarSync() {
+async function invokeLegalCalendarTask(action, payload = {}, timeoutMs = 150_000) {
   if (!supabase) throw new Error("Website chưa kết nối Supabase.");
 
   const { data: sessionData, error: sessionError } = await supabase.auth.getSession();
@@ -256,7 +256,7 @@ export async function invokeLegalCalendarSync() {
   }
 
   const controller = new AbortController();
-  const timeout = window.setTimeout(() => controller.abort(), 90_000);
+  const timeout = window.setTimeout(() => controller.abort(), timeoutMs);
   let response;
   try {
     response = await fetch(`${supabaseUrl}/functions/v1/legal-calendar-sync`, {
@@ -267,7 +267,7 @@ export async function invokeLegalCalendarSync() {
         Accept: "application/json",
         "Content-Type": "application/json",
       },
-      body: JSON.stringify({ action: "sync" }),
+      body: JSON.stringify({ action, ...payload }),
       signal: controller.signal,
     });
   } catch (requestError) {
@@ -299,4 +299,19 @@ export async function invokeLegalCalendarSync() {
   }
   if (data?.error) throw new Error(data.error);
   return data;
+}
+
+export function invokeLegalCalendarSync({ startDate, endDate } = {}) {
+  return invokeLegalCalendarTask("sync", {
+    start_date: startDate,
+    end_date: endDate,
+    auto_create_drafts: true,
+  });
+}
+
+export function invokeLegalCalendarImport(rows, fileName) {
+  return invokeLegalCalendarTask("import", {
+    rows,
+    file_name: fileName,
+  }, 180_000);
 }
