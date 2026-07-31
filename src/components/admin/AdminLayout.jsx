@@ -1,5 +1,5 @@
 import { Link, NavLink, useNavigate } from "react-router-dom";
-import { Briefcase, CalendarRange, ExternalLink, FilePlus2, LayoutDashboard, LogOut, MailCheck, MessagesSquare, Newspaper, Radar, UserRoundSearch } from "lucide-react";
+import { BarChart3, Briefcase, CalendarRange, ExternalLink, FilePlus2, LayoutDashboard, LogOut, MailCheck, MessagesSquare, Newspaper, Radar, UserRoundSearch } from "lucide-react";
 import { supabase } from "../../lib/supabaseClient";
 
 const navClass = ({ isActive }) =>
@@ -70,6 +70,9 @@ export default function AdminLayout({ children }) {
             </NavLink>
 
             <div className="mt-2 border-t border-white/10 px-4 pb-1 pt-5 text-[11px] font-bold uppercase tracking-[0.18em] text-slate-600 sm:col-span-2 lg:col-span-1">Legal Calendar</div>
+            <NavLink to="/admin/legal-dashboard" end className={navClass}>
+              <BarChart3 size={18} /> Dashboard vận hành
+            </NavLink>
             <NavLink to="/admin/legal-calendar" end className={navClass}>
               <CalendarRange size={18} /> Mốc pháp lý
             </NavLink>

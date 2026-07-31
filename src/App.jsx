@@ -20,6 +20,7 @@ import AdminApplicationsPage from "./pages/admin/AdminApplicationsPage";
 import AdminInquiriesPage from "./pages/admin/AdminInquiriesPage";
 import AdminFormEmailPage from "./pages/admin/AdminFormEmailPage";
 import AdminLegalCalendarPage from "./pages/admin/AdminLegalCalendarPage";
+import AdminLegalDashboardPage from "./pages/admin/AdminLegalDashboardPage";
 import AdminLegalCalendarEditorPage from "./pages/admin/AdminLegalCalendarEditorPage";
 import AdminLegalSourcesPage from "./pages/admin/AdminLegalSourcesPage";
 import ProtectedAdminRoute from "./components/admin/ProtectedAdminRoute";
@@ -122,6 +123,7 @@ function AnimatedRoutes() {
         <Route path="/admin/applications" element={<ProtectedAdminRoute><AdminApplicationsPage /></ProtectedAdminRoute>} />
         <Route path="/admin/inquiries" element={<ProtectedAdminRoute><AdminInquiriesPage /></ProtectedAdminRoute>} />
         <Route path="/admin/form-email" element={<ProtectedAdminRoute><AdminFormEmailPage /></ProtectedAdminRoute>} />
+        <Route path="/admin/legal-dashboard" element={<ProtectedAdminRoute><AdminLegalDashboardPage /></ProtectedAdminRoute>} />
         <Route path="/admin/legal-calendar" element={<ProtectedAdminRoute><AdminLegalCalendarPage /></ProtectedAdminRoute>} />
         <Route path="/admin/legal-calendar/new" element={<ProtectedAdminRoute><AdminLegalCalendarEditorPage /></ProtectedAdminRoute>} />
         <Route path="/admin/legal-calendar/:id/edit" element={<ProtectedAdminRoute><AdminLegalCalendarEditorPage /></ProtectedAdminRoute>} />
