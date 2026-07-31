@@ -137,11 +137,16 @@ alter table public.legal_calendar_sources enable row level security;
 alter table public.legal_calendar_events enable row level security;
 alter table public.legal_calendar_candidates enable row level security;
 
-grant usage on schema public to anon, authenticated;
+grant usage on schema public to anon, authenticated, service_role;
 grant select on public.legal_calendar_events to anon;
 grant select, insert, update, delete on public.legal_calendar_events to authenticated;
 grant select, insert, update, delete on public.legal_calendar_sources to authenticated;
 grant select, insert, update, delete on public.legal_calendar_candidates to authenticated;
+-- The source sync Edge Function connects with SUPABASE_SERVICE_ROLE_KEY.
+-- BYPASSRLS does not replace the underlying table privileges, so grant only
+-- the operations used by legal-calendar-sync.
+grant select, update on public.legal_calendar_sources to service_role;
+grant select, insert, update on public.legal_calendar_candidates to service_role;
 
 drop policy if exists "Public can read verified legal calendar events" on public.legal_calendar_events;
 create policy "Public can read verified legal calendar events"
