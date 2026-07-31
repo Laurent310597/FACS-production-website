@@ -62,6 +62,7 @@ export default function AdminLegalSourcesPage() {
   const [startDate, setStartDate] = useState(() => currentYearRange().start);
   const [endDate, setEndDate] = useState(() => currentYearRange().end);
   const [importFile, setImportFile] = useState(null);
+  const [scanResult, setScanResult] = useState(null);
 
   const load = useCallback(async () => {
     setError("");
@@ -142,8 +143,10 @@ export default function AdminLegalSourcesPage() {
     setWorking("sync");
     setError("");
     setMessage("");
+    setScanResult(null);
     try {
       const result = await invokeLegalCalendarSync({ startDate, endDate });
+      setScanResult(result);
       const failedSources = (result.results || []).filter((item) => item.status === "error");
       if (failedSources.length > 0) {
         const failedNames = failedSources.map((item) => item.source).filter(Boolean).join(", ");
@@ -234,6 +237,44 @@ export default function AdminLegalSourcesPage() {
           <button type="button" disabled={working === "sync" || working === "import"} onClick={syncNow} className="mt-5 inline-flex w-full items-center justify-center gap-2 rounded-2xl bg-cyan-300 px-5 py-3 font-bold text-[#071421] transition hover:-translate-y-0.5 hover:bg-cyan-200 disabled:opacity-50 sm:w-auto">
             {working === "sync" ? <Loader2 size={18} className="animate-spin" /> : <RefreshCw size={18} />} Quét & tạo thẻ song ngữ
           </button>
+          {scanResult && (
+            <div className="mt-6 border-t border-cyan-200/10 pt-5">
+              <div className="flex flex-wrap items-center justify-between gap-3">
+                <div>
+                  <h3 className="font-semibold text-cyan-100">Kết quả lần quét gần nhất</h3>
+                  <p className="mt-1 text-xs text-slate-500">Mỗi nguồn đều có kết quả riêng, kể cả khi không phát sinh thẻ mới.</p>
+                </div>
+                <Link to="/admin/legal-calendar" className="inline-flex items-center gap-2 rounded-xl border border-cyan-200/20 px-3.5 py-2 text-sm font-semibold text-cyan-100 hover:bg-cyan-300/10">
+                  <FilePlus2 size={15} /> Kiểm tra thẻ đã tạo
+                </Link>
+              </div>
+              <div className="mt-4 grid gap-2">
+                {(scanResult.results || []).map((item, index) => {
+                  const statusLabel = item.status === "ok"
+                    ? "Đã xử lý"
+                    : item.status === "unchanged"
+                      ? "Không có thay đổi"
+                      : item.status === "ai_unavailable"
+                        ? "Chưa biên soạn AI"
+                        : "Có lỗi";
+                  return (
+                    <div key={`${item.source || "source"}-${index}`} className="rounded-2xl border border-white/10 bg-[#081321]/55 px-4 py-3">
+                      <div className="flex flex-wrap items-center justify-between gap-2">
+                        <span className="text-sm font-semibold text-slate-200">{item.source || `Nguồn ${index + 1}`}</span>
+                        <span className={`rounded-full border px-2.5 py-1 text-[11px] font-semibold ${item.status === "error" ? "border-red-300/20 text-red-200" : item.status === "unchanged" ? "border-slate-300/15 text-slate-400" : "border-emerald-300/20 text-emerald-200"}`}>{statusLabel}</span>
+                      </div>
+                      <div className="mt-2 text-xs leading-relaxed text-slate-500">
+                        {item.status === "ok" && <>AI nhận diện {item.prepared || 0} mốc · Tạo mới {item.drafts_created || 0} thẻ · Trùng {item.duplicates || 0}</>}
+                        {item.status === "unchanged" && <>Nội dung nguồn và phạm vi ngày giống lần quét trước; hệ thống không tạo lại thẻ trùng.</>}
+                        {item.status === "ai_unavailable" && <>Đã giữ {item.candidates_created || 0} kết quả thô để kiểm tra sau.</>}
+                        {item.status === "error" && <>{item.error || "Không thể truy cập hoặc xử lý nguồn này."}</>}
+                      </div>
+                    </div>
+                  );
+                })}
+              </div>
+            </div>
+          )}
         </section>
 
         <section className="rounded-[28px] border border-violet-300/15 bg-violet-300/[0.04] p-5 md:p-7">
