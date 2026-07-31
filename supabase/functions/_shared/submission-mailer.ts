@@ -11,7 +11,7 @@ import {
 
 const INTERNAL_RECIPIENTS = [
   { mail_address: "tunguyen@facs.vn", name: "Tu Nguyen" },
-  { mail_address: "thanhuynh@facs.vn", name: "Thanh Huynh" },
+  { mail_address: "thanhhuynh@facs.vn", name: "Thanh Huynh" },
   { mail_address: "yendoan@facs.vn", name: "Yen Doan" },
 ];
 
