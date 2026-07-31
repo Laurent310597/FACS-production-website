@@ -33,7 +33,16 @@ export async function invokeFormEmailAdmin(action, payload = {}) {
   const { data, error } = await supabase.functions.invoke("form-email-admin", {
     body: { action, ...payload },
   });
-  if (error) throw new Error(error.message || "Không thể gọi dịch vụ email.");
+  if (error) {
+    let message = error.message || "Không thể gọi dịch vụ email.";
+    try {
+      const details = await error.context?.json?.();
+      if (details?.error) message = details.error;
+    } catch {
+      // Keep the SDK error when the Edge Function did not return JSON.
+    }
+    throw new Error(message);
+  }
   if (data?.error) throw new Error(data.error);
   return data;
 }

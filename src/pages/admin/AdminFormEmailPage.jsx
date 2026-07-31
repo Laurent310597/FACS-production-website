@@ -20,23 +20,44 @@ export default function AdminFormEmailPage() {
   const [editing, setEditing] = useState(null);
   const [preview, setPreview] = useState(false);
 
+  const loadConnection = async () => {
+    try {
+      const status = await invokeFormEmailAdmin("oauth_status");
+      setConnection({ ...status, loading: false });
+      return null;
+    } catch (loadError) {
+      setConnection({ loading: false, connected: false });
+      return `Kết nối Lark: ${loadError.message}`;
+    }
+  };
+
+  const loadTemplates = async () => {
+    try {
+      const templateData = await invokeFormEmailAdmin("get_templates");
+      setTemplates(templateData.templates || []);
+      return null;
+    } catch (loadError) {
+      return `Mẫu email: ${loadError.message}`;
+    }
+  };
+
   const load = async () => {
     setError("");
-    try {
-      const [status, templateData] = await Promise.all([invokeFormEmailAdmin("oauth_status"), invokeFormEmailAdmin("get_templates")]);
-      setConnection({ ...status, loading: false });
-      setTemplates(templateData.templates || []);
-    } catch (loadError) {
-      setConnection((current) => ({ ...current, loading: false }));
-      setError(loadError.message);
-    }
+    const issues = (await Promise.all([loadConnection(), loadTemplates()])).filter(Boolean);
+    setError(issues.join(" · "));
   };
 
   useEffect(() => {
     let active = true;
-    Promise.all([invokeFormEmailAdmin("oauth_status"), invokeFormEmailAdmin("get_templates")])
-      .then(([status, templateData]) => { if (active) { setConnection({ ...status, loading: false }); setTemplates(templateData.templates || []); } })
-      .catch((loadError) => { if (active) { setConnection({ loading: false, connected: false }); setError(loadError.message); } });
+    Promise.allSettled([invokeFormEmailAdmin("oauth_status"), invokeFormEmailAdmin("get_templates")]).then(([statusResult, templatesResult]) => {
+      if (!active) return;
+      const issues = [];
+      if (statusResult.status === "fulfilled") setConnection({ ...statusResult.value, loading: false });
+      else { setConnection({ loading: false, connected: false }); issues.push(`Kết nối Lark: ${statusResult.reason.message}`); }
+      if (templatesResult.status === "fulfilled") setTemplates(templatesResult.value.templates || []);
+      else issues.push(`Mẫu email: ${templatesResult.reason.message}`);
+      setError(issues.join(" · "));
+    });
     return () => { active = false; };
   }, []);
 

@@ -152,7 +152,7 @@ export default function Navbar() {
                         ["/tools/unemployment-benefit", isVi ? "Tính BHTN" : "Unemployment Benefit", isVi ? "Ước tính mức hưởng và thời gian hưởng trợ cấp." : "Estimate benefit amount and entitlement duration.", ShieldCheck],
                         ["/tools/one-time-social-insurance", isVi ? "Tính BHXH một lần" : "One-time Social Insurance", isVi ? "Ước tính quyền lợi theo quá trình đóng BHXH." : "Estimate benefits from contribution history.", Landmark],
                         ["/tools/savings-plan", isVi ? "Kế hoạch tiết kiệm" : "Savings Planner", isVi ? "Mô phỏng lãi kép và khoản tiết kiệm định kỳ." : "Model compound growth and recurring savings.", PiggyBank],
-                        ["/tools/rates-and-gold", isVi ? "Tỷ giá & giá vàng" : "FX & Gold Monitor", isVi ? "Tra cứu tỷ giá, giá vàng và quy đổi tham khảo." : "Check reference FX, gold prices and conversions.", Coins],
+                        ["/tools/rates-and-gold", isVi ? "Thị trường tài chính" : "Financial Markets", isVi ? "Theo dõi tỷ giá, vàng và các chỉ số chứng khoán." : "Monitor FX, gold and securities market indices.", Coins],
                       ].map(([itemTo, title, desc, Icon]) => renderDropdownItem({ to: itemTo, title, desc, Icon }))}
                     </div>
                   </div>

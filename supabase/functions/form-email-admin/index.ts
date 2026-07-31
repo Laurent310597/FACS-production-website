@@ -112,10 +112,17 @@ Deno.serve(async (req) => {
 
     if (action === "get_templates") {
       const { data, error } = await admin.from("form_email_templates").select("template_key,subject,body_vi,body_en,updated_at");
-      if (error) throw new Error(error.message);
+      if (error) {
+        // Keep the CMS usable with code defaults while the additive v20.15
+        // migration is still being applied to an environment.
+        if (error.code === "42P01" || error.message.toLowerCase().includes("form_email_templates")) {
+          return json({ templates: Object.values(DEFAULT_RECEIPT_TEMPLATES).map((item) => ({ ...item, is_custom: false })), storage_ready: false });
+        }
+        throw new Error(error.message);
+      }
       const saved = new Map((data || []).map((item) => [item.template_key, item]));
       return json({
-        templates: Object.values(DEFAULT_RECEIPT_TEMPLATES).map((item) => ({ ...item, ...(saved.get(item.template_key) || {}), is_custom: saved.has(item.template_key) })),
+        templates: Object.values(DEFAULT_RECEIPT_TEMPLATES).map((item) => ({ ...item, ...(saved.get(item.template_key) || {}), is_custom: saved.has(item.template_key) })), storage_ready: true,
       });
     }
 
