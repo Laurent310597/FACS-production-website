@@ -1,7 +1,7 @@
 import { useState } from "react";
 import { Link, NavLink, useLocation } from "react-router-dom";
 import { motion } from "framer-motion";
-import { CalendarRange, ChevronDown, Menu, X } from "lucide-react";
+import { Banknote, Calculator, CalendarRange, ChevronDown, Coins, Landmark, Menu, PiggyBank, ShieldCheck, X } from "lucide-react";
 import { useLanguage } from "./LanguageContext";
 import { getServiceContent, services } from "../data/services";
 import { industries } from "../data/industries";
@@ -146,6 +146,15 @@ export default function Navbar() {
                           : "Track tax, accounting, labour, insurance and HSE deadlines.",
                         Icon: CalendarRange,
                       })}
+                      <div className="mx-4 my-2 border-t border-white/10" />
+                      {[
+                        ["/tools/gross-net", isVi ? "Tính lương Gross – Net" : "Gross – Net Salary", Banknote],
+                        ["/tools/personal-income-tax", isVi ? "Tính thuế TNCN" : "Personal Income Tax", Calculator],
+                        ["/tools/unemployment-benefit", isVi ? "Tính BHTN" : "Unemployment Benefit", ShieldCheck],
+                        ["/tools/one-time-social-insurance", isVi ? "Tính BHXH một lần" : "One-time Social Insurance", Landmark],
+                        ["/tools/savings-plan", isVi ? "Kế hoạch tiết kiệm" : "Savings Planner", PiggyBank],
+                        ["/tools/rates-and-gold", isVi ? "Tỷ giá & giá vàng" : "FX & Gold Monitor", Coins],
+                      ].map(([itemTo, title, Icon]) => renderDropdownItem({ to: itemTo, title, Icon }))}
                     </div>
                   </div>
                 );

@@ -11,6 +11,7 @@ import IndustryDetailPage from "./pages/IndustryDetailPage";
 import InsightsPage from "./pages/InsightsPage";
 import InsightDetailPage from "./pages/InsightDetailPage";
 import LegalCalendarPage from "./pages/LegalCalendarPage";
+import ToolsPage from "./pages/ToolsPage";
 import AdminLoginPage from "./pages/admin/AdminLoginPage";
 import AdminPostsPage from "./pages/admin/AdminPostsPage";
 import AdminPostEditorPage from "./pages/admin/AdminPostEditorPage";
@@ -112,6 +113,8 @@ function AnimatedRoutes() {
         <Route path="/insights" element={<PageTransition><InsightsPage /></PageTransition>} />
         <Route path="/insights/:slug" element={<PageTransition><InsightDetailPage /></PageTransition>} />
         <Route path="/legal-calendar" element={<PageTransition><LegalCalendarPage /></PageTransition>} />
+        <Route path="/tools" element={<PageTransition><ToolsPage /></PageTransition>} />
+        <Route path="/tools/:slug" element={<PageTransition><ToolsPage /></PageTransition>} />
         <Route path="/admin" element={<Navigate to="/admin/posts" replace />} />
         <Route path="/admin/login" element={<AdminLoginPage />} />
         <Route path="/admin/posts" element={<ProtectedAdminRoute><AdminPostsPage /></ProtectedAdminRoute>} />
