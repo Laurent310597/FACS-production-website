@@ -3,7 +3,6 @@ import {
   AlertTriangle,
   CalendarCheck2,
   CalendarDays,
-  CheckCircle2,
   ChevronLeft,
   ChevronRight,
   Clock3,
@@ -21,7 +20,6 @@ import {
   downloadLegalEventIcs,
   fallbackLegalEvents,
   formatLegalDate,
-  formatLegalDateTime,
   getCategory,
   getLocalizedLegalEvent,
   legalCalendarCategories,
@@ -31,6 +29,16 @@ import { isSupabaseConfigured, supabase } from "../lib/supabaseClient";
 const weekDays = {
   vi: ["T2", "T3", "T4", "T5", "T6", "T7", "CN"],
   en: ["Mon", "Tue", "Wed", "Thu", "Fri", "Sat", "Sun"],
+};
+
+const calendarCategoryColors = {
+  tax: "#0e7490",
+  accounting: "#2563eb",
+  labor: "#7c3aed",
+  insurance: "#047857",
+  hse: "#a16207",
+  corporate: "#be123c",
+  other: "#475569",
 };
 
 function monthRange(year, month) {
@@ -58,7 +66,7 @@ function LegalCalendarSkeleton() {
   return (
     <div className="grid grid-cols-7 gap-2">
       {Array.from({ length: 35 }, (_, index) => (
-        <div key={index} className="min-h-24 animate-pulse rounded-2xl bg-white/[0.04] md:min-h-32" />
+        <div key={index} className="min-h-24 animate-pulse rounded-2xl bg-slate-200/80 md:min-h-32" />
       ))}
     </div>
   );
@@ -68,7 +76,6 @@ function EventCard({ event, language, compact = false }) {
   const isVi = language === "vi";
   const localized = getLocalizedLegalEvent(event, language);
   const category = getCategory(event.category);
-  const isDemo = String(event.id || "").startsWith("demo-");
 
   return (
     <article className={`rounded-[26px] border border-white/10 bg-[#081321]/55 transition hover:border-cyan-200/25 ${compact ? "p-5" : "p-6 md:p-7"}`}>
@@ -78,9 +85,6 @@ function EventCard({ event, language, compact = false }) {
           style={{ color: category.color, borderColor: `${category.color}45`, backgroundColor: `${category.color}12` }}
         >
           {category[language] || category.en}
-        </span>
-        <span className={`inline-flex items-center gap-1.5 rounded-full border px-3 py-1 text-xs font-semibold ${isDemo ? "border-amber-300/15 bg-amber-300/[0.06] text-amber-200" : "border-emerald-300/15 bg-emerald-300/[0.06] text-emerald-200"}`}>
-          <CheckCircle2 size={13} /> {isDemo ? (isVi ? "Dữ liệu minh họa" : "Sample data") : (isVi ? "FACS đã duyệt" : "FACS reviewed")}
         </span>
       </div>
 
@@ -127,7 +131,7 @@ function EventCard({ event, language, compact = false }) {
         )}
         {event.source_url && (
           <a href={event.source_url} target="_blank" rel="noreferrer" className="inline-flex items-center gap-2 rounded-xl border border-white/10 px-3.5 py-2 text-sm font-semibold text-slate-300 transition hover:border-cyan-200/25 hover:text-white">
-            {event.source_name || (isVi ? "Nguồn tham khảo" : "Reference")} · {event.source_tier || "P2"} <ExternalLink size={14} />
+            {event.source_name || (isVi ? "Nguồn tham khảo" : "Reference")} <ExternalLink size={14} />
           </a>
         )}
       </div>
@@ -205,11 +209,6 @@ export default function LegalCalendarPage() {
   }, new Map()), [filteredEvents]);
 
   const selectedEvents = eventsByDay.get(selectedDay) || [];
-  const lastReviewed = useMemo(() => {
-    const timestamps = events.map((event) => event.reviewed_at || event.updated_at).filter(Boolean).sort();
-    return timestamps.at(-1) || null;
-  }, [events]);
-
   const changeMonth = (offset) => {
     const next = new Date(Date.UTC(year, month + offset, 1));
     setYear(next.getUTCFullYear());
@@ -237,6 +236,7 @@ export default function LegalCalendarPage() {
     month: "long",
     year: "numeric",
   }).format(new Date(Date.UTC(year, month, 1)));
+  const displayMonthTitle = monthTitle.charAt(0).toUpperCase() + monthTitle.slice(1);
 
   return (
     <main className="min-h-screen bg-[radial-gradient(circle_at_top_right,rgba(0,183,255,0.11),transparent_28%),linear-gradient(135deg,#0d1726_0%,#101b2f_50%,#132238_100%)] text-white">
@@ -263,7 +263,7 @@ export default function LegalCalendarPage() {
             <div className="grid gap-3 sm:grid-cols-3 xl:grid-cols-1">
               {[
                 [ShieldCheck, isVi ? "Có kiểm duyệt" : "Editorially reviewed", isVi ? "Không tự động công bố dữ liệu chưa xác minh" : "Unverified data is never auto-published"],
-                [RefreshCw, isVi ? "Cập nhật định kỳ" : "Continuously monitored", isVi ? "Quét nguồn 10:00 và 16:00 hằng ngày" : "Sources checked daily at 10:00 and 16:00"],
+                [RefreshCw, isVi ? "Cập nhật định kỳ" : "Regularly updated", isVi ? "Các mốc được rà soát và bổ sung thường xuyên" : "Deadlines are reviewed and updated regularly"],
                 [ExternalLink, isVi ? "Truy xuất nguồn" : "Source traceability", isVi ? "Lưu nguồn phát hiện và căn cứ chính thức" : "Discovery and official sources are retained"],
               ].map(([Icon, title, desc]) => (
                 <div key={title} className="flex gap-3 rounded-2xl border border-white/10 bg-white/[0.035] p-4">
@@ -281,45 +281,45 @@ export default function LegalCalendarPage() {
 
       <section className="py-14 md:py-20">
         <div className="container mx-auto px-4 sm:px-6 lg:px-12">
-          <div className="rounded-[32px] border border-white/10 bg-white/[0.035] p-4 shadow-[0_32px_100px_rgba(0,0,0,0.24)] md:p-7">
+          <div className="rounded-[32px] border border-cyan-100/40 bg-[linear-gradient(145deg,rgba(248,250,252,0.98),rgba(226,232,240,0.96))] p-4 text-[#0d1726] shadow-[0_32px_100px_rgba(0,0,0,0.24)] md:p-7">
             <div className="flex flex-col gap-5 xl:flex-row xl:items-center xl:justify-between">
               <div className="flex items-center justify-between gap-3 sm:justify-start">
-                <button type="button" onClick={() => changeMonth(-1)} aria-label={isVi ? "Tháng trước" : "Previous month"} className="flex h-11 w-11 items-center justify-center rounded-2xl border border-white/10 text-slate-300 transition hover:border-cyan-200/30 hover:text-white">
+                <button type="button" onClick={() => changeMonth(-1)} aria-label={isVi ? "Tháng trước" : "Previous month"} className="flex h-11 w-11 items-center justify-center rounded-2xl border border-slate-300/80 bg-white/70 text-slate-600 transition hover:border-cyan-500/40 hover:bg-white hover:text-cyan-800">
                   <ChevronLeft size={20} />
                 </button>
                 <div className="min-w-[190px] text-center">
-                  <h2 className="text-xl font-bold capitalize md:text-2xl">{monthTitle}</h2>
-                  <button type="button" onClick={goToday} className="mt-1 text-xs font-semibold text-cyan-300 transition hover:text-cyan-100">
+                  <h2 className="text-xl font-bold text-slate-950 md:text-2xl">{displayMonthTitle}</h2>
+                  <button type="button" onClick={goToday} className="mt-1 text-xs font-semibold text-cyan-700 transition hover:text-cyan-900">
                     {isVi ? "Về tháng hiện tại" : "Go to current month"}
                   </button>
                 </div>
-                <button type="button" onClick={() => changeMonth(1)} aria-label={isVi ? "Tháng sau" : "Next month"} className="flex h-11 w-11 items-center justify-center rounded-2xl border border-white/10 text-slate-300 transition hover:border-cyan-200/30 hover:text-white">
+                <button type="button" onClick={() => changeMonth(1)} aria-label={isVi ? "Tháng sau" : "Next month"} className="flex h-11 w-11 items-center justify-center rounded-2xl border border-slate-300/80 bg-white/70 text-slate-600 transition hover:border-cyan-500/40 hover:bg-white hover:text-cyan-800">
                   <ChevronRight size={20} />
                 </button>
               </div>
 
               <div className="grid gap-3 sm:grid-cols-2">
-                <label className="flex items-center gap-3 rounded-2xl border border-white/10 bg-[#081321]/55 px-4">
+                <label className="flex items-center gap-3 rounded-2xl border border-slate-300/80 bg-white/75 px-4">
                   <CalendarDays size={17} className="text-slate-500" />
-                  <select value={month} onChange={(event) => { setMonth(Number(event.target.value)); setSelectedDay(1); }} className="min-w-0 flex-1 bg-transparent py-3 text-sm font-semibold text-white outline-none">
+                  <select value={month} onChange={(event) => { setMonth(Number(event.target.value)); setSelectedDay(1); }} className="min-w-0 flex-1 bg-transparent py-3 text-sm font-semibold text-slate-900 outline-none">
                     {Array.from({ length: 12 }, (_, index) => (
-                      <option key={index} value={index} className="bg-[#0d1726]">
+                      <option key={index} value={index} className="bg-white text-slate-900">
                         {new Intl.DateTimeFormat(isVi ? "vi-VN" : "en-GB", { month: "long" }).format(new Date(Date.UTC(2026, index, 1)))}
                       </option>
                     ))}
                   </select>
                 </label>
-                <label className="flex items-center gap-3 rounded-2xl border border-white/10 bg-[#081321]/55 px-4">
+                <label className="flex items-center gap-3 rounded-2xl border border-slate-300/80 bg-white/75 px-4">
                   <Clock3 size={17} className="text-slate-500" />
-                  <select value={year} onChange={(event) => { setYear(Number(event.target.value)); setSelectedDay(1); }} className="min-w-0 flex-1 bg-transparent py-3 text-sm font-semibold text-white outline-none">
-                    {Array.from({ length: 5 }, (_, index) => today.getFullYear() - 1 + index).map((item) => <option key={item} value={item} className="bg-[#0d1726]">{item}</option>)}
+                  <select value={year} onChange={(event) => { setYear(Number(event.target.value)); setSelectedDay(1); }} className="min-w-0 flex-1 bg-transparent py-3 text-sm font-semibold text-slate-900 outline-none">
+                    {Array.from({ length: 5 }, (_, index) => today.getFullYear() - 1 + index).map((item) => <option key={item} value={item} className="bg-white text-slate-900">{item}</option>)}
                   </select>
                 </label>
               </div>
             </div>
 
-            <div className="mt-6 border-t border-white/10 pt-5">
-              <div className="flex items-center gap-2 text-xs font-bold uppercase tracking-[0.14em] text-slate-600">
+            <div className="mt-6 border-t border-slate-300/70 pt-5">
+              <div className="flex items-center gap-2 text-xs font-bold uppercase tracking-[0.14em] text-slate-500">
                 <Filter size={14} /> {isVi ? "Lọc lĩnh vực" : "Filter by area"}
               </div>
               <div className="mt-3 flex gap-2 overflow-x-auto pb-2">
@@ -332,9 +332,9 @@ export default function LegalCalendarPage() {
                       onClick={() => toggleCategory(category.value)}
                       className="whitespace-nowrap rounded-full border px-3.5 py-2 text-sm font-semibold transition"
                       style={{
-                        color: enabled ? category.color : "#64748b",
-                        borderColor: enabled ? `${category.color}55` : "rgba(255,255,255,.08)",
-                        backgroundColor: enabled ? `${category.color}12` : "transparent",
+                        color: enabled ? calendarCategoryColors[category.value] : "#64748b",
+                        borderColor: enabled ? `${category.color}55` : "rgba(100,116,139,.22)",
+                        backgroundColor: enabled ? `${category.color}1c` : "rgba(255,255,255,.55)",
                       }}
                     >
                       {category[language] || category.en}
@@ -345,7 +345,7 @@ export default function LegalCalendarPage() {
             </div>
 
             <div className="mt-5 hidden grid-cols-7 gap-2 px-1 md:grid">
-              {weekDays[language].map((day) => <div key={day} className="py-2 text-center text-xs font-bold uppercase tracking-[0.14em] text-slate-600">{day}</div>)}
+              {weekDays[language].map((day) => <div key={day} className="py-2 text-center text-xs font-bold uppercase tracking-[0.14em] text-slate-500">{day}</div>)}
             </div>
 
             {loading ? <div className="mt-3"><LegalCalendarSkeleton /></div> : (
@@ -362,12 +362,12 @@ export default function LegalCalendarPage() {
                       onClick={() => setSelectedDay(day)}
                       className={`relative min-h-16 overflow-hidden rounded-2xl border p-2 text-left transition md:min-h-32 md:p-3 ${
                         selected
-                          ? "border-cyan-300/50 bg-cyan-300/[0.09] shadow-[0_0_30px_rgba(34,211,238,0.10)]"
-                          : "border-white/8 bg-[#081321]/45 hover:border-cyan-200/25 hover:bg-white/[0.045]"
+                          ? "border-cyan-500/50 bg-cyan-100/80 shadow-[0_8px_24px_rgba(8,145,178,0.12)]"
+                          : "border-slate-200/90 bg-white/80 hover:border-cyan-500/35 hover:bg-white"
                       }`}
                       aria-label={`${formatLegalDate(dateKey(year, month, day), language, { longMonth: true })}, ${dayEvents.length} ${isVi ? "nghĩa vụ" : "deadlines"}`}
                     >
-                      <span className={`inline-flex h-7 w-7 items-center justify-center rounded-full text-sm font-bold md:h-8 md:w-8 ${isToday ? "bg-cyan-300 text-[#06111f]" : selected ? "text-cyan-100" : "text-slate-300"}`}>{day}</span>
+                      <span className={`inline-flex h-7 w-7 items-center justify-center rounded-full text-sm font-bold md:h-8 md:w-8 ${isToday ? "bg-cyan-500 text-white" : selected ? "text-cyan-900" : "text-slate-700"}`}>{day}</span>
                       <div className="mt-2 flex flex-wrap gap-1 md:hidden">
                         {dayEvents.slice(0, 4).map((event) => <span key={event.id} className="h-1.5 w-1.5 rounded-full" style={{ backgroundColor: getCategory(event.category).color }} />)}
                       </div>
@@ -376,12 +376,12 @@ export default function LegalCalendarPage() {
                           const localized = getLocalizedLegalEvent(event, language);
                           const category = getCategory(event.category);
                           return (
-                            <div key={event.id} className="line-clamp-2 rounded-lg px-2 py-1.5 text-[11px] font-semibold leading-snug" style={{ color: category.color, backgroundColor: `${category.color}10` }}>
+                            <div key={event.id} className="line-clamp-2 rounded-lg px-2 py-1.5 text-[11px] font-semibold leading-snug" style={{ color: calendarCategoryColors[category.value], backgroundColor: `${category.color}1c` }}>
                               {localized.title}
                             </div>
                           );
                         })}
-                        {dayEvents.length > 2 && <div className="px-2 text-[10px] font-semibold text-slate-500">+{dayEvents.length - 2} {isVi ? "mốc khác" : "more"}</div>}
+                        {dayEvents.length > 2 && <div className="px-2 text-[10px] font-semibold text-slate-600">+{dayEvents.length - 2} {isVi ? "mốc khác" : "more"}</div>}
                       </div>
                     </button>
                   );
@@ -432,22 +432,6 @@ export default function LegalCalendarPage() {
               <div className="mt-5 space-y-4 text-sm leading-relaxed text-slate-400">
                 <p>{isVi ? "Lịch được xây dựng như công cụ nhận diện và quản lý thời hạn, không thay thế ý kiến tư vấn cho một hồ sơ cụ thể." : "This calendar is a deadline identification and management tool. It does not replace advice on a specific matter."}</p>
                 <p>{isVi ? "Ngày thực hiện có thể thay đổi do ngày nghỉ, phương thức nộp, cơ quan quản lý, địa phương hoặc đặc điểm của doanh nghiệp." : "Dates may change due to holidays, filing method, authority, locality or enterprise-specific circumstances."}</p>
-                <p>{isVi ? "Nguồn P2/P3 chỉ dùng để phát hiện. Khi áp dụng, cần ưu tiên văn bản và hướng dẫn chính thức thuộc nguồn P1." : "P2/P3 sources are used for discovery only. Official P1 legislation and authority guidance take priority when acting."}</p>
-              </div>
-
-              <div className="mt-6 border-t border-white/10 pt-5">
-                <div className="text-xs font-bold uppercase tracking-[0.14em] text-slate-600">{isVi ? "Trạng thái dữ liệu" : "Data status"}</div>
-                <div className="mt-3 flex items-start gap-3 rounded-2xl border border-emerald-300/15 bg-emerald-300/[0.05] p-4">
-                  <CheckCircle2 size={18} className="mt-0.5 shrink-0 text-emerald-300" />
-                  <div>
-                    <div className="text-sm font-semibold text-emerald-100">{isVi ? "Chỉ hiển thị nội dung đã duyệt" : "Reviewed content only"}</div>
-                    <div className="mt-1 text-xs leading-relaxed text-slate-500">
-                      {lastReviewed
-                        ? `${isVi ? "Cập nhật gần nhất" : "Last reviewed"}: ${formatLegalDateTime(lastReviewed, language)}`
-                        : (isVi ? "Chưa có dữ liệu công khai trong tháng này." : "No public records for this month yet.")}
-                    </div>
-                  </div>
-                </div>
               </div>
 
               <a href="/contact" className="mt-6 inline-flex w-full items-center justify-center gap-2 rounded-2xl bg-cyan-300 px-5 py-3.5 font-bold text-[#071421] transition hover:-translate-y-0.5 hover:bg-cyan-200">
@@ -460,7 +444,7 @@ export default function LegalCalendarPage() {
             <section className="mt-16 border-t border-white/10 pt-12">
               <div className="flex flex-wrap items-end justify-between gap-4">
                 <div>
-                  <div className="text-sm font-semibold text-cyan-300">{monthTitle}</div>
+                  <div className="text-sm font-semibold text-cyan-300">{displayMonthTitle}</div>
                   <h2 className="mt-2 text-3xl font-bold">{isVi ? "Danh sách mốc trong tháng" : "Monthly deadline list"}</h2>
                 </div>
                 <div className="text-sm text-slate-500">{filteredEvents.length} {isVi ? "mốc phù hợp bộ lọc" : "matching deadlines"}</div>
