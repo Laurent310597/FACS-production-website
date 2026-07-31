@@ -324,6 +324,8 @@ Deno.serve(async (req) => {
 
     return json({
       ok: true,
+      service: "legal-calendar-sync",
+      version: "20.8",
       sources_checked: sources?.length || 0,
       candidates_created: candidatesCreated,
       results,

@@ -122,7 +122,13 @@ export default function AdminLegalSourcesPage() {
     setMessage("");
     try {
       const result = await invokeLegalCalendarSync();
-      setMessage(`Đã quét ${result.sources_checked || 0} nguồn và ghi nhận ${result.candidates_created || 0} cập nhật mới.`);
+      const failedSources = (result.results || []).filter((item) => item.status === "error");
+      if (failedSources.length > 0) {
+        const failedNames = failedSources.map((item) => item.source).filter(Boolean).join(", ");
+        setError(`Đã quét ${result.sources_checked || 0} nguồn; ${failedSources.length} nguồn không thể truy cập${failedNames ? `: ${failedNames}` : ""}. Chi tiết được lưu tại từng nguồn.`);
+      } else {
+        setMessage(`Đã quét ${result.sources_checked || 0} nguồn và ghi nhận ${result.candidates_created || 0} cập nhật mới.`);
+      }
       await load();
     } catch (syncError) {
       setError(`Không thể quét nguồn: ${syncError.message}`);

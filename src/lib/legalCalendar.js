@@ -239,10 +239,27 @@ export function downloadLegalEventIcs(event, language) {
 
 export async function invokeLegalCalendarSync() {
   if (!supabase) throw new Error("Website chưa kết nối Supabase.");
+
+  const { data: sessionData, error: sessionError } = await supabase.auth.getSession();
+  const accessToken = sessionData.session?.access_token;
+  if (sessionError || !accessToken) {
+    throw new Error("Phiên đăng nhập quản trị đã hết hạn. Vui lòng đăng nhập lại rồi thử quét nguồn.");
+  }
+
   const { data, error } = await supabase.functions.invoke("legal-calendar-sync", {
     body: { action: "sync" },
+    headers: { Authorization: `Bearer ${accessToken}` },
   });
-  if (error) throw new Error(error.message || "Không thể quét nguồn pháp lý.");
+  if (error) {
+    const message = error.message || "Không thể quét nguồn pháp lý.";
+    if (/failed to send a request|fetch failed|network/i.test(message)) {
+      throw new Error("Tác vụ quét nguồn chưa được triển khai hoặc chưa thể kết nối. Cần triển khai Edge Function legal-calendar-sync trên Supabase rồi thử lại.");
+    }
+    if (/non-2xx|not found|404/i.test(message)) {
+      throw new Error("Không tìm thấy tác vụ legal-calendar-sync trên Supabase. Vui lòng triển khai Edge Function trước khi quét.");
+    }
+    throw new Error(message);
+  }
   if (data?.error) throw new Error(data.error);
   return data;
 }

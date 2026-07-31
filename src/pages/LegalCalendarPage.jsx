@@ -66,7 +66,7 @@ function LegalCalendarSkeleton() {
   return (
     <div className="grid grid-cols-7 gap-2">
       {Array.from({ length: 35 }, (_, index) => (
-        <div key={index} className="min-h-24 animate-pulse rounded-2xl bg-slate-200/80 md:min-h-32" />
+        <div key={index} className="min-h-24 animate-pulse rounded-2xl bg-slate-300/65 md:min-h-32" />
       ))}
     </div>
   );
@@ -76,6 +76,7 @@ function EventCard({ event, language, compact = false }) {
   const isVi = language === "vi";
   const localized = getLocalizedLegalEvent(event, language);
   const category = getCategory(event.category);
+  const officialSourceUrl = event.official_source_url || event.source_url;
 
   return (
     <article className={`rounded-[26px] border border-white/10 bg-[#081321]/55 transition hover:border-cyan-200/25 ${compact ? "p-5" : "p-6 md:p-7"}`}>
@@ -124,14 +125,9 @@ function EventCard({ event, language, compact = false }) {
         >
           <Download size={15} /> {isVi ? "Thêm vào lịch" : "Add to calendar"}
         </button>
-        {event.official_source_url && (
-          <a href={event.official_source_url} target="_blank" rel="noreferrer" className="inline-flex items-center gap-2 rounded-xl border border-emerald-200/15 px-3.5 py-2 text-sm font-semibold text-emerald-100 transition hover:bg-emerald-300/10">
+        {officialSourceUrl && (
+          <a href={officialSourceUrl} target="_blank" rel="noreferrer" className="inline-flex items-center gap-2 rounded-xl border border-emerald-200/15 px-3.5 py-2 text-sm font-semibold text-emerald-100 transition hover:bg-emerald-300/10">
             {isVi ? "Nguồn chính thức" : "Official source"} <ExternalLink size={14} />
-          </a>
-        )}
-        {event.source_url && (
-          <a href={event.source_url} target="_blank" rel="noreferrer" className="inline-flex items-center gap-2 rounded-xl border border-white/10 px-3.5 py-2 text-sm font-semibold text-slate-300 transition hover:border-cyan-200/25 hover:text-white">
-            {event.source_name || (isVi ? "Nguồn tham khảo" : "Reference")} <ExternalLink size={14} />
           </a>
         )}
       </div>
@@ -281,10 +277,10 @@ export default function LegalCalendarPage() {
 
       <section className="py-14 md:py-20">
         <div className="container mx-auto px-4 sm:px-6 lg:px-12">
-          <div className="rounded-[32px] border border-cyan-100/40 bg-[linear-gradient(145deg,rgba(248,250,252,0.98),rgba(226,232,240,0.96))] p-4 text-[#0d1726] shadow-[0_32px_100px_rgba(0,0,0,0.24)] md:p-7">
+          <div className="rounded-[32px] border border-slate-300/45 bg-[linear-gradient(145deg,rgba(218,228,236,0.97),rgba(191,207,220,0.96))] p-4 text-[#0d1726] shadow-[0_32px_100px_rgba(0,0,0,0.24)] md:p-7">
             <div className="flex flex-col gap-5 xl:flex-row xl:items-center xl:justify-between">
               <div className="flex items-center justify-between gap-3 sm:justify-start">
-                <button type="button" onClick={() => changeMonth(-1)} aria-label={isVi ? "Tháng trước" : "Previous month"} className="flex h-11 w-11 items-center justify-center rounded-2xl border border-slate-300/80 bg-white/70 text-slate-600 transition hover:border-cyan-500/40 hover:bg-white hover:text-cyan-800">
+                <button type="button" onClick={() => changeMonth(-1)} aria-label={isVi ? "Tháng trước" : "Previous month"} className="flex h-11 w-11 items-center justify-center rounded-2xl border border-slate-400/60 bg-slate-100/70 text-slate-600 transition hover:border-cyan-600/40 hover:bg-slate-50 hover:text-cyan-900">
                   <ChevronLeft size={20} />
                 </button>
                 <div className="min-w-[190px] text-center">
@@ -293,32 +289,32 @@ export default function LegalCalendarPage() {
                     {isVi ? "Về tháng hiện tại" : "Go to current month"}
                   </button>
                 </div>
-                <button type="button" onClick={() => changeMonth(1)} aria-label={isVi ? "Tháng sau" : "Next month"} className="flex h-11 w-11 items-center justify-center rounded-2xl border border-slate-300/80 bg-white/70 text-slate-600 transition hover:border-cyan-500/40 hover:bg-white hover:text-cyan-800">
+                <button type="button" onClick={() => changeMonth(1)} aria-label={isVi ? "Tháng sau" : "Next month"} className="flex h-11 w-11 items-center justify-center rounded-2xl border border-slate-400/60 bg-slate-100/70 text-slate-600 transition hover:border-cyan-600/40 hover:bg-slate-50 hover:text-cyan-900">
                   <ChevronRight size={20} />
                 </button>
               </div>
 
               <div className="grid gap-3 sm:grid-cols-2">
-                <label className="flex items-center gap-3 rounded-2xl border border-slate-300/80 bg-white/75 px-4">
+                <label className="flex items-center gap-3 rounded-2xl border border-slate-400/60 bg-slate-100/70 px-4">
                   <CalendarDays size={17} className="text-slate-500" />
                   <select value={month} onChange={(event) => { setMonth(Number(event.target.value)); setSelectedDay(1); }} className="min-w-0 flex-1 bg-transparent py-3 text-sm font-semibold text-slate-900 outline-none">
                     {Array.from({ length: 12 }, (_, index) => (
-                      <option key={index} value={index} className="bg-white text-slate-900">
+                      <option key={index} value={index} className="bg-slate-100 text-slate-900">
                         {new Intl.DateTimeFormat(isVi ? "vi-VN" : "en-GB", { month: "long" }).format(new Date(Date.UTC(2026, index, 1)))}
                       </option>
                     ))}
                   </select>
                 </label>
-                <label className="flex items-center gap-3 rounded-2xl border border-slate-300/80 bg-white/75 px-4">
+                <label className="flex items-center gap-3 rounded-2xl border border-slate-400/60 bg-slate-100/70 px-4">
                   <Clock3 size={17} className="text-slate-500" />
                   <select value={year} onChange={(event) => { setYear(Number(event.target.value)); setSelectedDay(1); }} className="min-w-0 flex-1 bg-transparent py-3 text-sm font-semibold text-slate-900 outline-none">
-                    {Array.from({ length: 5 }, (_, index) => today.getFullYear() - 1 + index).map((item) => <option key={item} value={item} className="bg-white text-slate-900">{item}</option>)}
+                    {Array.from({ length: 5 }, (_, index) => today.getFullYear() - 1 + index).map((item) => <option key={item} value={item} className="bg-slate-100 text-slate-900">{item}</option>)}
                   </select>
                 </label>
               </div>
             </div>
 
-            <div className="mt-6 border-t border-slate-300/70 pt-5">
+            <div className="mt-6 border-t border-slate-400/55 pt-5">
               <div className="flex items-center gap-2 text-xs font-bold uppercase tracking-[0.14em] text-slate-500">
                 <Filter size={14} /> {isVi ? "Lọc lĩnh vực" : "Filter by area"}
               </div>
@@ -334,7 +330,7 @@ export default function LegalCalendarPage() {
                       style={{
                         color: enabled ? calendarCategoryColors[category.value] : "#64748b",
                         borderColor: enabled ? `${category.color}55` : "rgba(100,116,139,.22)",
-                        backgroundColor: enabled ? `${category.color}1c` : "rgba(255,255,255,.55)",
+                        backgroundColor: enabled ? `${category.color}1c` : "rgba(241,245,249,.65)",
                       }}
                     >
                       {category[language] || category.en}
@@ -362,8 +358,8 @@ export default function LegalCalendarPage() {
                       onClick={() => setSelectedDay(day)}
                       className={`relative min-h-16 overflow-hidden rounded-2xl border p-2 text-left transition md:min-h-32 md:p-3 ${
                         selected
-                          ? "border-cyan-500/50 bg-cyan-100/80 shadow-[0_8px_24px_rgba(8,145,178,0.12)]"
-                          : "border-slate-200/90 bg-white/80 hover:border-cyan-500/35 hover:bg-white"
+                          ? "border-cyan-600/45 bg-cyan-100/55 shadow-[0_8px_24px_rgba(8,145,178,0.12)]"
+                          : "border-slate-300/90 bg-slate-100/80 hover:border-cyan-600/35 hover:bg-slate-50"
                       }`}
                       aria-label={`${formatLegalDate(dateKey(year, month, day), language, { longMonth: true })}, ${dayEvents.length} ${isVi ? "nghĩa vụ" : "deadlines"}`}
                     >
