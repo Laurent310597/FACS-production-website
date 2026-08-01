@@ -1,7 +1,7 @@
 import { useState } from "react";
 import { Link, NavLink, useLocation } from "react-router-dom";
 import { motion } from "framer-motion";
-import { Banknote, Calculator, CalendarRange, ChevronDown, Coins, Landmark, Menu, PiggyBank, ShieldCheck, X } from "lucide-react";
+import { Banknote, Calculator, CalendarRange, ChevronDown, Coins, Landmark, Menu, PiggyBank, ShieldCheck, Sparkles, X } from "lucide-react";
 import { useLanguage } from "./LanguageContext";
 import { getServiceContent, services } from "../data/services";
 import { industries } from "../data/industries";
@@ -67,7 +67,7 @@ export default function Navbar() {
             <LogoWordmark />
           </Link>
 
-          <div className="hidden min-w-[178px] border-l border-cyan-200/18 pl-5 xl:block">
+          <div className="hidden min-w-[178px] border-l border-cyan-200/18 pl-5 2xl:block">
             <motion.div
               initial={{ opacity: 0, x: -8 }}
               animate={{ opacity: 1, x: 0 }}
@@ -85,7 +85,7 @@ export default function Navbar() {
             </motion.div>
           </div>
 
-          <nav className="hidden flex-1 items-center justify-center gap-3 text-[14px] font-bold tracking-[0.01em] text-slate-200 lg:flex xl:gap-5 xl:text-[15px]">
+          <nav className="hidden flex-1 items-center justify-center gap-3 text-[14px] font-bold tracking-[0.01em] text-slate-200 xl:flex 2xl:gap-5 2xl:text-[15px]">
             {navItems.map(([to, label, type]) => {
               if (type === "services") {
                 return (
@@ -146,6 +146,14 @@ export default function Navbar() {
                           : "Track tax, accounting, labour, insurance and HSE deadlines.",
                         Icon: CalendarRange,
                       })}
+                      {renderDropdownItem({
+                        to: "/legal-ai",
+                        title: isVi ? "AI Tư vấn FACS" : "FACS Advisory AI",
+                        desc: isVi
+                          ? "GROQ tìm kiếm trên danh sách nguồn mở uy tín đã được FACS phê duyệt."
+                          : "GROQ searches only FACS-approved reputable open sources.",
+                        Icon: Sparkles,
+                      })}
                       {[
                         ["/tools/gross-net", isVi ? "Tính lương Gross – Net" : "Gross – Net Salary", isVi ? "Ước tính lương thực nhận, bảo hiểm và thuế TNCN." : "Estimate take-home pay, insurance and PIT.", Banknote],
                         ["/tools/personal-income-tax", isVi ? "Tính thuế TNCN" : "Personal Income Tax", isVi ? "Tính thuế tiền lương theo biểu lũy tiến 5 bậc." : "Calculate salary tax using the five-band schedule.", Calculator],
@@ -168,6 +176,14 @@ export default function Navbar() {
           </nav>
 
           <div className="hidden shrink-0 items-center gap-3 md:flex">
+            <NavLink
+              to="/legal-ai"
+              className={`relative flex items-center gap-1.5 whitespace-nowrap rounded-2xl border border-violet-300/25 bg-violet-300/[0.07] px-4 py-3 text-sm font-semibold text-violet-100 transition-all duration-300 hover:-translate-y-1 hover:border-violet-300/40 hover:bg-violet-300/[0.13] hover:shadow-[0_18px_42px_rgba(139,92,246,0.18)] ${isActive("/legal-ai") ? "border-violet-300/45 bg-violet-300/[0.15] text-white" : ""}`}
+            >
+              <Sparkles size={15} />
+              {isVi ? "AI Tư vấn FACS" : "FACS Advisory AI"}
+            </NavLink>
+
             <Link
               to="/contact"
               className="whitespace-nowrap rounded-2xl border border-cyan-200/30 bg-white/[0.04] px-4 py-3 text-sm font-semibold text-cyan-100 transition-all duration-300 hover:-translate-y-1 hover:bg-cyan-300 hover:text-[#06111f] hover:shadow-[0_18px_42px_rgba(6,182,212,0.30)] xl:px-5 xl:text-base"
@@ -184,7 +200,7 @@ export default function Navbar() {
           <button
             type="button"
             onClick={() => setMobileOpen((current) => !current)}
-            className="relative z-20 inline-flex h-11 w-11 items-center justify-center rounded-2xl border border-cyan-200/20 bg-white/[0.045] text-cyan-100 transition-all duration-300 hover:bg-cyan-400/12 md:hidden"
+            className="relative z-20 inline-flex h-11 w-11 items-center justify-center rounded-2xl border border-cyan-200/20 bg-white/[0.045] text-cyan-100 transition-all duration-300 hover:bg-cyan-400/12 xl:hidden"
             aria-label={mobileOpen ? "Close navigation" : "Open navigation"}
           >
             {mobileOpen ? <X size={22} /> : <Menu size={22} />}
@@ -192,8 +208,15 @@ export default function Navbar() {
         </div>
 
         {mobileOpen && (
-          <div className="pb-5 md:hidden">
+          <div className="pb-5 xl:hidden">
             <div className="rounded-3xl border border-cyan-200/15 bg-[#0d1726]/95 p-3 shadow-[0_24px_70px_rgba(0,0,0,0.34)]">
+              <Link
+                to="/legal-ai"
+                onClick={() => setMobileOpen(false)}
+                className="mb-2 flex items-center gap-2 rounded-2xl border border-violet-300/20 bg-violet-300/[0.07] px-4 py-3 font-semibold text-violet-100 hover:bg-violet-300/[0.13] hover:text-white"
+              >
+                <Sparkles size={16} />{isVi ? "AI Tư vấn FACS" : "FACS Advisory AI"}
+              </Link>
               <div className="grid gap-1">
                 {navItems.map(([to, label]) => (
                   <Link key={to} to={to} onClick={() => setMobileOpen(false)} className="rounded-2xl px-4 py-3 font-semibold text-slate-200 hover:bg-cyan-400/10 hover:text-white">
