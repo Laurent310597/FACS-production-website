@@ -1,6 +1,11 @@
 import { createClient } from "npm:@supabase/supabase-js@2";
 import { corsHeaders } from "../_shared/cors.ts";
 
+// Supabase Edge Functions use tables created by project migrations rather than
+// a generated Database type in this repository.
+// deno-lint-ignore no-explicit-any
+type AdminClient = any;
+
 type Source = {
   id: string;
   name: string;
@@ -94,7 +99,7 @@ async function sha256(value: string) {
   return Array.from(new Uint8Array(digest)).map((byte) => byte.toString(16).padStart(2, "0")).join("");
 }
 
-async function requireAdmin(req: Request, admin: ReturnType<typeof createClient>) {
+async function requireAdmin(req: Request, admin: AdminClient) {
   const token = (req.headers.get("authorization") || "").replace(/^Bearer\s+/i, "").trim();
   if (!token) throw new Error("UNAUTHORIZED");
   const { data, error } = await admin.auth.getUser(token);
@@ -367,7 +372,9 @@ function aiConfiguration() {
     apiKey: groqKey,
     model: Deno.env.get("GROQ_LEGAL_CALENDAR_MODEL") || "openai/gpt-oss-120b",
   };
-  const openAIKey = Deno.env.get("OPENAI_API_KEY") || "";
+  // Keep the CMS OpenAI budget isolated. Calendar fallback is enabled only
+  // when a separate, explicitly scoped key is configured.
+  const openAIKey = Deno.env.get("OPENAI_LEGAL_CALENDAR_API_KEY") || "";
   if (openAIKey) return {
     provider: "openai",
     apiKey: openAIKey,
@@ -436,9 +443,9 @@ async function callAI(prompt: string, schemaName: string, itemSchema: Record<str
 }
 
 function compactDocuments(documents: SourceDocument[]) {
-  // Groq's free plan currently permits 8K tokens/minute for GPT-OSS. Keep the
-  // source payload comfortably below that limit; longer sources remain linked
-  // as candidates for manual review instead of being silently invented.
+  // Keep Groq requests conservative because developer limits are account- and
+  // model-specific. Longer sources remain linked for manual review instead of
+  // being silently invented.
   let remaining = aiConfiguration()?.provider === "groq" ? 18_000 : 95_000;
   return documents.map((document, index) => {
     const text = document.text.slice(0, Math.max(0, Math.min(30_000, remaining)));
@@ -453,7 +460,7 @@ function compactDocuments(documents: SourceDocument[]) {
   }).filter((document) => document.content || document.title);
 }
 
-async function prepareSourceEvents(source: Source, documents: SourceDocument[], startDate: string, endDate: string) {
+function prepareSourceEvents(source: Source, documents: SourceDocument[], startDate: string, endDate: string) {
   const prompt = [
     `Extract every distinct Vietnam enterprise compliance deadline with an event date from ${startDate} through ${endDate}, inclusive.`,
     "The selected range concerns the compliance/deadline date, not the article publication date.",
@@ -475,7 +482,7 @@ function normalizeCategory(value: unknown) {
   return (CATEGORIES as readonly string[]).includes(category) ? category : "other";
 }
 
-async function eventDedupKey(event: Record<string, unknown>) {
+function eventDedupKey(event: Record<string, unknown>) {
   return sha256([
     normalizedText(event.event_date),
     normalizedText(event.title_vi || event.title_en).toLocaleLowerCase("vi"),
@@ -535,7 +542,7 @@ async function buildScanPayloads(source: Source, documents: SourceDocument[], pr
   return payloads;
 }
 
-async function insertNewEvents(admin: ReturnType<typeof createClient>, payloads: Array<Record<string, unknown>>) {
+async function insertNewEvents(admin: AdminClient, payloads: Array<Record<string, unknown>>) {
   const uniquePayloads = Array.from(new Map(payloads.map((payload) => [payload.dedup_key, payload])).values());
   const hashes = uniquePayloads.map((payload) => String(payload.dedup_key));
   const existingHashes = new Set<string>();
@@ -545,7 +552,7 @@ async function insertNewEvents(admin: ReturnType<typeof createClient>, payloads:
       .select("dedup_key")
       .in("dedup_key", hashes.slice(offset, offset + 100));
     if (error) throw new Error(`Không thể kiểm tra dữ liệu trùng: ${error.message}`);
-    (data || []).forEach((row) => existingHashes.add(row.dedup_key));
+    (data || []).forEach((row: { dedup_key: string }) => existingHashes.add(row.dedup_key));
   }
   const fresh = uniquePayloads.filter((payload) => !existingHashes.has(String(payload.dedup_key)));
   let inserted = 0;
@@ -578,7 +585,7 @@ async function buildFallbackCandidates(source: Source, documents: SourceDocument
   return candidates;
 }
 
-async function insertNewCandidates(admin: ReturnType<typeof createClient>, candidates: Candidate[]) {
+async function insertNewCandidates(admin: AdminClient, candidates: Candidate[]) {
   if (candidates.length === 0) return 0;
   const hashes = candidates.map((candidate) => candidate.content_hash);
   const { data: existing, error: existingError } = await admin
@@ -587,7 +594,7 @@ async function insertNewCandidates(admin: ReturnType<typeof createClient>, candi
     .eq("source_id", candidates[0].source_id)
     .in("content_hash", hashes);
   if (existingError) throw new Error(existingError.message);
-  const existingHashes = new Set((existing || []).map((candidate) => candidate.content_hash));
+  const existingHashes = new Set((existing || []).map((candidate: { content_hash: string }) => candidate.content_hash));
   const fresh = candidates.filter((candidate) => !existingHashes.has(candidate.content_hash));
   if (fresh.length === 0) return 0;
   const { data, error } = await admin.from("legal_calendar_candidates").insert(fresh).select("id");
@@ -595,7 +602,7 @@ async function insertNewCandidates(admin: ReturnType<typeof createClient>, candi
   return data?.length || 0;
 }
 
-async function handleSync(body: Record<string, unknown>, admin: ReturnType<typeof createClient>) {
+async function handleSync(body: Record<string, unknown>, admin: AdminClient) {
   const { startDate, endDate } = parseDateRange(body);
   const { data: sources, error: sourceError } = await admin
     .from("legal_calendar_sources")
@@ -670,7 +677,7 @@ async function handleSync(body: Record<string, unknown>, admin: ReturnType<typeo
   return {
     ok: true,
     service: "legal-calendar-sync",
-    version: "20.17",
+    version: "20.18",
     start_date: startDate,
     end_date: endDate,
     sources_checked: sources?.length || 0,
@@ -745,7 +752,7 @@ async function completeImportRows(rows: ImportRow[]) {
     try {
       const result = await callAI(prompt, "legal_calendar_import", eventSchema(true));
       if (!result) {
-        warnings.push("Chưa cấu hình GROQ_API_KEY hoặc OPENAI_API_KEY; các ô song ngữ còn thiếu được giữ nguyên.");
+        warnings.push("Chưa cấu hình GROQ_API_KEY hoặc OPENAI_LEGAL_CALENDAR_API_KEY; các ô song ngữ còn thiếu được giữ nguyên.");
         break;
       }
       model = result.model;
@@ -782,7 +789,7 @@ async function completeImportRows(rows: ImportRow[]) {
   };
 }
 
-async function handleImport(body: Record<string, unknown>, admin: ReturnType<typeof createClient>, userId: string) {
+async function handleImport(body: Record<string, unknown>, admin: AdminClient, userId: string) {
   const rows = sanitizeImportRows(body.rows);
   const completed = await completeImportRows(rows);
   const batchId = crypto.randomUUID();
@@ -842,7 +849,7 @@ Deno.serve(async (req) => {
 
   const supabaseUrl = Deno.env.get("SUPABASE_URL")!;
   const serviceKey = Deno.env.get("SUPABASE_SERVICE_ROLE_KEY")!;
-  const admin = createClient(supabaseUrl, serviceKey, {
+  const admin: AdminClient = createClient(supabaseUrl, serviceKey, {
     auth: { persistSession: false, autoRefreshToken: false },
   });
 

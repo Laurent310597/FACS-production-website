@@ -15,3 +15,9 @@ verify_jwt = false
 
 [functions.legal-calendar-sync]
 verify_jwt = false
+
+[functions.legal-ai-assistant]
+verify_jwt = false
+
+[functions.cms-assistant]
+verify_jwt = false

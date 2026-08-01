@@ -1,7 +1,7 @@
 import { useState } from "react";
 import { Link, NavLink, useLocation } from "react-router-dom";
 import { motion } from "framer-motion";
-import { Banknote, Calculator, CalendarRange, ChevronDown, Coins, Landmark, Menu, PiggyBank, ShieldCheck, X } from "lucide-react";
+import { Banknote, Calculator, CalendarRange, ChevronDown, Coins, Landmark, Menu, PiggyBank, ShieldCheck, Sparkles, X } from "lucide-react";
 import { useLanguage } from "./LanguageContext";
 import { getServiceContent, services } from "../data/services";
 import { industries } from "../data/industries";
@@ -29,6 +29,7 @@ export default function Navbar() {
     ["/industries", isVi ? "Lĩnh vực" : "Industries", "industries"],
     ["/insights", isVi ? "Góc nhìn" : "Insights"],
     ["/tools", isVi ? "Tiện ích" : "Resources", "resources"],
+    ["/legal-ai", isVi ? "AI Pháp lý" : "Legal AI", "ai"],
     ["/careers", isVi ? "Tuyển dụng" : "Careers"],
     ["/contact", isVi ? "Liên hệ" : "Contact"],
   ];
@@ -67,7 +68,7 @@ export default function Navbar() {
             <LogoWordmark />
           </Link>
 
-          <div className="hidden min-w-[178px] border-l border-cyan-200/18 pl-5 xl:block">
+          <div className="hidden min-w-[178px] border-l border-cyan-200/18 pl-5 2xl:block">
             <motion.div
               initial={{ opacity: 0, x: -8 }}
               animate={{ opacity: 1, x: 0 }}
@@ -85,7 +86,7 @@ export default function Navbar() {
             </motion.div>
           </div>
 
-          <nav className="hidden flex-1 items-center justify-center gap-3 text-[14px] font-bold tracking-[0.01em] text-slate-200 lg:flex xl:gap-5 xl:text-[15px]">
+          <nav className="hidden flex-1 items-center justify-center gap-3 text-[14px] font-bold tracking-[0.01em] text-slate-200 xl:flex 2xl:gap-5 2xl:text-[15px]">
             {navItems.map(([to, label, type]) => {
               if (type === "services") {
                 return (
@@ -146,6 +147,14 @@ export default function Navbar() {
                           : "Track tax, accounting, labour, insurance and HSE deadlines.",
                         Icon: CalendarRange,
                       })}
+                      {renderDropdownItem({
+                        to: "/legal-ai",
+                        title: isVi ? "AI giải đáp pháp lý cơ bản" : "Basic Legal AI",
+                        desc: isVi
+                          ? "Tra cứu sơ bộ bằng Groq trên kho nguồn P1 do FACS kiểm soát."
+                          : "Preliminary Groq-powered reference using FACS-controlled P1 sources.",
+                        Icon: Sparkles,
+                      })}
                       {[
                         ["/tools/gross-net", isVi ? "Tính lương Gross – Net" : "Gross – Net Salary", isVi ? "Ước tính lương thực nhận, bảo hiểm và thuế TNCN." : "Estimate take-home pay, insurance and PIT.", Banknote],
                         ["/tools/personal-income-tax", isVi ? "Tính thuế TNCN" : "Personal Income Tax", isVi ? "Tính thuế tiền lương theo biểu lũy tiến 5 bậc." : "Calculate salary tax using the five-band schedule.", Calculator],
@@ -156,6 +165,14 @@ export default function Navbar() {
                       ].map(([itemTo, title, desc, Icon]) => renderDropdownItem({ to: itemTo, title, desc, Icon }))}
                     </div>
                   </div>
+                );
+              }
+
+              if (type === "ai") {
+                return (
+                  <NavLink key={to} to={to} className={`relative flex items-center gap-1.5 rounded-full border border-violet-300/20 bg-violet-300/[0.06] px-3 py-2 text-violet-100 transition hover:border-violet-300/35 hover:bg-violet-300/[0.11] ${isActive(to) ? "border-violet-300/40 bg-violet-300/[0.14] text-white" : ""}`}>
+                    <Sparkles size={14} />{label}
+                  </NavLink>
                 );
               }
 
@@ -184,7 +201,7 @@ export default function Navbar() {
           <button
             type="button"
             onClick={() => setMobileOpen((current) => !current)}
-            className="relative z-20 inline-flex h-11 w-11 items-center justify-center rounded-2xl border border-cyan-200/20 bg-white/[0.045] text-cyan-100 transition-all duration-300 hover:bg-cyan-400/12 md:hidden"
+            className="relative z-20 inline-flex h-11 w-11 items-center justify-center rounded-2xl border border-cyan-200/20 bg-white/[0.045] text-cyan-100 transition-all duration-300 hover:bg-cyan-400/12 xl:hidden"
             aria-label={mobileOpen ? "Close navigation" : "Open navigation"}
           >
             {mobileOpen ? <X size={22} /> : <Menu size={22} />}
@@ -192,7 +209,7 @@ export default function Navbar() {
         </div>
 
         {mobileOpen && (
-          <div className="pb-5 md:hidden">
+          <div className="pb-5 xl:hidden">
             <div className="rounded-3xl border border-cyan-200/15 bg-[#0d1726]/95 p-3 shadow-[0_24px_70px_rgba(0,0,0,0.34)]">
               <div className="grid gap-1">
                 {navItems.map(([to, label]) => (

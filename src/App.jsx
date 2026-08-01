@@ -11,6 +11,7 @@ import IndustryDetailPage from "./pages/IndustryDetailPage";
 import InsightsPage from "./pages/InsightsPage";
 import InsightDetailPage from "./pages/InsightDetailPage";
 import LegalCalendarPage from "./pages/LegalCalendarPage";
+import LegalAIPage from "./pages/LegalAIPage";
 import ToolsPage from "./pages/ToolsPage";
 import AdminLoginPage from "./pages/admin/AdminLoginPage";
 import AdminPostsPage from "./pages/admin/AdminPostsPage";
@@ -24,6 +25,7 @@ import AdminLegalCalendarPage from "./pages/admin/AdminLegalCalendarPage";
 import AdminLegalDashboardPage from "./pages/admin/AdminLegalDashboardPage";
 import AdminLegalCalendarEditorPage from "./pages/admin/AdminLegalCalendarEditorPage";
 import AdminLegalSourcesPage from "./pages/admin/AdminLegalSourcesPage";
+import AdminLegalKnowledgePage from "./pages/admin/AdminLegalKnowledgePage";
 import ProtectedAdminRoute from "./components/admin/ProtectedAdminRoute";
 import CareersPage from "./pages/CareersPage";
 import CareerDetailPage from "./pages/CareerDetailPage";
@@ -34,6 +36,8 @@ import TeamMemberDetailPage from "./pages/TeamMemberDetailPage";
 import ScrollToTop from "./components/ScrollToTop";
 import PageTransition from "./components/PageTransition";
 import MouseGlow from "./components/MouseGlow";
+import FacsAssistant from "./components/FacsAssistant";
+import AdminAssistant from "./components/admin/AdminAssistant";
 import { LanguageProvider } from "./components/LanguageContext";
 
 function HomeIntroOverlay() {
@@ -113,6 +117,7 @@ function AnimatedRoutes() {
         <Route path="/insights" element={<PageTransition><InsightsPage /></PageTransition>} />
         <Route path="/insights/:slug" element={<PageTransition><InsightDetailPage /></PageTransition>} />
         <Route path="/legal-calendar" element={<PageTransition><LegalCalendarPage /></PageTransition>} />
+        <Route path="/legal-ai" element={<PageTransition><LegalAIPage /></PageTransition>} />
         <Route path="/tools" element={<PageTransition><ToolsPage /></PageTransition>} />
         <Route path="/tools/:slug" element={<PageTransition><ToolsPage /></PageTransition>} />
         <Route path="/admin" element={<Navigate to="/admin/posts" replace />} />
@@ -131,6 +136,7 @@ function AnimatedRoutes() {
         <Route path="/admin/legal-calendar/new" element={<ProtectedAdminRoute><AdminLegalCalendarEditorPage /></ProtectedAdminRoute>} />
         <Route path="/admin/legal-calendar/:id/edit" element={<ProtectedAdminRoute><AdminLegalCalendarEditorPage /></ProtectedAdminRoute>} />
         <Route path="/admin/legal-sources" element={<ProtectedAdminRoute><AdminLegalSourcesPage /></ProtectedAdminRoute>} />
+        <Route path="/admin/legal-knowledge" element={<ProtectedAdminRoute><AdminLegalKnowledgePage /></ProtectedAdminRoute>} />
         <Route path="/careers" element={<PageTransition><CareersPage /></PageTransition>} />
         <Route path="/careers/apply" element={<PageTransition><ApplicationPage /></PageTransition>} />
         <Route path="/careers/:slug" element={<PageTransition><CareerDetailPage /></PageTransition>} />
@@ -150,6 +156,8 @@ export default function App() {
         <MouseGlow />
         <HomeIntroOverlay />
         <AnimatedRoutes />
+        <FacsAssistant />
+        <AdminAssistant />
       </LanguageProvider>
     </BrowserRouter>
   );
