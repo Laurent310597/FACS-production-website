@@ -21,3 +21,6 @@ verify_jwt = false
 
 [functions.cms-assistant]
 verify_jwt = false
+
+[functions.cms-knowledge-ingest]
+verify_jwt = false

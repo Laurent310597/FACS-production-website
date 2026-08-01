@@ -3,6 +3,13 @@ export type AIMessage = {
   content: string;
 };
 
+export type GroqWebSearchResult = {
+  title: string;
+  url: string;
+  content: string;
+  score?: number | null;
+};
+
 export function cleanAIText(value: unknown, maxLength: number) {
   return String(value || "")
     .replaceAll("\u0000", "")
@@ -105,6 +112,91 @@ export async function callGroqStructured(params: {
   }
 }
 
+function webSearchResults(payload: Record<string, unknown>): GroqWebSearchResult[] {
+  const choices = Array.isArray(payload.choices) ? payload.choices : [];
+  const choice = choices[0] as Record<string, unknown> | undefined;
+  const message = choice?.message as Record<string, unknown> | undefined;
+  const executedTools = Array.isArray(message?.executed_tools) ? message.executed_tools : [];
+  const rows: GroqWebSearchResult[] = [];
+
+  for (const item of executedTools as Array<Record<string, unknown>>) {
+    const rawSearchResults = item.search_results;
+    const resultList = Array.isArray(rawSearchResults)
+      ? rawSearchResults
+      : rawSearchResults && typeof rawSearchResults === "object"
+      ? (rawSearchResults as Record<string, unknown>).results
+      : [];
+    if (!Array.isArray(resultList)) continue;
+
+    for (const raw of resultList as Array<Record<string, unknown>>) {
+      const url = cleanAIText(raw.url || raw.link, 2_000);
+      if (!url) continue;
+      rows.push({
+        title: cleanAIText(raw.title || raw.name, 300),
+        url,
+        content: cleanAIText(raw.content || raw.snippet || raw.description || raw.text, 6_000),
+        score: typeof raw.score === "number" ? raw.score : null,
+      });
+    }
+  }
+
+  return rows;
+}
+
+export async function callGroqWebSearch(params: {
+  apiKey: string;
+  model: string;
+  system: string;
+  query: string;
+  includeDomains: string[];
+  maxTokens?: number;
+}) {
+  const approvedDomains = [...new Set(params.includeDomains
+    .map((item) => item.trim().toLowerCase().replace(/^\*\./, ""))
+    .filter((item) => /^[a-z0-9]([a-z0-9-]*[a-z0-9])?([.][a-z0-9]([a-z0-9-]*[a-z0-9])?)+$/.test(item)))];
+  const includeDomains = approvedDomains.flatMap((domain) => [domain, `*.${domain}`]).slice(0, 60);
+  if (!includeDomains.length) throw new Error("Groq web search has no approved domains.");
+
+  const response = await fetch("https://api.groq.com/openai/v1/chat/completions", {
+    method: "POST",
+    headers: {
+      Authorization: `Bearer ${params.apiKey}`,
+      "Content-Type": "application/json",
+    },
+    body: JSON.stringify({
+      model: params.model,
+      messages: [
+        { role: "system", content: params.system },
+        { role: "user", content: params.query },
+      ],
+      search_settings: {
+        include_domains: includeDomains,
+        country: "vietnam",
+        include_images: false,
+      },
+      compound_custom: {
+        tools: { enabled_tools: ["web_search"] },
+      },
+      citation_options: "enabled",
+      reasoning_effort: "medium",
+      max_completion_tokens: params.maxTokens || 1_500,
+      temperature: 0.1,
+    }),
+    signal: AbortSignal.timeout(45_000),
+  });
+
+  const payload = await response.json().catch(() => ({}));
+  if (!response.ok) {
+    throw new Error(`Groq web search failed: ${providerError(payload, response.status)}`);
+  }
+
+  return {
+    text: readAIResponseText(payload),
+    results: webSearchResults(payload),
+    model: params.model,
+  };
+}
+
 export async function callOpenAIText(params: {
   apiKey: string;
   model: string;
@@ -135,7 +227,7 @@ export async function callOpenAIText(params: {
       reasoning: { effort: "medium" },
       max_output_tokens: 2_500,
       safety_identifier: params.safetyIdentifier,
-      prompt_cache_key: "facs-cms-assistant-v20.18",
+      prompt_cache_key: "facs-cms-assistant-v20.19",
     }),
     signal: AbortSignal.timeout(45_000),
   });

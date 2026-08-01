@@ -11,7 +11,7 @@ const copy = {
   vi: {
     launcher: "Tra cứu & liên hệ",
     title: "Trợ lý Tư vấn FACS",
-    subtitle: "AI nguồn kiểm soát · Groq",
+    subtitle: "Web search nguồn duyệt · GROQ",
     ai: "Tra cứu tư vấn",
     contact: "Nhắn FACS",
     contactTitle: "Gửi yêu cầu cho đội ngũ FACS",
@@ -30,7 +30,7 @@ const copy = {
   en: {
     launcher: "Search & contact",
     title: "FACS Advisory Assistant",
-    subtitle: "Controlled-source AI · Groq",
+    subtitle: "Approved-source web search · GROQ",
     ai: "Advisory search",
     contact: "Message FACS",
     contactTitle: "Send an inquiry to the FACS team",

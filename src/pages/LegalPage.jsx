@@ -35,7 +35,7 @@ const content = {
         {
           heading: "5. Artificial intelligence features",
           body:
-            "Public FACS Advisory AI questions are processed through Groq using FACS-controlled source context. The private CMS assistant uses the OpenAI API for authenticated administrative support. FACS does not intentionally include raw public questions or AI answers in its metadata audit log, but the relevant provider processes request content under its own service and data-control terms. Do not submit confidential, privileged, client, credential, banking, tax-account, health or sensitive personal information to an AI feature.",
+            "Public FACS Advisory AI questions are processed through Groq, including real-time web search restricted to a FACS-approved domain registry. The authenticated CMS assistant is separate: relevant excerpts from administrator-curated URLs or uploaded files may be sent to the OpenAI API only when the administrator asks a question, and this private library is not supplied to the public Groq assistant. FACS does not intentionally include raw public questions or AI answers in its metadata audit log, but each provider processes request content under its own terms and data controls. Do not submit confidential, privileged, client, credential, banking, tax-account, health or sensitive personal information to an AI feature or CMS library.",
         },
         {
           heading: "6. Your choices and contact",
@@ -74,7 +74,7 @@ const content = {
         {
           heading: "5. Chức năng trí tuệ nhân tạo",
           body:
-            "Câu hỏi gửi tới AI Tư vấn FACS được xử lý qua Groq cùng ngữ cảnh nguồn do FACS kiểm soát. Trợ lý CMS riêng sử dụng OpenAI API để hỗ trợ quản trị viên đã đăng nhập. FACS chủ động không lưu nội dung câu hỏi công khai hoặc câu trả lời AI trong nhật ký siêu dữ liệu của mình; tuy nhiên, nhà cung cấp tương ứng vẫn xử lý nội dung yêu cầu theo điều khoản dịch vụ và cơ chế kiểm soát dữ liệu của họ. Không gửi thông tin mật, thông tin được bảo vệ bởi đặc quyền nghề nghiệp, dữ liệu khách hàng, thông tin đăng nhập, ngân hàng, tài khoản thuế, sức khỏe hoặc dữ liệu cá nhân nhạy cảm vào chức năng AI.",
+            "Câu hỏi gửi tới AI Tư vấn FACS được xử lý qua Groq, bao gồm web search theo thời gian thực nhưng chỉ trong registry tên miền do FACS phê duyệt. Trợ lý CMS đã đăng nhập được tách riêng: các trích đoạn liên quan từ URL hoặc file do quản trị viên biên soạn chỉ được gửi tới OpenAI API khi quản trị viên đặt câu hỏi, và thư viện riêng này không được cấp cho GROQ công khai. FACS chủ động không lưu nội dung câu hỏi công khai hoặc câu trả lời AI trong nhật ký siêu dữ liệu; tuy nhiên, từng nhà cung cấp vẫn xử lý nội dung yêu cầu theo điều khoản và cơ chế kiểm soát dữ liệu của họ. Không gửi thông tin mật, dữ liệu khách hàng, thông tin đăng nhập, ngân hàng, tài khoản thuế, sức khỏe hoặc dữ liệu cá nhân nhạy cảm vào chức năng AI hay thư viện CMS.",
         },
         {
           heading: "6. Quyền lựa chọn và liên hệ",
@@ -105,7 +105,7 @@ const content = {
         {
           heading: "3. AI-generated information",
           body:
-            "AI outputs may be incomplete, outdated or incorrect. Source links and confidence indicators are aids, not guarantees. Users must verify the official instrument, effective status, supporting records and applicability before relying on any output. FACS may decline to answer when its approved source base is insufficient and may limit, suspend or change an AI feature without notice.",
+            "AI outputs may be incomplete, outdated or incorrect. Groq web search is restricted to approved domains, but third-party legal databases remain secondary sources and are not issuing authorities. Source links and confidence indicators are aids, not guarantees. Users must verify the official instrument, effective status, supporting records and applicability before relying on any output. FACS may decline to answer when approved-source results are insufficient and may limit, suspend or change an AI feature without notice.",
         },
         {
           heading: "4. Intellectual property",
@@ -144,7 +144,7 @@ const content = {
         {
           heading: "3. Thông tin do AI tạo ra",
           body:
-            "Kết quả AI có thể chưa đầy đủ, chưa cập nhật hoặc không chính xác. Liên kết nguồn và chỉ báo mức độ tin cậy chỉ là công cụ hỗ trợ, không phải sự bảo đảm. Người dùng phải kiểm tra văn bản chính thức, tình trạng hiệu lực, hồ sơ liên quan và phạm vi áp dụng trước khi sử dụng kết quả. FACS có thể từ chối trả lời khi kho nguồn đã phê duyệt chưa đủ, đồng thời có thể giới hạn, tạm dừng hoặc thay đổi chức năng AI mà không cần thông báo trước.",
+            "Kết quả AI có thể chưa đầy đủ, chưa cập nhật hoặc không chính xác. GROQ web search bị giới hạn trong các tên miền đã phê duyệt, nhưng cơ sở dữ liệu pháp luật của bên thứ ba vẫn là nguồn thứ cấp và không phải cơ quan ban hành. Liên kết nguồn và chỉ báo mức độ tin cậy chỉ là công cụ hỗ trợ, không phải sự bảo đảm. Người dùng phải kiểm tra văn bản chính thức, tình trạng hiệu lực, hồ sơ liên quan và phạm vi áp dụng trước khi sử dụng kết quả. FACS có thể từ chối trả lời khi kết quả nguồn được phép chưa đủ và có thể giới hạn, tạm dừng hoặc thay đổi chức năng AI mà không cần thông báo trước.",
         },
         {
           heading: "4. Quyền sở hữu trí tuệ",

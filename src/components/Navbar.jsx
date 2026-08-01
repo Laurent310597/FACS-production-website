@@ -150,8 +150,8 @@ export default function Navbar() {
                         to: "/legal-ai",
                         title: isVi ? "AI Tư vấn FACS" : "FACS Advisory AI",
                         desc: isVi
-                          ? "Tham khảo sơ bộ về pháp lý, thuế, kế toán và tuân thủ từ nguồn do FACS kiểm soát."
-                          : "Preliminary legal, tax, accounting and compliance guidance from FACS-controlled sources.",
+                          ? "GROQ tìm kiếm trên danh sách nguồn mở uy tín đã được FACS phê duyệt."
+                          : "GROQ searches only FACS-approved reputable open sources.",
                         Icon: Sparkles,
                       })}
                       {[

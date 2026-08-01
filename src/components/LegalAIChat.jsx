@@ -8,8 +8,8 @@ const MAX_QUESTION_LENGTH = 1500;
 
 const copy = {
   vi: {
-    welcome: "Tham khảo tư vấn sơ bộ từ nguồn đã được FACS kiểm soát.",
-    description: "AI hỗ trợ các vấn đề pháp lý, thuế, kế toán và tuân thủ; chỉ sử dụng kho văn bản P1 đã phê duyệt và các mốc lịch đã xác minh. Khi không đủ nguồn, hệ thống sẽ không tự suy đoán.",
+    welcome: "Tham khảo tư vấn sơ bộ từ nguồn mở đã được FACS phê duyệt.",
+    description: "GROQ tìm kiếm theo thời gian thực nhưng chỉ trong danh sách nguồn uy tín được cho phép. Nguồn P1 chính thức và nguồn P2 như Thư Viện Pháp Luật/LuatVietnam được phân loại rõ; hệ thống không tự suy đoán khi thiếu căn cứ.",
     suggestions: [
       "Doanh nghiệp mới cần lưu ý những nghĩa vụ tuân thủ nào?",
       "Cách xác định một quy định đã có hiệu lực hay chưa?",
@@ -17,8 +17,8 @@ const copy = {
     ],
     consent: "Tôi hiểu đây là thông tin tham khảo sơ bộ, không phải ý kiến tư vấn; tôi sẽ không nhập dữ liệu mật, thông tin khách hàng hoặc dữ liệu cá nhân nhạy cảm.",
     placeholder: "Nhập câu hỏi pháp lý, thuế, kế toán hoặc tuân thủ...",
-    thinking: "Đang đối chiếu kho nguồn đã duyệt...",
-    sources: "Căn cứ được sử dụng",
+    thinking: "Đang tìm và đối chiếu nguồn mở đã duyệt...",
+    sources: "Nguồn được tìm thấy và sử dụng",
     noSources: "Không có nguồn được viện dẫn.",
     clear: "Xóa cuộc trò chuyện",
     contact: "Chuyển nội dung này cho FACS",
@@ -29,8 +29,8 @@ const copy = {
     low: "Thấp",
   },
   en: {
-    welcome: "Preliminary advisory guidance using FACS-controlled sources.",
-    description: "The AI supports legal, tax, accounting and compliance topics using only approved P1 instruments and verified calendar entries. It will not guess when controlled sources are insufficient.",
+    welcome: "Preliminary guidance from FACS-approved open sources.",
+    description: "GROQ searches in real time only within an approved domain registry. Official P1 sources and reputable P2 databases such as Thu Vien Phap Luat and LuatVietnam are labelled separately; the system will not guess when evidence is insufficient.",
     suggestions: [
       "What compliance obligations should a new company consider?",
       "How can I tell whether a regulation is already effective?",
@@ -38,8 +38,8 @@ const copy = {
     ],
     consent: "I understand this is preliminary reference information, not advice, and I will not enter confidential, client or sensitive personal data.",
     placeholder: "Ask a legal, tax, accounting or compliance question...",
-    thinking: "Checking approved sources...",
-    sources: "Sources used",
+    thinking: "Searching and checking approved open sources...",
+    sources: "Sources found and used",
     noSources: "No source was cited.",
     clear: "Clear conversation",
     contact: "Send this issue to FACS",
@@ -88,6 +88,9 @@ function Sources({ sources, label }) {
                     {[source.document_number, source.authority].filter(Boolean).join(" · ")}
                   </span>
                 )}
+                <span className="mt-1 block text-[10px] uppercase tracking-[0.1em] text-slate-600">
+                  {source.source_tier === "P1" ? "P1 · official" : source.source_tier === "P2" ? "P2 · reputable secondary" : source.source_tier}
+                </span>
               </span>
               <ExternalLink size={12} className="mt-0.5 shrink-0 text-cyan-300" />
             </span>
@@ -185,7 +188,7 @@ export default function LegalAIChat({ channel = "legal_page", compact = false, o
                 {message.role === "assistant" && (
                   <>
                     <div className="mt-3 flex flex-wrap items-center gap-2 text-[10px] uppercase tracking-[0.12em] text-slate-500">
-                      <span>{message.provider === "groq" ? "Groq · GPT-OSS" : "FACS Retrieval"}</span>
+                      <span>{message.provider === "groq-web-search" ? "Groq · approved web search" : "FACS Retrieval"}</span>
                       <span>·</span>
                       <span>{t.confidence}: {t[message.confidence] || t.low}</span>
                     </div>

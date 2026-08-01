@@ -1,5 +1,5 @@
 import { Link, NavLink, useNavigate } from "react-router-dom";
-import { BarChart3, BookOpenCheck, Briefcase, CalendarRange, ExternalLink, FilePlus2, LayoutDashboard, LogOut, MailCheck, MessagesSquare, Newspaper, Radar, UserRoundSearch } from "lucide-react";
+import { BarChart3, BookOpenCheck, Briefcase, CalendarRange, ExternalLink, FilePlus2, Globe2, LayoutDashboard, LogOut, MailCheck, MessagesSquare, Newspaper, Radar, UserRoundSearch } from "lucide-react";
 import { supabase } from "../../lib/supabaseClient";
 
 const navClass = ({ isActive }) =>
@@ -79,8 +79,12 @@ export default function AdminLayout({ children }) {
             <NavLink to="/admin/legal-sources" end className={navClass}>
               <Radar size={18} /> Nguồn & cập nhật
             </NavLink>
-            <NavLink to="/admin/legal-knowledge" end className={navClass}>
-              <BookOpenCheck size={18} /> Kho tri thức AI
+            <div className="mt-2 border-t border-white/10 px-4 pb-1 pt-5 text-[11px] font-bold uppercase tracking-[0.18em] text-slate-600 sm:col-span-2 lg:col-span-1">AI Libraries</div>
+            <NavLink to="/admin/public-ai-sources" end className={navClass}>
+              <Globe2 size={18} /> Nguồn mở GROQ
+            </NavLink>
+            <NavLink to="/admin/cms-knowledge" end className={navClass}>
+              <BookOpenCheck size={18} /> Thư viện ChatGPT
             </NavLink>
 
             <div className="mt-2 border-t border-white/10 px-4 pb-1 pt-5 text-[11px] font-bold uppercase tracking-[0.18em] text-slate-600 sm:col-span-2 lg:col-span-1">Automation</div>

@@ -38,3 +38,7 @@ export async function askCmsAssistant({ message, history, page }) {
   if (!data?.answer) throw new Error("Trợ lý CMS chưa trả về nội dung.");
   return data;
 }
+
+export async function ingestCmsKnowledge(payload) {
+  return invoke("cms-knowledge-ingest", payload);
+}

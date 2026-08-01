@@ -25,7 +25,8 @@ import AdminLegalCalendarPage from "./pages/admin/AdminLegalCalendarPage";
 import AdminLegalDashboardPage from "./pages/admin/AdminLegalDashboardPage";
 import AdminLegalCalendarEditorPage from "./pages/admin/AdminLegalCalendarEditorPage";
 import AdminLegalSourcesPage from "./pages/admin/AdminLegalSourcesPage";
-import AdminLegalKnowledgePage from "./pages/admin/AdminLegalKnowledgePage";
+import AdminPublicAISourcesPage from "./pages/admin/AdminPublicAISourcesPage";
+import AdminCmsKnowledgePage from "./pages/admin/AdminCmsKnowledgePage";
 import ProtectedAdminRoute from "./components/admin/ProtectedAdminRoute";
 import CareersPage from "./pages/CareersPage";
 import CareerDetailPage from "./pages/CareerDetailPage";
@@ -136,7 +137,9 @@ function AnimatedRoutes() {
         <Route path="/admin/legal-calendar/new" element={<ProtectedAdminRoute><AdminLegalCalendarEditorPage /></ProtectedAdminRoute>} />
         <Route path="/admin/legal-calendar/:id/edit" element={<ProtectedAdminRoute><AdminLegalCalendarEditorPage /></ProtectedAdminRoute>} />
         <Route path="/admin/legal-sources" element={<ProtectedAdminRoute><AdminLegalSourcesPage /></ProtectedAdminRoute>} />
-        <Route path="/admin/legal-knowledge" element={<ProtectedAdminRoute><AdminLegalKnowledgePage /></ProtectedAdminRoute>} />
+        <Route path="/admin/public-ai-sources" element={<ProtectedAdminRoute><AdminPublicAISourcesPage /></ProtectedAdminRoute>} />
+        <Route path="/admin/cms-knowledge" element={<ProtectedAdminRoute><AdminCmsKnowledgePage /></ProtectedAdminRoute>} />
+        <Route path="/admin/legal-knowledge" element={<Navigate to="/admin/public-ai-sources" replace />} />
         <Route path="/careers" element={<PageTransition><CareersPage /></PageTransition>} />
         <Route path="/careers/apply" element={<PageTransition><ApplicationPage /></PageTransition>} />
         <Route path="/careers/:slug" element={<PageTransition><CareerDetailPage /></PageTransition>} />

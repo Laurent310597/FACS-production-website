@@ -8,12 +8,12 @@ const content = {
   vi: {
     eyebrow: "FACS Advisory Intelligence",
     title: "AI hỗ trợ pháp lý, thuế, kế toán & tuân thủ",
-    intro: "Tham khảo sơ bộ các vấn đề pháp lý doanh nghiệp, thuế, kế toán, lao động, bảo hiểm và tuân thủ tại Việt Nam bằng Groq AI, trên cơ sở kho nguồn do FACS kiểm soát.",
-    badge: "Nguồn P1 đã phê duyệt · Có dẫn nguồn · Không tự suy đoán",
+    intro: "Tham khảo sơ bộ các vấn đề pháp lý doanh nghiệp, thuế, kế toán, lao động, bảo hiểm và tuân thủ tại Việt Nam bằng GROQ AI, với web search giới hạn trong danh sách nguồn mở uy tín do FACS phê duyệt.",
+    badge: "Web search có allowlist · Phân loại P1/P2 · Có dẫn nguồn",
     howTitle: "Cơ chế kiểm soát câu trả lời",
     items: [
-      ["Chỉ dùng nguồn đã duyệt", "Văn bản P1 và trích đoạn pháp lý phải được FACS kiểm tra, đánh dấu cho phép trích dẫn và phê duyệt trước khi AI sử dụng."],
-      ["Phân biệt hiệu lực", "Câu trả lời phải nhận diện quy định đang có hiệu lực, chưa có hiệu lực, hết hiệu lực hoặc chỉ là hướng dẫn tham khảo."],
+      ["Chỉ tìm trong domain đã duyệt", "GROQ bị giới hạn bằng allowlist; kết quả ngoài các cổng chính thức và nguồn pháp lý uy tín đã chọn sẽ bị loại."],
+      ["Ưu tiên nguồn chính thức", "Nguồn P1 của cơ quan nhà nước hỗ trợ kết luận pháp lý; Thư Viện Pháp Luật và LuatVietnam là nguồn P2 để giải thích và đối chiếu."],
       ["Chuyển chuyên gia khi cần", "Tình huống cụ thể, giao dịch trọng yếu hoặc vấn đề có rủi ro sẽ được chuyển sang đội ngũ FACS để rà soát hồ sơ."],
     ],
     noteTitle: "Giới hạn quan trọng",
@@ -22,12 +22,12 @@ const content = {
   en: {
     eyebrow: "FACS Advisory Intelligence",
     title: "AI-assisted legal, tax, accounting & compliance guidance",
-    intro: "Use Groq AI for preliminary reference on Vietnamese corporate law, tax, accounting, labour, insurance and compliance, grounded in a FACS-controlled knowledge base.",
-    badge: "Approved P1 sources · Source-linked · No unsupported guessing",
+    intro: "Use GROQ AI for preliminary reference on Vietnamese corporate law, tax, accounting, labour, insurance and compliance, with web search restricted to a FACS-approved registry of reputable open sources.",
+    badge: "Allowlisted web search · P1/P2 labels · Source-linked",
     howTitle: "How answers are controlled",
     items: [
-      ["Approved sources only", "P1 instruments and legal extracts must be checked, citation-enabled and approved by FACS before the AI may use them."],
-      ["Effective-status distinction", "Answers must distinguish effective, not-yet-effective, expired and non-binding guidance materials."],
+      ["Approved domains only", "GROQ is restricted by an allowlist; results outside selected official portals and reputable legal sources are discarded."],
+      ["Official sources first", "Government P1 sources may support legal conclusions; Thu Vien Phap Luat and LuatVietnam are labelled P2 for explanation and cross-checking."],
       ["Professional escalation", "Specific facts, material transactions and higher-risk issues are referred to the FACS team for a records-based review."],
     ],
     noteTitle: "Important limitation",
