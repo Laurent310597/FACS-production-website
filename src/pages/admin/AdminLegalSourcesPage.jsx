@@ -152,7 +152,7 @@ export default function AdminLegalSourcesPage() {
         const failedNames = failedSources.map((item) => item.source).filter(Boolean).join(", ");
         setError(`Đã quét ${result.sources_checked || 0} nguồn và tạo ${result.drafts_created || 0} thẻ; ${failedSources.length} nguồn không thể truy cập${failedNames ? `: ${failedNames}` : ""}. Chi tiết được lưu tại từng nguồn.`);
       } else if (!result.ai_configured) {
-        setError(`Đã quét ${result.sources_checked || 0} nguồn nhưng chưa thể biên soạn thẻ song ngữ vì Supabase chưa có OPENAI_API_KEY. ${result.candidates_created || 0} kết quả thô đã được giữ lại.`);
+        setError(`Đã quét ${result.sources_checked || 0} nguồn nhưng chưa thể biên soạn thẻ song ngữ vì Supabase chưa có GROQ_API_KEY hoặc OPENAI_API_KEY. ${result.candidates_created || 0} kết quả thô đã được giữ lại.`);
       } else {
         setMessage(`Đã quét ${result.sources_checked || 0} nguồn trong khoảng ${startDate} – ${endDate}; tạo ${result.drafts_created || 0} thẻ đã phân loại và biên soạn song ngữ, bỏ qua ${result.duplicates_skipped || 0} mục trùng.`);
       }
