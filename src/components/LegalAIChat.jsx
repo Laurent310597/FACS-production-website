@@ -8,15 +8,15 @@ const MAX_QUESTION_LENGTH = 1500;
 
 const copy = {
   vi: {
-    welcome: "Tra cứu pháp lý sơ bộ từ nguồn đã được FACS kiểm soát.",
-    description: "AI chỉ sử dụng kho văn bản P1 đã phê duyệt và các mốc lịch pháp lý đã xác minh. Khi không đủ nguồn, hệ thống sẽ không tự suy đoán.",
+    welcome: "Tham khảo tư vấn sơ bộ từ nguồn đã được FACS kiểm soát.",
+    description: "AI hỗ trợ các vấn đề pháp lý, thuế, kế toán và tuân thủ; chỉ sử dụng kho văn bản P1 đã phê duyệt và các mốc lịch đã xác minh. Khi không đủ nguồn, hệ thống sẽ không tự suy đoán.",
     suggestions: [
       "Doanh nghiệp mới cần lưu ý những nghĩa vụ tuân thủ nào?",
       "Cách xác định một quy định đã có hiệu lực hay chưa?",
       "FACS có thể hỗ trợ doanh nghiệp FDI những dịch vụ gì?",
     ],
     consent: "Tôi hiểu đây là thông tin tham khảo sơ bộ, không phải ý kiến tư vấn; tôi sẽ không nhập dữ liệu mật, thông tin khách hàng hoặc dữ liệu cá nhân nhạy cảm.",
-    placeholder: "Nhập câu hỏi pháp lý hoặc tuân thủ cơ bản...",
+    placeholder: "Nhập câu hỏi pháp lý, thuế, kế toán hoặc tuân thủ...",
     thinking: "Đang đối chiếu kho nguồn đã duyệt...",
     sources: "Căn cứ được sử dụng",
     noSources: "Không có nguồn được viện dẫn.",
@@ -29,15 +29,15 @@ const copy = {
     low: "Thấp",
   },
   en: {
-    welcome: "Preliminary legal reference using FACS-controlled sources.",
-    description: "The AI uses only approved P1 instruments and verified Legal Calendar entries. It will not guess when the controlled sources are insufficient.",
+    welcome: "Preliminary advisory guidance using FACS-controlled sources.",
+    description: "The AI supports legal, tax, accounting and compliance topics using only approved P1 instruments and verified calendar entries. It will not guess when controlled sources are insufficient.",
     suggestions: [
       "What compliance obligations should a new company consider?",
       "How can I tell whether a regulation is already effective?",
       "How can FACS support a foreign-invested enterprise?",
     ],
     consent: "I understand this is preliminary reference information, not advice, and I will not enter confidential, client or sensitive personal data.",
-    placeholder: "Ask a basic legal or compliance question...",
+    placeholder: "Ask a legal, tax, accounting or compliance question...",
     thinking: "Checking approved sources...",
     sources: "Sources used",
     noSources: "No source was cited.",

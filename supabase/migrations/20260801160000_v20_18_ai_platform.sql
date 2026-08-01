@@ -1,4 +1,4 @@
--- FACS Website v20.18 - controlled AI knowledge base and request audit
+-- FACS Website v20.18 - controlled advisory AI knowledge base and request audit
 -- Additive migration. Existing website, CMS and Legal Calendar data are preserved.
 
 create extension if not exists pgcrypto;

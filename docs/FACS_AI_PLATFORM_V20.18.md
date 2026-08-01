@@ -4,7 +4,7 @@
 
 - Legal Calendar: Groq `openai/gpt-oss-120b` biên soạn bản nháp; quản trị viên vẫn phải kiểm tra và phê duyệt.
 - Popup website: Groq trả lời từ kho nguồn FACS đã kiểm soát và tiếp tục chuyển yêu cầu sang biểu mẫu liên hệ hiện có.
-- `/legal-ai`: trang tra cứu pháp lý cơ bản bằng cùng cơ chế truy xuất có kiểm soát.
+- `/legal-ai`: trang **AI Tư vấn FACS** cho tham khảo sơ bộ về pháp lý, thuế, kế toán và tuân thủ bằng cơ chế truy xuất có kiểm soát.
 - CMS: OpenAI `gpt-5.6-sol` hỗ trợ Tú ở chế độ chỉ đọc; không tự sửa, xuất bản, xóa hoặc gửi dữ liệu.
 - `/admin/legal-knowledge`: kho tri thức pháp lý riêng có trạng thái, phiên bản và bước phê duyệt P1.
 
@@ -22,7 +22,7 @@
 5. Server loại kết luận không gắn được với nguồn được phép rồi mới trả về trình duyệt.
 6. Nhật ký FACS chỉ lưu metadata kỹ thuật; không lưu câu hỏi hoặc câu trả lời thô.
 
-Public Legal AI không tự tìm kiếm web. Văn bản mới chỉ được dùng sau khi FACS nhập, kiểm tra và phê duyệt.
+AI Tư vấn FACS không tự tìm kiếm web. Văn bản mới chỉ được dùng sau khi FACS nhập, kiểm tra và phê duyệt.
 
 ## Quy trình bổ sung thư viện pháp lý
 
@@ -82,6 +82,12 @@ npx supabase@latest db push
 npx supabase@latest functions deploy legal-calendar-sync
 npx supabase@latest functions deploy legal-ai-assistant
 npx supabase@latest functions deploy cms-assistant
+```
+
+Migration của nền tảng AI sử dụng tên chuẩn Supabase:
+
+```text
+20260801160000_v20_18_ai_platform.sql
 ```
 
 Trước khi triển khai, bật Zero Data Retention trong Groq Data Controls nếu tài khoản hỗ trợ cấu hình này. Với OpenAI, cấu hình project API và ngân sách riêng cho CMS.

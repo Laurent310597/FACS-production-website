@@ -6,9 +6,9 @@ import { useLanguage } from "../components/LanguageContext";
 
 const content = {
   vi: {
-    eyebrow: "FACS Legal Intelligence",
-    title: "AI hỗ trợ giải đáp pháp lý cơ bản",
-    intro: "Tra cứu sơ bộ về pháp lý doanh nghiệp, thuế, kế toán, lao động, bảo hiểm và tuân thủ tại Việt Nam bằng Groq AI, trên cơ sở kho nguồn do FACS kiểm soát.",
+    eyebrow: "FACS Advisory Intelligence",
+    title: "AI hỗ trợ pháp lý, thuế, kế toán & tuân thủ",
+    intro: "Tham khảo sơ bộ các vấn đề pháp lý doanh nghiệp, thuế, kế toán, lao động, bảo hiểm và tuân thủ tại Việt Nam bằng Groq AI, trên cơ sở kho nguồn do FACS kiểm soát.",
     badge: "Nguồn P1 đã phê duyệt · Có dẫn nguồn · Không tự suy đoán",
     howTitle: "Cơ chế kiểm soát câu trả lời",
     items: [
@@ -20,8 +20,8 @@ const content = {
     note: "Công cụ này không hình thành quan hệ luật sư–khách hàng hoặc hợp đồng dịch vụ, không thay thế ý kiến tư vấn và không nên được dùng làm căn cứ duy nhất để kê khai, ký kết, xử lý tranh chấp hay thực hiện hành động không thể đảo ngược.",
   },
   en: {
-    eyebrow: "FACS Legal Intelligence",
-    title: "AI-assisted basic legal reference",
+    eyebrow: "FACS Advisory Intelligence",
+    title: "AI-assisted legal, tax, accounting & compliance guidance",
     intro: "Use Groq AI for preliminary reference on Vietnamese corporate law, tax, accounting, labour, insurance and compliance, grounded in a FACS-controlled knowledge base.",
     badge: "Approved P1 sources · Source-linked · No unsupported guessing",
     howTitle: "How answers are controlled",

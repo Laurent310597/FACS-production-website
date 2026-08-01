@@ -229,7 +229,7 @@ export default function AdminLegalKnowledgePage() {
   return (
     <AdminLayout>
       <div className="flex flex-col gap-5 xl:flex-row xl:items-end xl:justify-between">
-        <div><div className="text-xs font-bold uppercase tracking-[0.18em] text-violet-300/80">Controlled Legal Knowledge</div><h1 className="mt-3 text-3xl font-bold md:text-4xl">Kho tri thức cho AI pháp lý</h1><p className="mt-2 max-w-3xl text-sm leading-relaxed text-slate-400">Kiểm tra, bổ sung và phê duyệt nguồn mà Groq AI được phép sử dụng. Chỉ tài liệu P1 ở trạng thái Đã phê duyệt mới được đưa vào câu trả lời công khai.</p></div>
+        <div><div className="text-xs font-bold uppercase tracking-[0.18em] text-violet-300/80">Controlled Advisory Knowledge</div><h1 className="mt-3 text-3xl font-bold md:text-4xl">Kho tri thức cho AI Tư vấn FACS</h1><p className="mt-2 max-w-3xl text-sm leading-relaxed text-slate-400">Kiểm tra, bổ sung và phê duyệt nguồn pháp lý, thuế, kế toán và tuân thủ mà Groq AI được phép sử dụng. Chỉ tài liệu P1 ở trạng thái Đã phê duyệt mới được đưa vào câu trả lời công khai.</p></div>
         <button type="button" onClick={reset} className="inline-flex items-center justify-center gap-2 rounded-2xl bg-violet-300 px-5 py-3 font-bold text-[#101226]"><Plus size={18} />Tạo tài liệu mới</button>
       </div>
 

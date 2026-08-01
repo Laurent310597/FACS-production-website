@@ -10,9 +10,9 @@ import facsLogoMark from "../assets/facs-logo-mark.png";
 const copy = {
   vi: {
     launcher: "Tra cứu & liên hệ",
-    title: "Trợ lý FACS",
+    title: "Trợ lý Tư vấn FACS",
     subtitle: "AI nguồn kiểm soát · Groq",
-    ai: "Tra cứu AI",
+    ai: "Tra cứu tư vấn",
     contact: "Nhắn FACS",
     contactTitle: "Gửi yêu cầu cho đội ngũ FACS",
     contactBody: "Nội dung sẽ được lưu trên CMS và chuyển đến đội ngũ phụ trách để phản hồi.",
@@ -29,9 +29,9 @@ const copy = {
   },
   en: {
     launcher: "Search & contact",
-    title: "FACS Assistant",
+    title: "FACS Advisory Assistant",
     subtitle: "Controlled-source AI · Groq",
-    ai: "AI search",
+    ai: "Advisory search",
     contact: "Message FACS",
     contactTitle: "Send an inquiry to the FACS team",
     contactBody: "Your message will be recorded in the CMS and routed to the responsible team.",
@@ -78,7 +78,7 @@ export default function FacsAssistant() {
         type: "contact",
         language,
         submissionKey: submissionKey.current,
-        extra: { service_interest: "FACS Legal AI Assistant" },
+        extra: { service_interest: "FACS Advisory AI Assistant" },
       });
       setSuccess(true);
       setDraft("");

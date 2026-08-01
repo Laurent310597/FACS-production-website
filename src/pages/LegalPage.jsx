@@ -35,7 +35,7 @@ const content = {
         {
           heading: "5. Artificial intelligence features",
           body:
-            "Public Legal AI questions are processed through Groq using FACS-controlled source context. The private CMS assistant uses the OpenAI API for authenticated administrative support. FACS does not intentionally include raw public questions or AI answers in its metadata audit log, but the relevant provider processes request content under its own service and data-control terms. Do not submit confidential, privileged, client, credential, banking, tax-account, health or sensitive personal information to an AI feature.",
+            "Public FACS Advisory AI questions are processed through Groq using FACS-controlled source context. The private CMS assistant uses the OpenAI API for authenticated administrative support. FACS does not intentionally include raw public questions or AI answers in its metadata audit log, but the relevant provider processes request content under its own service and data-control terms. Do not submit confidential, privileged, client, credential, banking, tax-account, health or sensitive personal information to an AI feature.",
         },
         {
           heading: "6. Your choices and contact",
@@ -74,7 +74,7 @@ const content = {
         {
           heading: "5. Chức năng trí tuệ nhân tạo",
           body:
-            "Câu hỏi gửi tới AI pháp lý công khai được xử lý qua Groq cùng ngữ cảnh nguồn do FACS kiểm soát. Trợ lý CMS riêng sử dụng OpenAI API để hỗ trợ quản trị viên đã đăng nhập. FACS chủ động không lưu nội dung câu hỏi công khai hoặc câu trả lời AI trong nhật ký siêu dữ liệu của mình; tuy nhiên, nhà cung cấp tương ứng vẫn xử lý nội dung yêu cầu theo điều khoản dịch vụ và cơ chế kiểm soát dữ liệu của họ. Không gửi thông tin mật, thông tin được bảo vệ bởi đặc quyền nghề nghiệp, dữ liệu khách hàng, thông tin đăng nhập, ngân hàng, tài khoản thuế, sức khỏe hoặc dữ liệu cá nhân nhạy cảm vào chức năng AI.",
+            "Câu hỏi gửi tới AI Tư vấn FACS được xử lý qua Groq cùng ngữ cảnh nguồn do FACS kiểm soát. Trợ lý CMS riêng sử dụng OpenAI API để hỗ trợ quản trị viên đã đăng nhập. FACS chủ động không lưu nội dung câu hỏi công khai hoặc câu trả lời AI trong nhật ký siêu dữ liệu của mình; tuy nhiên, nhà cung cấp tương ứng vẫn xử lý nội dung yêu cầu theo điều khoản dịch vụ và cơ chế kiểm soát dữ liệu của họ. Không gửi thông tin mật, thông tin được bảo vệ bởi đặc quyền nghề nghiệp, dữ liệu khách hàng, thông tin đăng nhập, ngân hàng, tài khoản thuế, sức khỏe hoặc dữ liệu cá nhân nhạy cảm vào chức năng AI.",
         },
         {
           heading: "6. Quyền lựa chọn và liên hệ",

@@ -1,6 +1,6 @@
 # FACS AI setup (v20.18)
 
-Groq powers Legal Calendar preparation, the public popup and `/legal-ai`.
+Groq powers Legal Calendar preparation, the public popup and FACS Advisory AI at `/legal-ai`.
 OpenAI powers the private authenticated CMS assistant. API keys stay in
 Supabase Edge Function Secrets and are never sent to the browser. A separate
 OpenAI key may optionally be configured as a Legal Calendar fallback; the CMS
