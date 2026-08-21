@@ -1,6 +1,5 @@
 import type { SupabaseClient } from "npm:@supabase/supabase-js@2";
-import { buildRawEmail } from "./mime-message.ts";
-import { FORM_MAILBOX, getValidFormLarkToken, sendFormLarkMail } from "./form-lark.ts";
+import { getMicrosoftGraphToken, sendMicrosoftMail } from "./microsoft-graph.ts";
 import {
   buildCareerInternalEmail,
   buildCareerReceipt,
@@ -14,6 +13,7 @@ const INTERNAL_RECIPIENTS = [
   { mail_address: "thanhhuynh@facs.vn", name: "Thanh Huynh" },
   { mail_address: "yendoan@facs.vn", name: "Yen Doan" },
 ];
+const FORM_MAILBOX = "tunguyen@facs.vn";
 
 type Delivery = "internal" | "receipt";
 type SubmissionType = "career" | "contact";
@@ -101,31 +101,18 @@ async function sendOne(params: {
       };
     }
 
-    const token = await getValidFormLarkToken(params.admin);
-    const raw = buildRawEmail({
-      from: senderEmail,
-      fromName: senderName,
-      to,
-      replyTo,
-      subject: template.subject,
-      html: template.html,
-      plainText: template.plainText,
-      attachment,
-    });
-    let result: { message_id?: string; thread_id?: string } = {};
-    try {
-      result = await sendFormLarkMail({
+    const token = await getMicrosoftGraphToken();
+    const result = await sendMicrosoftMail({
         accessToken: token,
-        raw,
         senderEmail,
         senderName,
+        subject: template.subject,
+        bodyHtml: template.html,
+        to,
+        replyTo: [{ mail_address: replyTo }],
+        attachment,
         dedupeKey: `facs-${params.type}-${params.delivery}-${params.row.id}`,
       });
-    } catch (error) {
-      const coded = error as Error & { code?: number };
-      if (coded.code !== 1236005) throw error;
-      // Lark's duplicate response proves that this dedupe key has already been accepted.
-    }
 
     await params.admin.from(table).update({
       [columns.status]: "sent",
