@@ -1,6 +1,7 @@
 import { createClient } from "npm:@supabase/supabase-js@2";
 import { corsHeaders } from "../_shared/cors.ts";
 import { buildInsightEmail } from "../_shared/email-template.ts";
+import type { InsightPost } from "../_shared/email-template.ts";
 import { getMicrosoftGraphToken, getMicrosoftMailStatus, sendMicrosoftMail } from "../_shared/microsoft-graph.ts";
 
 const SENDER = "infor@facs.vn";
@@ -9,6 +10,8 @@ const CC = [
   { mail_address: "yendoan@facs.vn", name: "Yen Doan" },
   { mail_address: "thanhhuynh@facs.vn", name: "Thanh Huynh" },
 ];
+type AdminClient = ReturnType<typeof createClient<any>>;
+type InsightEmailPost = InsightPost & Record<string, any>;
 
 function json(body: unknown, status = 200) {
   return new Response(JSON.stringify(body), {
@@ -17,7 +20,7 @@ function json(body: unknown, status = 200) {
   });
 }
 
-async function requireAdmin(req: Request, admin: ReturnType<typeof createClient>) {
+async function requireAdmin(req: Request, admin: AdminClient) {
   const authorization = req.headers.get("authorization") || "";
   const token = authorization.replace(/^Bearer\s+/i, "").trim();
   if (!token) throw new Error("UNAUTHORIZED");
@@ -26,17 +29,17 @@ async function requireAdmin(req: Request, admin: ReturnType<typeof createClient>
   return data.user;
 }
 
-async function createLog(admin: ReturnType<typeof createClient>, payload: Record<string, unknown>) {
+async function createLog(admin: AdminClient, payload: Record<string, unknown>) {
   const { data, error } = await admin.from("insight_email_delivery_logs").insert(payload).select("id").single();
   if (error) throw new Error(`Không thể tạo email log: ${error.message}`);
   return data.id as string;
 }
 
-async function finishLog(admin: ReturnType<typeof createClient>, id: string, payload: Record<string, unknown>) {
+async function finishLog(admin: AdminClient, id: string, payload: Record<string, unknown>) {
   await admin.from("insight_email_delivery_logs").update({ ...payload, completed_at: new Date().toISOString() }).eq("id", id);
 }
 
-async function markPostFailure(admin: ReturnType<typeof createClient>, postId: string, message: string) {
+async function markPostFailure(admin: AdminClient, postId: string, message: string) {
   await admin.from("posts").update({
     email_notification_status: "failed",
     email_notification_last_error: message.slice(0, 2000),
@@ -45,7 +48,7 @@ async function markPostFailure(admin: ReturnType<typeof createClient>, postId: s
   }).eq("id", postId);
 }
 
-async function processPost(admin: ReturnType<typeof createClient>, post: Record<string, any>, siteUrl: string) {
+async function processPost(admin: AdminClient, post: InsightEmailPost, siteUrl: string) {
   const { data: audience, error: audienceError } = await admin
     .from("insight_email_audience")
     .select("email,display_name")

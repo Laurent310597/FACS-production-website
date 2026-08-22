@@ -6,6 +6,7 @@ import { DEFAULT_RECEIPT_TEMPLATES } from "../_shared/form-email-templates.ts";
 
 const PUBLIC_MAILBOXES = ["hr@facs.vn", "contact@facs.vn"];
 const FORM_MAILBOX = "tunguyen@facs.vn";
+type AdminClient = ReturnType<typeof createClient<any>>;
 
 function json(body: unknown, status = 200) {
   return new Response(JSON.stringify(body), {
@@ -14,7 +15,7 @@ function json(body: unknown, status = 200) {
   });
 }
 
-async function requireAdmin(req: Request, admin: ReturnType<typeof createClient>) {
+async function requireAdmin(req: Request, admin: AdminClient) {
   const token = (req.headers.get("authorization") || "").replace(/^Bearer\s+/i, "").trim();
   if (!token) throw new Error("UNAUTHORIZED");
   const { data, error } = await admin.auth.getUser(token);
