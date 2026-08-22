@@ -3,7 +3,7 @@ import { corsHeaders } from "../_shared/cors.ts";
 import { buildInsightEmail } from "../_shared/email-template.ts";
 import { getMicrosoftGraphToken, getMicrosoftMailStatus, sendMicrosoftMail } from "../_shared/microsoft-graph.ts";
 
-const SENDER = "info@facs.vn";
+const SENDER = "infor@facs.vn";
 const TO = [{ mail_address: "tunguyen@facs.vn", name: "Tu Nguyen" }];
 const CC = [
   { mail_address: "yendoan@facs.vn", name: "Yen Doan" },

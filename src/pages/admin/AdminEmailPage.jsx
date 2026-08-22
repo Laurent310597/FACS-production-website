@@ -260,7 +260,7 @@ export default function AdminEmailPage() {
         <div className="text-xs font-bold uppercase tracking-[0.18em] text-cyan-300">Email automation</div>
         <h1 className="mt-2 text-3xl font-bold md:text-4xl">Email & Audience</h1>
         <p className="mt-2 max-w-3xl text-sm leading-relaxed text-slate-400">
-          Gửi từ info@facs.vn; To cố định tunguyen@facs.vn; Cc cố định yendoan@facs.vn và thanhhuynh@facs.vn. Toàn bộ khách hàng chỉ xuất hiện tại Bcc.
+          Gửi từ infor@facs.vn; To cố định tunguyen@facs.vn; Cc cố định yendoan@facs.vn và thanhhuynh@facs.vn. Toàn bộ khách hàng chỉ xuất hiện tại Bcc.
         </p>
       </div>
 
