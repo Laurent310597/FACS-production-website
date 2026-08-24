@@ -7,6 +7,7 @@ import {
   Plus,
   RefreshCw,
   Search,
+  Send,
   Trash2,
   Upload,
   UserMinus,
@@ -100,6 +101,7 @@ export default function AdminEmailPage() {
   const [logs, setLogs] = useState([]);
   const [loading, setLoading] = useState(true);
   const [saving, setSaving] = useState(false);
+  const [testing, setTesting] = useState(false);
   const [query, setQuery] = useState("");
   const [status, setStatus] = useState("all");
   const [form, setForm] = useState(emptyContact);
@@ -125,6 +127,21 @@ export default function AdminEmailPage() {
     else setAudience(contacts || []);
     if (!logError) setLogs(logRows || []);
     setLoading(false);
+  };
+
+  const testMailbox = async () => {
+    setTesting(true);
+    setMessage("");
+    setError("");
+    try {
+      await invokeInsightEmail("test");
+      setMessage("Đã gửi email thử từ infor@facs.vn đến tunguyen@facs.vn. Hãy kiểm tra địa chỉ From trong Outlook.");
+      await loadData();
+    } catch (testError) {
+      setError(testError.message);
+    } finally {
+      setTesting(false);
+    }
   };
 
   useEffect(() => {
@@ -291,6 +308,9 @@ export default function AdminEmailPage() {
           <div className="flex flex-wrap gap-3">
             <button type="button" onClick={loadConnection} className="inline-flex items-center gap-2 rounded-2xl border border-white/10 px-4 py-3 text-sm font-semibold text-slate-300 transition hover:text-white">
               <RefreshCw size={17} /> Kiểm tra lại
+            </button>
+            <button type="button" disabled={!connection.connected || testing} onClick={testMailbox} className="inline-flex items-center gap-2 rounded-2xl border border-white/10 px-4 py-3 text-sm font-semibold text-slate-300 transition hover:border-cyan-200/30 hover:text-cyan-100 disabled:cursor-not-allowed disabled:opacity-40">
+              {testing ? <Loader2 size={17} className="animate-spin" /> : <Send size={17} />} Gửi thử
             </button>
           </div>
         </div>

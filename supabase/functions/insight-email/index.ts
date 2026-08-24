@@ -151,12 +151,15 @@ Deno.serve(async (req) => {
 
     if (action === "test") {
       const postId = String(body.post_id || "");
-      if (!postId) return json({ error: "Thiếu post_id" }, 400);
-      const { data: post, error } = await admin.from("posts").select("*").eq("id", postId).single();
-      if (error || !post) return json({ error: "Không tìm thấy bài viết" }, 404);
+      let post: InsightEmailPost | null = null;
+      if (postId) {
+        const { data, error } = await admin.from("posts").select("*").eq("id", postId).single();
+        if (error || !data) return json({ error: "Không tìm thấy bài viết" }, 404);
+        post = data as InsightEmailPost;
+      }
 
       const logId = await createLog(admin, {
-        post_id: post.id,
+        post_id: post?.id || null,
         delivery_type: "test",
         status: "processing",
         sender_email: SENDER,
@@ -167,7 +170,12 @@ Deno.serve(async (req) => {
 
       try {
         const token = await getMicrosoftGraphToken();
-        const email = buildInsightEmail(post, siteUrl, true);
+        const email = post
+          ? buildInsightEmail(post, siteUrl, true)
+          : {
+              subject: `[TEST] Kiểm tra gửi từ ${SENDER}`,
+              html: `<div style="font-family:Arial,sans-serif;line-height:1.7"><h2>Kiểm tra FACS Insights Email</h2><p>Email thử đã được gửi thành công từ <strong>${SENDER}</strong> qua Microsoft 365.</p><p>Thời gian: ${new Date().toLocaleString("vi-VN", { timeZone: "Asia/Ho_Chi_Minh" })}</p></div>`,
+            };
         const result = await sendMicrosoftMail({
           accessToken: token,
           senderEmail: SENDER,
@@ -178,7 +186,7 @@ Deno.serve(async (req) => {
           cc: [],
           bcc: [],
           replyTo: [{ mail_address: SENDER, name: "FACS Insights" }],
-          dedupeKey: `facs-insight-test-${post.id}-${Date.now()}`,
+          dedupeKey: `facs-insight-test-${post?.id || "mailbox"}-${Date.now()}`,
         });
         await finishLog(admin, logId, {
           status: "sent",
