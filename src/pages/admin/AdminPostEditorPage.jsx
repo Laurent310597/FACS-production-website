@@ -51,6 +51,7 @@ const emptyForm = {
   seo_description_vi: "",
   status: "draft",
   published_at: null,
+  email_delivery_mode: "disabled",
 };
 
 function stripHtml(value = "") {
@@ -242,13 +243,14 @@ export default function AdminPostEditorPage() {
       seo_description_vi: form.seo_description_vi,
       status: nextStatus,
       published_at: publishedAt,
+      email_delivery_mode: form.email_delivery_mode || "disabled",
       created_by: authData.session?.user?.id || null,
     };
 
     const request = isEditing
       ? supabase.from("posts").update(payload).eq("id", id)
       : supabase.from("posts").insert(payload);
-    const { error: saveError } = await request;
+    const { data: savedPost, error: saveError } = await request.select("id,email_delivery_mode").single();
 
     setSaving(false);
 
@@ -259,6 +261,13 @@ export default function AdminPostEditorPage() {
       return;
     }
 
+    if (
+      (action === "publish" || action === "schedule")
+      && savedPost?.email_delivery_mode === "review_after_publish"
+    ) {
+      navigate(`/admin/email?post_id=${savedPost.id}`, { replace: true });
+      return;
+    }
     navigate("/admin/posts", { replace: true });
   };
 
@@ -430,6 +439,37 @@ export default function AdminPostEditorPage() {
               <input type="checkbox" checked={form.featured} onChange={(event) => updateField("featured", event.target.checked)} className="mt-0.5 h-4 w-4 accent-cyan-300" />
               <span><strong className="flex items-center gap-1.5 text-sm"><Star size={14} /> Bài viết nổi bật</strong><span className="mt-1 block text-xs leading-relaxed text-slate-500">Ưu tiên bài trong các khu vực nổi bật của Insights.</span></span>
             </label>
+
+            <div className="mt-4">
+              <div className="text-sm font-semibold text-slate-200">Phương thức gửi Email Insights</div>
+              <p className="mt-1 text-xs leading-relaxed text-slate-500">Đăng bài không tự gửi email. Audience luôn cần xem trước, gửi thử và xác nhận riêng.</p>
+              <div className="mt-3 space-y-2">
+                {[
+                  ["disabled", "Không gửi email", "Chỉ xuất bản bài viết; không tạo quy trình email."],
+                  ["review_after_publish", "Gửi sau khi kiểm duyệt", "Khuyến nghị: sau khi đăng, mở ngay quy trình Xem trước → Gửi thử → Xác nhận."],
+                  ["manual_later", "Gửi thủ công sau", "Xuất bản trước; xử lý email sau tại trang Email & Audience."],
+                ].map(([value, label, description]) => (
+                  <label key={value} className={`flex cursor-pointer items-start gap-3 rounded-2xl border px-4 py-3 transition ${form.email_delivery_mode === value ? "border-cyan-200/30 bg-cyan-300/8" : "border-white/10 bg-[#081321]/45 hover:border-white/20"}`}>
+                    <input
+                      type="radio"
+                      name="email-delivery-mode"
+                      value={value}
+                      checked={form.email_delivery_mode === value}
+                      disabled={form.email_notification_status === "sent"}
+                      onChange={(event) => updateField("email_delivery_mode", event.target.value)}
+                      className="mt-1 h-4 w-4 accent-cyan-300"
+                    />
+                    <span>
+                      <strong className="block text-sm text-white">{label}</strong>
+                      <span className="mt-1 block text-xs leading-relaxed text-slate-500">{description}</span>
+                    </span>
+                  </label>
+                ))}
+              </div>
+              {form.email_notification_status === "sent" && (
+                <div className="mt-3 rounded-xl border border-emerald-300/20 bg-emerald-300/8 px-3 py-2 text-xs text-emerald-100">Email đã gửi được khóa để tránh gửi lặp lại khi chỉnh sửa bài viết.</div>
+              )}
+            </div>
 
             <label className="mt-4 block">
               <span className="mb-2 block text-sm font-semibold text-violet-100">Ngày và giờ hẹn đăng</span>

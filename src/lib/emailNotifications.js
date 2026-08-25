@@ -2,6 +2,7 @@ import { supabase } from "./supabaseClient";
 
 export const emailStatusLabels = {
   disabled: "Không gửi email",
+  awaiting_review: "Chờ kiểm duyệt",
   pending: "Chờ gửi",
   cancelled: "Đã hủy gửi",
   processing: "Đang gửi",
@@ -11,6 +12,7 @@ export const emailStatusLabels = {
 
 export const emailStatusStyles = {
   disabled: "bg-slate-300/10 text-slate-300",
+  awaiting_review: "bg-cyan-300/10 text-cyan-200",
   pending: "bg-sky-300/10 text-sky-200",
   cancelled: "bg-amber-300/10 text-amber-200",
   processing: "bg-violet-300/10 text-violet-200",
