@@ -1,4 +1,4 @@
-type InsightPost = {
+export type InsightPost = {
   id: string;
   slug: string;
   slug_vi?: string | null;

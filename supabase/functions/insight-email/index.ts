@@ -1,14 +1,17 @@
 import { createClient } from "npm:@supabase/supabase-js@2";
 import { corsHeaders } from "../_shared/cors.ts";
 import { buildInsightEmail } from "../_shared/email-template.ts";
-import { getValidLarkAccessToken, sendLarkMail } from "../_shared/lark.ts";
+import type { InsightPost } from "../_shared/email-template.ts";
+import { getMicrosoftGraphToken, getMicrosoftMailStatus, sendMicrosoftMail } from "../_shared/microsoft-graph.ts";
 
-const SENDER = "info@facs.vn";
+const SENDER = "infor@facs.vn";
 const TO = [{ mail_address: "tunguyen@facs.vn", name: "Tu Nguyen" }];
 const CC = [
   { mail_address: "yendoan@facs.vn", name: "Yen Doan" },
   { mail_address: "thanhhuynh@facs.vn", name: "Thanh Huynh" },
 ];
+type AdminClient = ReturnType<typeof createClient<any>>;
+type InsightEmailPost = InsightPost & Record<string, any>;
 
 function json(body: unknown, status = 200) {
   return new Response(JSON.stringify(body), {
@@ -17,19 +20,7 @@ function json(body: unknown, status = 200) {
   });
 }
 
-async function sha256(value: string) {
-  const bytes = new TextEncoder().encode(value);
-  const digest = await crypto.subtle.digest("SHA-256", bytes);
-  return Array.from(new Uint8Array(digest)).map((byte) => byte.toString(16).padStart(2, "0")).join("");
-}
-
-function base64Url(bytes: Uint8Array) {
-  let binary = "";
-  bytes.forEach((byte) => (binary += String.fromCharCode(byte)));
-  return btoa(binary).replaceAll("+", "-").replaceAll("/", "_").replaceAll("=", "");
-}
-
-async function requireAdmin(req: Request, admin: ReturnType<typeof createClient>) {
+async function requireAdmin(req: Request, admin: AdminClient) {
   const authorization = req.headers.get("authorization") || "";
   const token = authorization.replace(/^Bearer\s+/i, "").trim();
   if (!token) throw new Error("UNAUTHORIZED");
@@ -38,64 +29,17 @@ async function requireAdmin(req: Request, admin: ReturnType<typeof createClient>
   return data.user;
 }
 
-async function createOAuthUrl(admin: ReturnType<typeof createClient>) {
-  const appId = Deno.env.get("LARK_APP_ID")?.trim();
-  const supabaseUrl = Deno.env.get("SUPABASE_URL")?.trim();
-  if (!appId || !supabaseUrl) throw new Error("Thiếu LARK_APP_ID hoặc SUPABASE_URL.");
-
-  const state = crypto.randomUUID().replaceAll("-", "") + crypto.randomUUID().replaceAll("-", "");
-  const verifierBytes = crypto.getRandomValues(new Uint8Array(48));
-  const codeVerifier = base64Url(verifierBytes);
-  const challengeBytes = new Uint8Array(await crypto.subtle.digest("SHA-256", new TextEncoder().encode(codeVerifier)));
-  const codeChallenge = base64Url(challengeBytes);
-  const stateHash = await sha256(state);
-  const callback = `${supabaseUrl.replace(/\/$/, "")}/functions/v1/lark-oauth-callback`;
-
-  const { error } = await admin.from("lark_oauth_states").insert({
-    state_hash: stateHash,
-    code_verifier: codeVerifier,
-    expires_at: new Date(Date.now() + 10 * 60 * 1000).toISOString(),
-  });
-  if (error) throw new Error(`Không thể tạo OAuth state: ${error.message}`);
-
-  const url = new URL("https://accounts.larksuite.com/open-apis/authen/v1/authorize");
-  url.searchParams.set("client_id", appId);
-  url.searchParams.set("redirect_uri", callback);
-  url.searchParams.set("scope", "mail:user_mailbox.message:send offline_access");
-  url.searchParams.set("state", state);
-  url.searchParams.set("code_challenge", codeChallenge);
-  url.searchParams.set("code_challenge_method", "S256");
-  return url.toString();
-}
-
-async function getOAuthStatus(admin: ReturnType<typeof createClient>) {
-  const { data, error } = await admin
-    .from("lark_oauth_credentials")
-    .select("mailbox_email,access_token_expires_at,refresh_token_expires_at,granted_scopes,updated_at")
-    .eq("id", true)
-    .maybeSingle();
-  if (error) throw new Error(error.message);
-  return {
-    connected: Boolean(data),
-    mailbox_email: data?.mailbox_email || SENDER,
-    access_token_expires_at: data?.access_token_expires_at || null,
-    refresh_token_expires_at: data?.refresh_token_expires_at || null,
-    granted_scopes: data?.granted_scopes || null,
-    updated_at: data?.updated_at || null,
-  };
-}
-
-async function createLog(admin: ReturnType<typeof createClient>, payload: Record<string, unknown>) {
+async function createLog(admin: AdminClient, payload: Record<string, unknown>) {
   const { data, error } = await admin.from("insight_email_delivery_logs").insert(payload).select("id").single();
   if (error) throw new Error(`Không thể tạo email log: ${error.message}`);
   return data.id as string;
 }
 
-async function finishLog(admin: ReturnType<typeof createClient>, id: string, payload: Record<string, unknown>) {
+async function finishLog(admin: AdminClient, id: string, payload: Record<string, unknown>) {
   await admin.from("insight_email_delivery_logs").update({ ...payload, completed_at: new Date().toISOString() }).eq("id", id);
 }
 
-async function markPostFailure(admin: ReturnType<typeof createClient>, postId: string, message: string) {
+async function markPostFailure(admin: AdminClient, postId: string, message: string) {
   await admin.from("posts").update({
     email_notification_status: "failed",
     email_notification_last_error: message.slice(0, 2000),
@@ -104,7 +48,7 @@ async function markPostFailure(admin: ReturnType<typeof createClient>, postId: s
   }).eq("id", postId);
 }
 
-async function processPost(admin: ReturnType<typeof createClient>, post: Record<string, any>, siteUrl: string) {
+async function processPost(admin: AdminClient, post: InsightEmailPost, siteUrl: string) {
   const { data: audience, error: audienceError } = await admin
     .from("insight_email_audience")
     .select("email,display_name")
@@ -118,7 +62,7 @@ async function processPost(admin: ReturnType<typeof createClient>, post: Record<
 
   const uniqueBcc = Array.from(new Map(bcc.map((item) => [item.mail_address, item])).values());
   if (uniqueBcc.length === 0) throw new Error("Danh sách BCC chưa có khách hàng đang ở trạng thái subscribed.");
-  if (uniqueBcc.length + TO.length + CC.length > 500) throw new Error("Tổng số người nhận vượt giới hạn 500 của Lark Mail. Vui lòng giảm audience trước khi gửi.");
+  if (uniqueBcc.length + TO.length + CC.length > 500) throw new Error("Tổng số người nhận vượt giới hạn 500 của Microsoft 365. Vui lòng giảm audience trước khi gửi.");
 
   const logId = await createLog(admin, {
     post_id: post.id,
@@ -131,25 +75,20 @@ async function processPost(admin: ReturnType<typeof createClient>, post: Record<
   });
 
   try {
-    const token = await getValidLarkAccessToken(admin);
+    const token = await getMicrosoftGraphToken();
     const email = buildInsightEmail(post, siteUrl, false);
-    let result: { message_id?: string; thread_id?: string } = {};
-    try {
-      result = await sendLarkMail({
+    const result = await sendMicrosoftMail({
         accessToken: token,
+        senderEmail: SENDER,
+        senderName: "FACS Insights",
         subject: email.subject,
         bodyHtml: email.html,
-        bodyPlainText: email.plainText,
         to: TO,
         cc: CC,
         bcc: uniqueBcc,
+        replyTo: [{ mail_address: SENDER, name: "FACS Insights" }],
         dedupeKey: `facs-insight-${post.id}`,
       });
-    } catch (error) {
-      const coded = error as Error & { code?: number };
-      if (coded.code !== 1236005) throw error;
-      // Lark's duplicate response proves the same dedupe key was already sent.
-    }
 
     await admin.from("posts").update({
       email_notification_status: "sent",
@@ -206,28 +145,21 @@ Deno.serve(async (req) => {
 
     await requireAdmin(req, admin);
 
-    if (action === "oauth_url") {
-      return json({ url: await createOAuthUrl(admin) });
-    }
-
     if (action === "oauth_status") {
-      return json(await getOAuthStatus(admin));
-    }
-
-    if (action === "oauth_disconnect") {
-      const { error } = await admin.from("lark_oauth_credentials").delete().eq("id", true);
-      if (error) throw new Error(error.message);
-      return json({ ok: true });
+      return json({ ...getMicrosoftMailStatus(), mailbox_email: SENDER });
     }
 
     if (action === "test") {
       const postId = String(body.post_id || "");
-      if (!postId) return json({ error: "Thiếu post_id" }, 400);
-      const { data: post, error } = await admin.from("posts").select("*").eq("id", postId).single();
-      if (error || !post) return json({ error: "Không tìm thấy bài viết" }, 404);
+      let post: InsightEmailPost | null = null;
+      if (postId) {
+        const { data, error } = await admin.from("posts").select("*").eq("id", postId).single();
+        if (error || !data) return json({ error: "Không tìm thấy bài viết" }, 404);
+        post = data as InsightEmailPost;
+      }
 
       const logId = await createLog(admin, {
-        post_id: post.id,
+        post_id: post?.id || null,
         delivery_type: "test",
         status: "processing",
         sender_email: SENDER,
@@ -237,17 +169,24 @@ Deno.serve(async (req) => {
       });
 
       try {
-        const token = await getValidLarkAccessToken(admin);
-        const email = buildInsightEmail(post, siteUrl, true);
-        const result = await sendLarkMail({
+        const token = await getMicrosoftGraphToken();
+        const email = post
+          ? buildInsightEmail(post, siteUrl, true)
+          : {
+              subject: `[TEST] Kiểm tra gửi từ ${SENDER}`,
+              html: `<div style="font-family:Arial,sans-serif;line-height:1.7"><h2>Kiểm tra FACS Insights Email</h2><p>Email thử đã được gửi thành công từ <strong>${SENDER}</strong> qua Microsoft 365.</p><p>Thời gian: ${new Date().toLocaleString("vi-VN", { timeZone: "Asia/Ho_Chi_Minh" })}</p></div>`,
+            };
+        const result = await sendMicrosoftMail({
           accessToken: token,
+          senderEmail: SENDER,
+          senderName: "FACS Insights",
           subject: email.subject,
           bodyHtml: email.html,
-          bodyPlainText: email.plainText,
           to: TO,
           cc: [],
           bcc: [],
-          dedupeKey: `facs-insight-test-${post.id}-${Date.now()}`,
+          replyTo: [{ mail_address: SENDER, name: "FACS Insights" }],
+          dedupeKey: `facs-insight-test-${post?.id || "mailbox"}-${Date.now()}`,
         });
         await finishLog(admin, logId, {
           status: "sent",

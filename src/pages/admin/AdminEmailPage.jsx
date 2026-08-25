@@ -2,12 +2,12 @@ import { useEffect, useMemo, useState } from "react";
 import {
   CheckCircle2,
   Download,
-  Link2,
   Loader2,
   Mail,
   Plus,
   RefreshCw,
   Search,
+  Send,
   Trash2,
   Upload,
   UserMinus,
@@ -101,7 +101,7 @@ export default function AdminEmailPage() {
   const [logs, setLogs] = useState([]);
   const [loading, setLoading] = useState(true);
   const [saving, setSaving] = useState(false);
-  const [connecting, setConnecting] = useState(false);
+  const [testing, setTesting] = useState(false);
   const [query, setQuery] = useState("");
   const [status, setStatus] = useState("all");
   const [form, setForm] = useState(emptyContact);
@@ -129,6 +129,21 @@ export default function AdminEmailPage() {
     setLoading(false);
   };
 
+  const testMailbox = async () => {
+    setTesting(true);
+    setMessage("");
+    setError("");
+    try {
+      await invokeInsightEmail("test");
+      setMessage("Đã gửi email thử từ infor@facs.vn đến tunguyen@facs.vn. Hãy kiểm tra địa chỉ From trong Outlook.");
+      await loadData();
+    } catch (testError) {
+      setError(testError.message);
+    } finally {
+      setTesting(false);
+    }
+  };
+
   useEffect(() => {
     let cancelled = false;
     const initialize = async () => {
@@ -142,7 +157,7 @@ export default function AdminEmailPage() {
       if (connectionResult.status === "fulfilled") {
         setConnection({ ...connectionResult.value, loading: false });
       } else {
-        setConnection({ connected: false, loading: false, error: connectionResult.reason?.message || "Không thể kiểm tra kết nối Lark." });
+        setConnection({ connected: false, loading: false, error: connectionResult.reason?.message || "Không thể kiểm tra Microsoft 365." });
       }
 
       if (contactsResult.status === "fulfilled" && !contactsResult.value.error) {
@@ -171,18 +186,6 @@ export default function AdminEmailPage() {
   }, [audience, query, status]);
 
   const subscribedCount = audience.filter((contact) => contact.status === "subscribed").length;
-
-  const connectLark = async () => {
-    setConnecting(true);
-    setError("");
-    try {
-      const data = await invokeInsightEmail("oauth_url");
-      window.location.href = data.url;
-    } catch (connectError) {
-      setError(connectError.message);
-      setConnecting(false);
-    }
-  };
 
   const addContact = async (event) => {
     event.preventDefault();
@@ -274,7 +277,7 @@ export default function AdminEmailPage() {
         <div className="text-xs font-bold uppercase tracking-[0.18em] text-cyan-300">Email automation</div>
         <h1 className="mt-2 text-3xl font-bold md:text-4xl">Email & Audience</h1>
         <p className="mt-2 max-w-3xl text-sm leading-relaxed text-slate-400">
-          Gửi từ info@facs.vn; To cố định tunguyen@facs.vn; Cc cố định yendoan@facs.vn và thanhhuynh@facs.vn. Toàn bộ khách hàng chỉ xuất hiện tại Bcc.
+          Gửi từ infor@facs.vn; To cố định tunguyen@facs.vn; Cc cố định yendoan@facs.vn và thanhhuynh@facs.vn. Toàn bộ khách hàng chỉ xuất hiện tại Bcc.
         </p>
       </div>
 
@@ -289,15 +292,15 @@ export default function AdminEmailPage() {
           <div>
             <div className="flex items-center gap-3">
               <Mail className="text-cyan-300" size={24} />
-              <h2 className="text-xl font-semibold">Kết nối Lark Mail</h2>
+              <h2 className="text-xl font-semibold">Microsoft 365</h2>
             </div>
             <div className="mt-3 flex items-center gap-2 text-sm">
               {connection.loading ? (
                 <><Loader2 size={16} className="animate-spin text-slate-400" /> Đang kiểm tra...</>
               ) : connection.connected ? (
-                <><CheckCircle2 size={17} className="text-emerald-300" /> <span className="text-emerald-200">Đã kết nối {connection.mailbox_email}</span></>
+                <><CheckCircle2 size={17} className="text-emerald-300" /> <span className="text-emerald-200">Đã cấu hình gửi từ {connection.mailbox_email}</span></>
               ) : (
-                <><XCircle size={17} className="text-amber-300" /> <span className="text-amber-200">Chưa kết nối mailbox info@facs.vn</span></>
+                <><XCircle size={17} className="text-amber-300" /> <span className="text-amber-200">Chưa cấu hình Microsoft Graph</span></>
               )}
             </div>
             {connection.error && <div className="mt-2 text-xs text-red-200">{connection.error}</div>}
@@ -306,9 +309,8 @@ export default function AdminEmailPage() {
             <button type="button" onClick={loadConnection} className="inline-flex items-center gap-2 rounded-2xl border border-white/10 px-4 py-3 text-sm font-semibold text-slate-300 transition hover:text-white">
               <RefreshCw size={17} /> Kiểm tra lại
             </button>
-            <button type="button" disabled={connecting} onClick={connectLark} className="inline-flex items-center gap-2 rounded-2xl bg-cyan-300 px-5 py-3 font-bold text-[#071421] transition hover:bg-cyan-200 disabled:opacity-50">
-              {connecting ? <Loader2 size={18} className="animate-spin" /> : <Link2 size={18} />}
-              {connection.connected ? "Kết nối lại info@facs.vn" : "Kết nối info@facs.vn"}
+            <button type="button" disabled={!connection.connected || testing} onClick={testMailbox} className="inline-flex items-center gap-2 rounded-2xl border border-white/10 px-4 py-3 text-sm font-semibold text-slate-300 transition hover:border-cyan-200/30 hover:text-cyan-100 disabled:cursor-not-allowed disabled:opacity-40">
+              {testing ? <Loader2 size={17} className="animate-spin" /> : <Send size={17} />} Gửi thử
             </button>
           </div>
         </div>

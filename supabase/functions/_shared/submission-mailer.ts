@@ -1,6 +1,5 @@
-import type { SupabaseClient } from "npm:@supabase/supabase-js@2";
-import { buildRawEmail } from "./mime-message.ts";
-import { FORM_MAILBOX, getValidFormLarkToken, sendFormLarkMail } from "./form-lark.ts";
+import { createClient } from "npm:@supabase/supabase-js@2";
+import { getMicrosoftGraphToken, sendMicrosoftMail } from "./microsoft-graph.ts";
 import {
   buildCareerInternalEmail,
   buildCareerReceipt,
@@ -8,23 +7,27 @@ import {
   buildContactReceipt,
   buildEditableReceipt,
 } from "./form-email-templates.ts";
+import type { CareerApplication, ContactInquiry } from "./form-email-templates.ts";
 
 const INTERNAL_RECIPIENTS = [
   { mail_address: "tunguyen@facs.vn", name: "Tu Nguyen" },
   { mail_address: "thanhhuynh@facs.vn", name: "Thanh Huynh" },
   { mail_address: "yendoan@facs.vn", name: "Yen Doan" },
 ];
+const FORM_MAILBOX = "tunguyen@facs.vn";
 
 type Delivery = "internal" | "receipt";
 type SubmissionType = "career" | "contact";
+type AdminClient = ReturnType<typeof createClient<any>>;
+type SubmissionRow = CareerApplication | ContactInquiry;
 
-async function createLog(admin: SupabaseClient, payload: Record<string, unknown>) {
+async function createLog(admin: AdminClient, payload: Record<string, unknown>) {
   const { data, error } = await admin.from("submission_email_logs").insert({ ...payload, status: "processing" }).select("id").single();
   if (error) throw new Error(`Không thể tạo email log: ${error.message}`);
   return data.id as string;
 }
 
-async function finishLog(admin: SupabaseClient, id: string, payload: Record<string, unknown>) {
+async function finishLog(admin: AdminClient, id: string, payload: Record<string, unknown>) {
   await admin.from("submission_email_logs").update({ ...payload, completed_at: new Date().toISOString() }).eq("id", id);
 }
 
@@ -34,7 +37,7 @@ function fields(delivery: Delivery) {
     : { status: "receipt_email_status", attempts: "receipt_email_attempts", sentAt: "receipt_email_sent_at", messageId: "receipt_email_message_id" };
 }
 
-async function updateDelivery(admin: SupabaseClient, table: string, id: string, delivery: Delivery, currentAttempts: number, payload: Record<string, unknown>) {
+async function updateDelivery(admin: AdminClient, table: string, id: string, delivery: Delivery, currentAttempts: number, payload: Record<string, unknown>) {
   const columns = fields(delivery);
   await admin.from(table).update({
     [columns.attempts]: currentAttempts + 1,
@@ -43,13 +46,15 @@ async function updateDelivery(admin: SupabaseClient, table: string, id: string, 
 }
 
 async function sendOne(params: {
-  admin: SupabaseClient;
+  admin: AdminClient;
   type: SubmissionType;
-  row: Record<string, any>;
+  row: SubmissionRow;
   delivery: Delivery;
   siteUrl: string;
 }) {
   const isCareer = params.type === "career";
+  const careerRow = params.row as CareerApplication;
+  const rowRecord = params.row as unknown as Record<string, unknown>;
   const table = isCareer ? "career_applications" : "contact_inquiries";
   const parentKey = isCareer ? "career_application_id" : "contact_inquiry_id";
   const columns = fields(params.delivery);
@@ -69,11 +74,11 @@ async function sendOne(params: {
     ? buildEditableReceipt(params.type, params.row, params.siteUrl, configuredTemplate)
     : isCareer
     ? params.delivery === "internal"
-      ? buildCareerInternalEmail(params.row, `${params.siteUrl}/admin/applications`)
-      : buildCareerReceipt(params.row, params.siteUrl)
+      ? buildCareerInternalEmail(params.row as CareerApplication, `${params.siteUrl}/admin/applications`)
+      : buildCareerReceipt(params.row as CareerApplication, params.siteUrl)
     : params.delivery === "internal"
-      ? buildContactInternalEmail(params.row, `${params.siteUrl}/admin/inquiries`)
-      : buildContactReceipt(params.row, params.siteUrl);
+      ? buildContactInternalEmail(params.row as ContactInquiry, `${params.siteUrl}/admin/inquiries`)
+      : buildContactReceipt(params.row as ContactInquiry, params.siteUrl);
 
   let logId: string | null = null;
   try {
@@ -85,52 +90,39 @@ async function sendOne(params: {
       to_addresses: to.map((item) => item.mail_address),
     });
 
-    await updateDelivery(params.admin, table, params.row.id, params.delivery, Number(params.row[columns.attempts] || 0), {
+    await updateDelivery(params.admin, table, params.row.id, params.delivery, Number(rowRecord[columns.attempts] || 0), {
       [columns.status]: "processing",
       last_email_error: null,
     });
 
     let attachment: { filename: string; contentType: string; bytes: Uint8Array } | undefined;
     if (isCareer && params.delivery === "internal") {
-      const { data, error } = await params.admin.storage.from(params.row.cv_bucket).download(params.row.cv_path);
+      const { data, error } = await params.admin.storage.from(careerRow.cv_bucket).download(careerRow.cv_path);
       if (error || !data) throw new Error(`Không thể tải CV để đính kèm: ${error?.message || "không có dữ liệu"}`);
       attachment = {
-        filename: params.row.cv_original_name,
-        contentType: params.row.cv_mime_type,
+        filename: careerRow.cv_original_name,
+        contentType: careerRow.cv_mime_type,
         bytes: new Uint8Array(await data.arrayBuffer()),
       };
     }
 
-    const token = await getValidFormLarkToken(params.admin);
-    const raw = buildRawEmail({
-      from: senderEmail,
-      fromName: senderName,
-      to,
-      replyTo,
-      subject: template.subject,
-      html: template.html,
-      plainText: template.plainText,
-      attachment,
-    });
-    let result: { message_id?: string; thread_id?: string } = {};
-    try {
-      result = await sendFormLarkMail({
+    const token = await getMicrosoftGraphToken();
+    const result = await sendMicrosoftMail({
         accessToken: token,
-        raw,
         senderEmail,
         senderName,
+        subject: template.subject,
+        bodyHtml: template.html,
+        to,
+        replyTo: [{ mail_address: replyTo }],
+        attachment,
         dedupeKey: `facs-${params.type}-${params.delivery}-${params.row.id}`,
       });
-    } catch (error) {
-      const coded = error as Error & { code?: number };
-      if (coded.code !== 1236005) throw error;
-      // Lark's duplicate response proves that this dedupe key has already been accepted.
-    }
 
     await params.admin.from(table).update({
       [columns.status]: "sent",
       [columns.sentAt]: new Date().toISOString(),
-      [columns.messageId]: result.message_id || params.row[columns.messageId] || null,
+      [columns.messageId]: result.message_id || rowRecord[columns.messageId] || null,
       last_email_error: null,
     }).eq("id", params.row.id);
     await finishLog(params.admin, logId, {
@@ -151,9 +143,9 @@ async function sendOne(params: {
 }
 
 export async function sendSubmissionEmails(params: {
-  admin: SupabaseClient;
+  admin: AdminClient;
   type: SubmissionType;
-  row: Record<string, any>;
+  row: SubmissionRow;
   siteUrl: string;
   only?: Delivery;
 }) {

@@ -1,4 +1,4 @@
-type CareerApplication = {
+export type CareerApplication = {
   id: string;
   full_name: string;
   email: string;
@@ -6,9 +6,15 @@ type CareerApplication = {
   position?: string | null;
   message?: string | null;
   submitted_at: string;
+  cv_bucket: string;
+  cv_path: string;
+  cv_original_name: string;
+  cv_mime_type: string;
+  internal_email_attempts: number;
+  receipt_email_attempts: number;
 };
 
-type ContactInquiry = {
+export type ContactInquiry = {
   id: string;
   full_name: string;
   email: string;
@@ -17,6 +23,8 @@ type ContactInquiry = {
   service_interest?: string | null;
   message: string;
   submitted_at: string;
+  internal_email_attempts: number;
+  receipt_email_attempts: number;
 };
 
 export type EditableReceiptTemplate = {
