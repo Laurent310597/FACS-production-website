@@ -1,5 +1,5 @@
 import { useEffect, useMemo, useState } from "react";
-import { CalendarClock, Copy, Edit3, FilePlus2, Search, Trash2 } from "lucide-react";
+import { CalendarClock, Copy, Edit3, FilePlus2, Mail, Search, Trash2 } from "lucide-react";
 import { Link } from "react-router-dom";
 import AdminLayout from "../../components/admin/AdminLayout";
 import { getCategoryLabel, getLocalizedPost, slugify } from "../../lib/insights";
@@ -16,6 +16,16 @@ const statusLabels = {
   published: "Đã xuất bản",
   scheduled: "Đã lên lịch",
   draft: "Bản nháp",
+};
+
+const emailStatusLabels = {
+  disabled: "Không gửi email",
+  awaiting_review: "Chờ kiểm duyệt email",
+  pending: "Chờ gửi email",
+  processing: "Đang gửi email",
+  sent: "Email đã gửi",
+  failed: "Email lỗi",
+  cancelled: "Đã hủy email",
 };
 
 export default function AdminPostsPage() {
@@ -192,6 +202,11 @@ export default function AdminPostsPage() {
                       <span className={`rounded-full px-3 py-1 font-semibold ${statusStyles[publicationState]}`}>
                         {statusLabels[publicationState]}
                       </span>
+                      {post.email_delivery_mode !== "disabled" && (
+                        <span className="rounded-full bg-sky-300/10 px-3 py-1 font-semibold text-sky-200">
+                          {emailStatusLabels[post.email_notification_status] || "Email chờ xử lý"}
+                        </span>
+                      )}
                     </div>
                     <h2 className="mt-3 truncate text-lg font-semibold text-white">{localized.title}</h2>
                     <div className="mt-1 truncate text-sm text-slate-500">/insights/{localized.slug}</div>
@@ -203,6 +218,9 @@ export default function AdminPostsPage() {
                     )}
                   </div>
                   <div className="flex items-center gap-2 md:justify-end">
+                    {post.email_delivery_mode !== "disabled" && (
+                      <Link to={`/admin/email?post_id=${post.id}`} className="flex h-10 w-10 items-center justify-center rounded-xl border border-white/10 text-slate-400 transition hover:border-sky-200/30 hover:text-sky-200" title="Quy trình Email Insights"><Mail size={17} /></Link>
+                    )}
                     <button type="button" onClick={() => duplicatePost(post)} className="flex h-10 w-10 items-center justify-center rounded-xl border border-white/10 text-slate-400 transition hover:border-cyan-200/30 hover:text-cyan-200" title="Nhân bản"><Copy size={17} /></button>
                     <Link to={`/admin/posts/${post.id}/edit`} className="flex h-10 w-10 items-center justify-center rounded-xl border border-white/10 text-slate-400 transition hover:border-cyan-200/30 hover:text-cyan-200" title="Chỉnh sửa"><Edit3 size={17} /></Link>
                     <button type="button" onClick={() => deletePost(post)} className="flex h-10 w-10 items-center justify-center rounded-xl border border-white/10 text-slate-400 transition hover:border-red-300/30 hover:text-red-200" title="Xóa"><Trash2 size={17} /></button>
