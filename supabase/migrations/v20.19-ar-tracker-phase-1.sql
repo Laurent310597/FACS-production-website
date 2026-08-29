@@ -590,3 +590,6 @@ comment on table public.ar_customers is 'FACS AR customer master. CMS is the mas
 comment on table public.ar_invoices is 'Read-only imported Viettel invoices with manual collection status.';
 comment on column public.ar_invoices.outstanding_amount is 'Invoice balance used by the AR dashboard; cancelled or paid invoices have zero outstanding.';
 comment on table public.ar_audit_events is 'Immutable before/after history for AR customers and invoices.';
+
+-- Ensure PostgREST sees the new AR objects immediately after the migration.
+notify pgrst, 'reload schema';
