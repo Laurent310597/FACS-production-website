@@ -266,7 +266,7 @@ export default function AdminARPage() {
             <h2 className="text-xl font-bold">Kiểm tra file hóa đơn Viettel</h2>
             <p className="mt-2 max-w-3xl text-sm leading-relaxed text-slate-400">Sử dụng báo cáo có một dòng cho mỗi hóa đơn. Dữ liệu chỉ được ghi sau khi file được kiểm tra và anh bấm xác nhận.</p>
           </div>
-          <a href="/templates/facs-ar-import-template.csv" download className="inline-flex items-center gap-2 text-sm font-semibold text-cyan-300 hover:text-cyan-200"><FileSpreadsheet size={17} /> Tải cấu trúc tham khảo</a>
+          <a href="/templates/facs-ar-import-template.xlsx" download className="inline-flex items-center gap-2 text-sm font-semibold text-cyan-300 hover:text-cyan-200"><FileSpreadsheet size={17} /> Tải file Excel mẫu</a>
         </div>
         <div className="mt-5 flex flex-col gap-3 md:flex-row md:items-center">
           <label className="flex min-h-12 flex-1 cursor-pointer items-center gap-3 rounded-2xl border border-dashed border-white/15 bg-[#081321]/45 px-4 py-3 text-sm text-slate-300 hover:border-cyan-200/30">

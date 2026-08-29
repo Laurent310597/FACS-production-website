@@ -5,6 +5,7 @@
 Viettel S-Invoice remains the authoritative source for invoice creation and issuance. This release adds a focused CMS module for:
 
 - Customer Master management and one-time Excel/CSV import.
+- Native Excel `.xlsx` templates for Customer Master and Viettel invoice imports, preserving Vietnamese text and separate columns in Windows Excel.
 - Viettel invoice-list import with client-side preview and validation.
 - Duplicate prevention by invoice series, number and invoice date.
 - Safe re-import of Viettel cancellation/replacement/adjustment status.
