@@ -25,6 +25,8 @@ import AdminLegalCalendarPage from "./pages/admin/AdminLegalCalendarPage";
 import AdminLegalDashboardPage from "./pages/admin/AdminLegalDashboardPage";
 import AdminLegalCalendarEditorPage from "./pages/admin/AdminLegalCalendarEditorPage";
 import AdminLegalSourcesPage from "./pages/admin/AdminLegalSourcesPage";
+import AdminARPage from "./pages/admin/AdminARPage";
+import AdminARCustomersPage from "./pages/admin/AdminARCustomersPage";
 import ProtectedAdminRoute from "./components/admin/ProtectedAdminRoute";
 import CareersPage from "./pages/CareersPage";
 import CareerDetailPage from "./pages/CareerDetailPage";
@@ -133,6 +135,8 @@ function AnimatedRoutes() {
         <Route path="/admin/legal-calendar/new" element={<ProtectedAdminRoute><AdminLegalCalendarEditorPage /></ProtectedAdminRoute>} />
         <Route path="/admin/legal-calendar/:id/edit" element={<ProtectedAdminRoute><AdminLegalCalendarEditorPage /></ProtectedAdminRoute>} />
         <Route path="/admin/legal-sources" element={<ProtectedAdminRoute><AdminLegalSourcesPage /></ProtectedAdminRoute>} />
+        <Route path="/admin/ar" element={<ProtectedAdminRoute><AdminARPage /></ProtectedAdminRoute>} />
+        <Route path="/admin/ar/customers" element={<ProtectedAdminRoute><AdminARCustomersPage /></ProtectedAdminRoute>} />
         <Route path="/careers" element={<PageTransition><CareersPage /></PageTransition>} />
         <Route path="/careers/apply" element={<PageTransition><ApplicationPage /></PageTransition>} />
         <Route path="/careers/:slug" element={<PageTransition><CareerDetailPage /></PageTransition>} />

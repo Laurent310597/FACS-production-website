@@ -1,0 +1,2 @@
+Ký hiệu hóa đơn / Invoice series,Số hóa đơn / Invoice number,Ngày hóa đơn / Invoice date,Tên khách hàng / Customer name,Mã số thuế / Tax code,Địa chỉ / Address,Email khách hàng / Customer email,Diễn giải / Description,Tiền trước thuế / Subtotal,Tiền thuế GTGT / VAT amount,Tổng thanh toán / Total amount,Hạn thanh toán / Due date,Trạng thái hóa đơn / Invoice status
+C26TFA,00000001,2026-08-29,CÔNG TY MẪU,0312345678,TP. Hồ Chí Minh,accounting@example.com,Phí dịch vụ tháng 08/2026,10000000,1000000,11000000,2026-09-28,Đã phát hành
