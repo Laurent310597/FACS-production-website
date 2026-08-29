@@ -2,9 +2,7 @@ import { createClient } from "npm:@supabase/supabase-js@2";
 import { getMicrosoftGraphToken, sendMicrosoftMail } from "./microsoft-graph.ts";
 import {
   buildCareerInternalEmail,
-  buildCareerReceipt,
   buildContactInternalEmail,
-  buildContactReceipt,
   buildEditableReceipt,
 } from "./form-email-templates.ts";
 import type { CareerApplication, ContactInquiry } from "./form-email-templates.ts";
@@ -70,15 +68,16 @@ async function sendOne(params: {
     const { data } = await params.admin.from("form_email_templates").select("template_key,subject,body_vi,body_en").eq("template_key", templateKey).maybeSingle();
     configuredTemplate = data;
   }
-  const template = configuredTemplate
+  // Receipt emails must always go through the same editable-template builder
+  // that powers the CMS preview. When no database override exists (or the
+  // additive template table is not available yet), buildEditableReceipt falls
+  // back to DEFAULT_RECEIPT_TEMPLATES. This prevents the legacy hard-coded
+  // receipt copies from drifting away from what administrators review in CMS.
+  const template = params.delivery === "receipt"
     ? buildEditableReceipt(params.type, params.row, params.siteUrl, configuredTemplate)
     : isCareer
-    ? params.delivery === "internal"
       ? buildCareerInternalEmail(params.row as CareerApplication, `${params.siteUrl}/admin/applications`)
-      : buildCareerReceipt(params.row as CareerApplication, params.siteUrl)
-    : params.delivery === "internal"
-      ? buildContactInternalEmail(params.row as ContactInquiry, `${params.siteUrl}/admin/inquiries`)
-      : buildContactReceipt(params.row as ContactInquiry, params.siteUrl);
+      : buildContactInternalEmail(params.row as ContactInquiry, `${params.siteUrl}/admin/inquiries`);
 
   let logId: string | null = null;
   try {
