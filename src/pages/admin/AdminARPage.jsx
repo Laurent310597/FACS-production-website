@@ -13,6 +13,7 @@ import {
   UploadCloud,
   UserRoundX,
   Users,
+  Send,
   X,
 } from "lucide-react";
 import { Link } from "react-router-dom";
@@ -253,6 +254,7 @@ export default function AdminARPage() {
         <div className="flex flex-wrap gap-3">
           <button type="button" onClick={load} disabled={loading} className="inline-flex items-center gap-2 rounded-2xl border border-white/10 px-5 py-3 font-semibold text-slate-200 transition hover:border-cyan-200/30 disabled:opacity-50"><RefreshCw size={17} className={loading ? "animate-spin" : ""} /> Làm mới</button>
           <Link to="/admin/ar/customers" className="inline-flex items-center gap-2 rounded-2xl border border-cyan-200/20 bg-cyan-300/[0.06] px-5 py-3 font-semibold text-cyan-100 transition hover:bg-cyan-300/10"><Users size={17} /> Customer Master</Link>
+          <Link to="/admin/ar/reminders" className="inline-flex items-center gap-2 rounded-2xl border border-cyan-200/20 bg-cyan-300/[0.06] px-5 py-3 font-semibold text-cyan-100 transition hover:bg-cyan-300/10"><Send size={17} /> Email nhắc nợ</Link>
           <button type="button" onClick={() => setShowImport((current) => !current)} className="inline-flex items-center gap-2 rounded-2xl bg-cyan-300 px-5 py-3 font-bold text-[#071421] transition hover:bg-cyan-200"><UploadCloud size={17} /> Import Viettel</button>
         </div>
       </div>

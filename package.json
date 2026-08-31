@@ -7,7 +7,7 @@
     "dev": "vite",
     "build": "vite build",
     "lint": "eslint .",
-    "qa:ar": "node scripts/qa-ar-import.mjs",
+    "qa:ar": "node scripts/qa-ar-import.mjs && node scripts/qa-ar-reminders.mjs && node scripts/qa-ar-reminder-schema.mjs",
     "preview": "vite preview"
   },
   "dependencies": {

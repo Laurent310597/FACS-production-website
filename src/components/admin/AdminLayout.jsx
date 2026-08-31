@@ -1,5 +1,5 @@
 import { Link, NavLink, useNavigate } from "react-router-dom";
-import { BarChart3, Briefcase, CalendarRange, ExternalLink, FilePlus2, LayoutDashboard, LogOut, Mail, MailCheck, MessagesSquare, Newspaper, Radar, ReceiptText, UserRoundSearch, Users } from "lucide-react";
+import { BarChart3, Briefcase, CalendarRange, ExternalLink, FilePlus2, LayoutDashboard, LogOut, Mail, MailCheck, MessagesSquare, Newspaper, Radar, ReceiptText, Send, UserRoundSearch, Users } from "lucide-react";
 import { supabase } from "../../lib/supabaseClient";
 
 const navClass = ({ isActive }) =>
@@ -94,6 +94,9 @@ export default function AdminLayout({ children }) {
             </NavLink>
             <NavLink to="/admin/ar/customers" end className={navClass}>
               <Users size={18} /> Customer Master
+            </NavLink>
+            <NavLink to="/admin/ar/reminders" end className={navClass}>
+              <Send size={18} /> Email nhắc nợ
             </NavLink>
           </nav>
         </aside>
