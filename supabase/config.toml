@@ -15,3 +15,6 @@ verify_jwt = false
 
 [functions.legal-calendar-sync]
 verify_jwt = false
+
+[functions.ar-reminders]
+verify_jwt = false
