@@ -177,8 +177,12 @@ function CinematicField({ reducedMotion }) {
         context.shadowBlur = 9;
         context.stroke();
 
-        const markerIndex = Math.floor((elapsed * 0.018 + ringIndex * 17) % pointCount);
-        const marker = points[markerIndex];
+        const markerOffset = elapsed * 0.018 + ringIndex * 17;
+        const markerIndex = Number.isFinite(markerOffset)
+          ? Math.floor(((markerOffset % pointCount) + pointCount) % pointCount)
+          : 0;
+        const marker = points[markerIndex] || points[0];
+        if (!marker) return;
         context.beginPath();
         context.arc(marker.x, marker.y, 2.2 + marker.scale * 1.4, 0, Math.PI * 2);
         context.fillStyle = `rgba(${color.join(", ")}, 0.9)`;
