@@ -2,8 +2,9 @@ import { AnimatePresence, motion, useReducedMotion } from "framer-motion";
 import { useCallback, useEffect, useRef, useState } from "react";
 import { useLocation } from "react-router-dom";
 
-const INTRO_DURATION = 2800;
-const DEPARTURE_LEAD = 620;
+const INTRO_DURATION = 4200;
+const REDUCED_INTRO_DURATION = 2800;
+const DEPARTURE_LEAD = 760;
 const SESSION_KEY = "facs_cinematic_intro_v1_seen";
 
 const CAPABILITIES = [
@@ -228,6 +229,8 @@ function CinematicField({ reducedMotion }) {
 export default function CinematicIntro() {
   const location = useLocation();
   const reducedMotion = useReducedMotion();
+  const forceFullMotion = new URLSearchParams(location.search).get("motion") === "full";
+  const motionReduced = Boolean(reducedMotion && !forceFullMotion);
   const [visible, setVisible] = useState(() => {
     if (typeof window === "undefined" || window.location.pathname !== "/") return false;
     const forcePreview = new URLSearchParams(window.location.search).get("intro") === "1";
@@ -246,8 +249,8 @@ export default function CinematicIntro() {
     const originalOverflow = document.body.style.overflow;
     document.body.style.overflow = "hidden";
 
-    if (reducedMotion) {
-      const reducedTimer = window.setTimeout(finish, 320);
+    if (motionReduced) {
+      const reducedTimer = window.setTimeout(finish, REDUCED_INTRO_DURATION);
       return () => {
         window.clearTimeout(reducedTimer);
         document.body.style.overflow = originalOverflow;
@@ -262,7 +265,7 @@ export default function CinematicIntro() {
       window.clearTimeout(finishTimer);
       document.body.style.overflow = originalOverflow;
     };
-  }, [finish, location.pathname, reducedMotion, visible]);
+  }, [finish, location.pathname, motionReduced, visible]);
 
   if (location.pathname !== "/") return null;
 
@@ -271,15 +274,15 @@ export default function CinematicIntro() {
       {visible && (
         <motion.section
           key="facs-cinematic-intro"
-          className={`facs-cinematic-intro${departing ? " is-departing" : ""}`}
+          className={`facs-cinematic-intro${departing ? " is-departing" : ""}${forceFullMotion ? " is-force-motion" : ""}`}
           initial={{ opacity: 1 }}
           exit={{ opacity: 0 }}
-          transition={{ duration: reducedMotion ? 0.12 : 0.55, ease: [0.45, 0, 0.55, 1] }}
+          transition={{ duration: motionReduced ? 0.18 : 0.55, ease: [0.45, 0, 0.55, 1] }}
           role="dialog"
           aria-modal="true"
           aria-label="FACS cinematic introduction"
         >
-          <CinematicField reducedMotion={Boolean(reducedMotion)} />
+          <CinematicField reducedMotion={motionReduced} />
           <div className="facs-cinematic-grid" aria-hidden="true" />
           <div className="facs-cinematic-vignette" aria-hidden="true" />
           <div className="facs-cinematic-scanline" aria-hidden="true" />
@@ -288,7 +291,7 @@ export default function CinematicIntro() {
             className="facs-cinematic-signature"
             initial={{ opacity: 0, y: -8 }}
             animate={{ opacity: 1, y: 0 }}
-            transition={{ duration: 0.65, delay: reducedMotion ? 0 : 0.18 }}
+            transition={{ duration: 0.65, delay: motionReduced ? 0 : 0.18 }}
           >
             <span>FACS.</span>
             <span>Strategic Advisory</span>
@@ -307,8 +310,8 @@ export default function CinematicIntro() {
                 initial={{ opacity: 0, scale: 0.82 }}
                 animate={{ opacity: 1, scale: 1 }}
                 transition={{
-                  duration: reducedMotion ? 0.1 : 0.5,
-                  delay: reducedMotion ? 0 : 0.46 + index * 0.11,
+                  duration: motionReduced ? 0.1 : 0.5,
+                  delay: motionReduced ? 0 : 0.46 + index * 0.11,
                 }}
               >
                 <span>{capability.code}</span>
@@ -321,7 +324,7 @@ export default function CinematicIntro() {
                 className="facs-cinematic-core"
                 initial={{ opacity: 0, scale: 0.72, filter: "blur(18px)" }}
                 animate={{ opacity: 1, scale: 1, filter: "blur(0px)" }}
-                transition={{ duration: reducedMotion ? 0.1 : 0.85, delay: reducedMotion ? 0 : 0.42, ease: [0.16, 1, 0.3, 1] }}
+                transition={{ duration: motionReduced ? 0.1 : 0.85, delay: motionReduced ? 0 : 0.42, ease: [0.16, 1, 0.3, 1] }}
               >
                 <div className="facs-cinematic-core-halo" aria-hidden="true" />
                 <div className="facs-cinematic-logo">
@@ -331,12 +334,12 @@ export default function CinematicIntro() {
                   className="facs-cinematic-divider"
                   initial={{ scaleX: 0 }}
                   animate={{ scaleX: 1 }}
-                  transition={{ duration: reducedMotion ? 0.1 : 0.55, delay: reducedMotion ? 0 : 1.08 }}
+                  transition={{ duration: motionReduced ? 0.1 : 0.55, delay: motionReduced ? 0 : 1.08 }}
                 />
                 <motion.p
                   initial={{ opacity: 0, y: 8 }}
                   animate={{ opacity: 1, y: 0 }}
-                  transition={{ duration: reducedMotion ? 0.1 : 0.52, delay: reducedMotion ? 0 : 1.18 }}
+                  transition={{ duration: motionReduced ? 0.1 : 0.52, delay: motionReduced ? 0 : 1.18 }}
                 >
                   Your Trusted Partner
                 </motion.p>
@@ -348,14 +351,14 @@ export default function CinematicIntro() {
             className="facs-cinematic-footer"
             initial={{ opacity: 0 }}
             animate={{ opacity: 1 }}
-            transition={{ duration: 0.55, delay: reducedMotion ? 0 : 0.58 }}
+            transition={{ duration: 0.55, delay: motionReduced ? 0 : 0.58 }}
           >
             <span>Building clarity into every decision</span>
             <div className="facs-cinematic-progress" aria-hidden="true">
               <motion.span
                 initial={{ scaleX: 0 }}
                 animate={{ scaleX: 1 }}
-                transition={{ duration: reducedMotion ? 0.2 : INTRO_DURATION / 1000, ease: "linear" }}
+                transition={{ duration: (motionReduced ? REDUCED_INTRO_DURATION : INTRO_DURATION) / 1000, ease: "linear" }}
               />
             </div>
             <span>Vietnam · 2026</span>

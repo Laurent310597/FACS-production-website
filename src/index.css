@@ -430,13 +430,13 @@ img {
 }
 
 @media (prefers-reduced-motion: reduce) {
-  .facs-cinematic-grid,
-  .facs-cinematic-scanline,
-  .facs-cinematic-core-halo {
+  .facs-cinematic-intro:not(.is-force-motion) .facs-cinematic-grid,
+  .facs-cinematic-intro:not(.is-force-motion) .facs-cinematic-scanline,
+  .facs-cinematic-intro:not(.is-force-motion) .facs-cinematic-core-halo {
     animation: none;
   }
 
-  .facs-cinematic-skip {
+  .facs-cinematic-intro:not(.is-force-motion) .facs-cinematic-skip {
     display: none;
   }
 }
