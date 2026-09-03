@@ -2,9 +2,9 @@ import { AnimatePresence, motion, useReducedMotion } from "framer-motion";
 import { useCallback, useEffect, useRef, useState } from "react";
 import { useLocation } from "react-router-dom";
 
-const INTRO_DURATION = 4200;
-const REDUCED_INTRO_DURATION = 2800;
-const DEPARTURE_LEAD = 760;
+const INTRO_DURATION = 4600;
+const REDUCED_INTRO_DURATION = 3000;
+const DEPARTURE_LEAD = 1050;
 const SESSION_KEY = "facs_cinematic_intro_v1_seen";
 
 const CAPABILITIES = [
@@ -40,6 +40,14 @@ function easeInOut(value) {
     : 1 - Math.pow(-2 * value + 2, 3) / 2;
 }
 
+function clamp(value, min = 0, max = 1) {
+  return Math.min(max, Math.max(min, value));
+}
+
+function easeOutCubic(value) {
+  return 1 - Math.pow(1 - value, 3);
+}
+
 function CinematicField({ reducedMotion }) {
   const canvasRef = useRef(null);
 
@@ -58,7 +66,7 @@ function CinematicField({ reducedMotion }) {
     let targetPointerY = 0;
     const startedAt = performance.now();
 
-    const particleCount = window.innerWidth < 720 ? 54 : 104;
+    const particleCount = window.innerWidth < 720 ? 58 : 112;
     const particles = Array.from({ length: particleCount }, (_, index) => ({
       angle: (index / particleCount) * Math.PI * 2 + Math.random() * 0.36,
       radius: 90 + Math.random() * 330,
@@ -86,8 +94,8 @@ function CinematicField({ reducedMotion }) {
     };
 
     const handlePointer = (event) => {
-      targetPointerX = (event.clientX / Math.max(window.innerWidth, 1) - 0.5) * 0.34;
-      targetPointerY = (event.clientY / Math.max(window.innerHeight, 1) - 0.5) * 0.2;
+      targetPointerX = (event.clientX / Math.max(window.innerWidth, 1) - 0.5) * 0.28;
+      targetPointerY = (event.clientY / Math.max(window.innerHeight, 1) - 0.5) * 0.16;
     };
 
     const project = (point, focalLength, cameraDistance, zoom) => {
@@ -104,28 +112,30 @@ function CinematicField({ reducedMotion }) {
     const draw = (now) => {
       const elapsed = now - startedAt;
       const progress = reducedMotion ? 0.58 : Math.min(elapsed / INTRO_DURATION, 1);
-      const eased = easeInOut(progress);
-      const departure = Math.max(0, (progress - 0.76) / 0.24);
-      const zoom = 0.7 + eased * 0.42 + departure * 1.55;
+      const arrival = easeOutCubic(clamp(progress / 0.34));
+      const departure = easeInOut(clamp((progress - 0.77) / 0.23));
+      const breathingWindow = clamp((progress - 0.28) / 0.44);
+      const breathing = Math.sin(breathingWindow * Math.PI) * 0.022;
+      const zoom = 0.72 + arrival * 0.27 + breathing + departure * 1.62;
       const focalLength = Math.min(width, height) * 0.92;
       const cameraDistance = 690;
-      const baseRadius = Math.min(width, height) * 0.29;
+      const baseRadius = Math.min(width, height) * 0.305;
 
-      pointerX += (targetPointerX - pointerX) * 0.045;
-      pointerY += (targetPointerY - pointerY) * 0.045;
+      pointerX += (targetPointerX - pointerX) * 0.032;
+      pointerY += (targetPointerY - pointerY) * 0.032;
 
       context.clearRect(0, 0, width, height);
       context.globalCompositeOperation = "lighter";
 
       particles.forEach((particle, index) => {
         const drift = reducedMotion ? 0 : elapsed * 0.00008 * particle.speed;
-        const radius = particle.radius * (1.24 - eased * 0.28);
+        const radius = particle.radius * (1.2 - arrival * 0.13 - departure * 0.17);
         const rawPoint = {
           x: Math.cos(particle.angle + drift) * radius,
           y: Math.sin(particle.angle * 1.21 + particle.offset) * radius * 0.54,
           z: particle.depth + Math.sin(particle.offset + drift * 7) * 72,
         };
-        const rotated = rotatePoint(rawPoint, pointerY, pointerX, eased * 0.08);
+        const rotated = rotatePoint(rawPoint, pointerY, pointerX, arrival * 0.055);
         const point = project(rotated, focalLength, cameraDistance, zoom);
         const alpha = Math.max(0.08, Math.min(0.7, 0.18 + point.scale * 0.48));
         context.beginPath();
@@ -147,8 +157,8 @@ function CinematicField({ reducedMotion }) {
         const pointCount = window.innerWidth < 720 ? 42 : 68;
         const points = [];
         const ringRadius = baseRadius * (0.8 + ringIndex * 0.105);
-        const spread = 1.18 - eased * 0.18;
-        const rotation = elapsed * 0.0002 * (ringIndex % 2 === 0 ? 1 : -1);
+        const spread = 1.16 - arrival * 0.11 - departure * 0.06;
+        const rotation = elapsed * 0.000155 * (ringIndex % 2 === 0 ? 1 : -1);
 
         for (let index = 0; index <= pointCount; index += 1) {
           const angle = (index / pointCount) * Math.PI * 2;
@@ -178,7 +188,7 @@ function CinematicField({ reducedMotion }) {
         context.shadowBlur = 9;
         context.stroke();
 
-        const markerOffset = elapsed * 0.018 + ringIndex * 17;
+        const markerOffset = elapsed * 0.014 + ringIndex * 17;
         const markerIndex = Number.isFinite(markerOffset)
           ? Math.floor(((markerOffset % pointCount) + pointCount) % pointCount)
           : 0;
@@ -200,8 +210,8 @@ function CinematicField({ reducedMotion }) {
         height / 2,
         glowRadius,
       );
-      glow.addColorStop(0, `rgba(165, 243, 252, ${0.16 + eased * 0.12})`);
-      glow.addColorStop(0.3, `rgba(34, 211, 238, ${0.1 + eased * 0.08})`);
+      glow.addColorStop(0, `rgba(165, 243, 252, ${0.16 + arrival * 0.12})`);
+      glow.addColorStop(0.3, `rgba(34, 211, 238, ${0.1 + arrival * 0.08})`);
       glow.addColorStop(1, "rgba(14, 116, 144, 0)");
       context.fillStyle = glow;
       context.fillRect(0, 0, width, height);
@@ -277,7 +287,7 @@ export default function CinematicIntro() {
           className={`facs-cinematic-intro${departing ? " is-departing" : ""}${forceFullMotion ? " is-force-motion" : ""}`}
           initial={{ opacity: 1 }}
           exit={{ opacity: 0 }}
-          transition={{ duration: motionReduced ? 0.18 : 0.55, ease: [0.45, 0, 0.55, 1] }}
+          transition={{ duration: motionReduced ? 0.18 : 0.72, ease: [0.65, 0, 0.35, 1] }}
           role="dialog"
           aria-modal="true"
           aria-label="FACS cinematic introduction"
@@ -303,28 +313,67 @@ export default function CinematicIntro() {
           </button>
 
           <div className="facs-cinematic-stage">
+            <motion.svg
+              className="facs-cinematic-connectors"
+              viewBox="0 0 1200 780"
+              preserveAspectRatio="none"
+              initial={{ opacity: 0 }}
+              animate={{ opacity: 1 }}
+              transition={{ duration: motionReduced ? 0.1 : 0.75, delay: motionReduced ? 0 : 0.72 }}
+              aria-hidden="true"
+            >
+              {[
+                "M 206 214 C 342 218, 414 304, 506 356",
+                "M 994 214 C 858 218, 786 304, 694 356",
+                "M 216 574 C 354 568, 426 494, 510 432",
+                "M 984 574 C 846 568, 774 494, 690 432",
+              ].map((path, index) => (
+                <motion.path
+                  key={path}
+                  d={path}
+                  pathLength={1}
+                  initial={{ pathLength: 0, opacity: 0 }}
+                  animate={{ pathLength: 1, opacity: 1 }}
+                  transition={{
+                    duration: motionReduced ? 0.1 : 0.9,
+                    delay: motionReduced ? 0 : 0.72 + index * 0.08,
+                    ease: [0.22, 1, 0.36, 1],
+                  }}
+                />
+              ))}
+              <circle cx="506" cy="356" r="3" />
+              <circle cx="694" cy="356" r="3" />
+              <circle cx="510" cy="432" r="3" />
+              <circle cx="690" cy="432" r="3" />
+            </motion.svg>
+
+            <div className="facs-cinematic-aperture" aria-hidden="true" />
+
             {CAPABILITIES.map((capability, index) => (
               <motion.div
                 key={capability.label}
                 className={`facs-cinematic-capability ${capability.className}`}
-                initial={{ opacity: 0, scale: 0.82 }}
-                animate={{ opacity: 1, scale: 1 }}
+                initial={{ opacity: 0, scale: 0.84, y: 10, filter: "blur(7px)" }}
+                animate={{ opacity: 1, scale: 1, y: 0, filter: "blur(0px)" }}
                 transition={{
-                  duration: motionReduced ? 0.1 : 0.5,
-                  delay: motionReduced ? 0 : 0.46 + index * 0.11,
+                  duration: motionReduced ? 0.1 : 0.72,
+                  delay: motionReduced ? 0 : 0.5 + index * 0.1,
+                  ease: [0.16, 1, 0.3, 1],
                 }}
               >
-                <span>{capability.code}</span>
-                <strong>{capability.label}</strong>
+                <div className="facs-cinematic-capability-card">
+                  <span>{capability.code}</span>
+                  <strong>{capability.label}</strong>
+                </div>
               </motion.div>
             ))}
 
             <div className="facs-cinematic-core-anchor">
               <motion.div
                 className="facs-cinematic-core"
-                initial={{ opacity: 0, scale: 0.72, filter: "blur(18px)" }}
-                animate={{ opacity: 1, scale: 1, filter: "blur(0px)" }}
-                transition={{ duration: motionReduced ? 0.1 : 0.85, delay: motionReduced ? 0 : 0.42, ease: [0.16, 1, 0.3, 1] }}
+                initial={{ opacity: 0, scale: 0.76, y: 14, filter: "blur(24px)" }}
+                animate={{ opacity: 1, scale: 1, y: 0, filter: "blur(0px)" }}
+                transition={{ duration: motionReduced ? 0.1 : 1.08, delay: motionReduced ? 0 : 0.34, ease: [0.16, 1, 0.3, 1] }}
               >
                 <div className="facs-cinematic-core-halo" aria-hidden="true" />
                 <div className="facs-cinematic-logo">
@@ -351,7 +400,7 @@ export default function CinematicIntro() {
             className="facs-cinematic-footer"
             initial={{ opacity: 0 }}
             animate={{ opacity: 1 }}
-            transition={{ duration: 0.55, delay: motionReduced ? 0 : 0.58 }}
+            transition={{ duration: 0.75, delay: motionReduced ? 0 : 0.58, ease: [0.22, 1, 0.36, 1] }}
           >
             <span>Building clarity into every decision</span>
             <div className="facs-cinematic-progress" aria-hidden="true">

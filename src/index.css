@@ -65,6 +65,16 @@ img {
   50% { opacity: 0.92; transform: translate(-50%, -50%) scale(1.06); }
 }
 
+@keyframes facsCinematicCapabilityFloat {
+  0%, 100% { transform: translate3d(0, 0, 0); }
+  50% { transform: translate3d(var(--facs-float-x, 3px), -7px, 0); }
+}
+
+@keyframes facsCinematicApertureReveal {
+  0% { opacity: 0; transform: translate(-50%, -50%) scale(0.72); }
+  100% { opacity: 1; transform: translate(-50%, -50%) scale(0.92); }
+}
+
 @keyframes facsCinematicScan {
   0% { transform: translateY(-120vh); }
   100% { transform: translateY(120vh); }
@@ -83,6 +93,7 @@ img {
   isolation: isolate;
   overflow: hidden;
   position: fixed;
+  will-change: opacity;
   z-index: 9999;
 }
 
@@ -97,6 +108,7 @@ img {
   position: absolute;
   top: 50%;
   transform: translate(-50%, -50%);
+  transition: opacity 900ms ease, transform 1050ms cubic-bezier(0.65, 0, 0.35, 1);
   width: min(88vw, 970px);
 }
 
@@ -118,7 +130,10 @@ img {
 .facs-cinematic-canvas {
   height: 100%;
   opacity: 0.96;
+  transform: scale(1.01);
+  transition: filter 1050ms ease, opacity 950ms ease, transform 1050ms cubic-bezier(0.65, 0, 0.35, 1);
   width: 100%;
+  will-change: filter, opacity, transform;
   z-index: 1;
 }
 
@@ -134,6 +149,7 @@ img {
   right: -18%;
   top: 42%;
   transform-origin: center bottom;
+  transition: opacity 900ms ease, transform 1050ms cubic-bezier(0.65, 0, 0.35, 1);
   z-index: 0;
 }
 
@@ -141,6 +157,7 @@ img {
   background:
     linear-gradient(90deg, rgba(2, 6, 13, 0.88), transparent 22%, transparent 78%, rgba(2, 6, 13, 0.88)),
     linear-gradient(0deg, rgba(2, 6, 13, 0.9), transparent 22%, transparent 80%, rgba(2, 6, 13, 0.68));
+  transition: opacity 850ms ease;
   z-index: 8;
 }
 
@@ -156,7 +173,7 @@ img {
 .facs-cinematic-signature {
   align-items: baseline;
   display: flex;
-  gap: 0.8rem;
+  gap: 0.95rem;
   left: clamp(1.25rem, 4vw, 4rem);
   position: absolute;
   top: clamp(1.25rem, 4vw, 3.25rem);
@@ -164,7 +181,7 @@ img {
 }
 
 .facs-cinematic-signature span:first-child {
-  font-size: 1.28rem;
+  font-size: clamp(1.3rem, 1.7vw, 1.62rem);
   font-weight: 800;
   letter-spacing: -0.05em;
 }
@@ -172,7 +189,7 @@ img {
 .facs-cinematic-signature span:last-child {
   color: rgba(186, 230, 253, 0.62);
   font-family: Arial, sans-serif;
-  font-size: 0.62rem;
+  font-size: 0.67rem;
   font-weight: 700;
   letter-spacing: 0.22em;
   text-transform: uppercase;
@@ -187,11 +204,11 @@ img {
   cursor: pointer;
   display: flex;
   font-family: Arial, sans-serif;
-  font-size: 0.68rem;
+  font-size: 0.72rem;
   font-weight: 700;
   gap: 0.55rem;
   letter-spacing: 0.12em;
-  padding: 0.7rem 0.95rem;
+  padding: 0.76rem 1.08rem;
   position: absolute;
   right: clamp(1.25rem, 4vw, 4rem);
   text-transform: uppercase;
@@ -208,12 +225,60 @@ img {
 }
 
 .facs-cinematic-stage {
-  height: min(82vh, 780px);
-  max-height: 780px;
-  max-width: 1180px;
+  height: min(84vh, 820px);
+  max-height: 820px;
+  max-width: 1280px;
+  perspective: 1200px;
   position: relative;
-  width: min(92vw, 1180px);
+  width: min(94vw, 1280px);
   z-index: 6;
+}
+
+.facs-cinematic-connectors {
+  height: 100%;
+  inset: 0;
+  overflow: visible;
+  pointer-events: none;
+  position: absolute;
+  transition: filter 800ms ease, opacity 760ms ease, transform 980ms cubic-bezier(0.65, 0, 0.35, 1);
+  width: 100%;
+  will-change: filter, opacity, transform;
+  z-index: 2;
+}
+
+.facs-cinematic-connectors path {
+  fill: none;
+  stroke: rgba(125, 211, 252, 0.19);
+  stroke-dasharray: 2 8;
+  stroke-linecap: round;
+  stroke-width: 1;
+  vector-effect: non-scaling-stroke;
+}
+
+.facs-cinematic-connectors circle {
+  fill: #a5f3fc;
+  filter: drop-shadow(0 0 7px rgba(103, 232, 249, 0.9));
+  opacity: 0.72;
+}
+
+.facs-cinematic-aperture {
+  animation: facsCinematicApertureReveal 1.35s cubic-bezier(0.16, 1, 0.3, 1) 180ms both;
+  background: radial-gradient(circle, rgba(207, 250, 254, 0.12), rgba(34, 211, 238, 0.035) 42%, transparent 68%);
+  border: 1px solid rgba(165, 243, 252, 0.13);
+  border-radius: 50%;
+  box-shadow:
+    inset 0 0 70px rgba(34, 211, 238, 0.05),
+    0 0 80px rgba(14, 116, 144, 0.08);
+  height: clamp(17rem, 34vw, 30rem);
+  left: 50%;
+  pointer-events: none;
+  position: absolute;
+  top: 50%;
+  transform: translate(-50%, -50%) scale(0.92);
+  transition: opacity 950ms ease, transform 1050ms cubic-bezier(0.65, 0, 0.35, 1);
+  width: clamp(17rem, 34vw, 30rem);
+  will-change: opacity, transform;
+  z-index: 1;
 }
 
 .facs-cinematic-core-anchor {
@@ -221,7 +286,8 @@ img {
   position: absolute;
   top: 50%;
   transform: translate(-50%, -50%);
-  width: min(78vw, 670px);
+  width: min(76vw, 720px);
+  z-index: 5;
 }
 
 .facs-cinematic-core {
@@ -231,27 +297,28 @@ img {
   position: relative;
   text-align: center;
   transform-origin: center;
-  transition: opacity 560ms ease, filter 560ms ease, transform 620ms cubic-bezier(0.65, 0, 0.35, 1);
+  transition: opacity 920ms ease, filter 980ms ease, transform 1050ms cubic-bezier(0.65, 0, 0.35, 1);
+  will-change: opacity, filter, transform;
   width: 100%;
 }
 
 .facs-cinematic-core-halo {
-  animation: facsCinematicHaloPulse 2.2s ease-in-out infinite;
+  animation: facsCinematicHaloPulse 3.1s cubic-bezier(0.45, 0, 0.55, 1) infinite;
   background: radial-gradient(circle, rgba(165, 243, 252, 0.19), rgba(34, 211, 238, 0.055) 37%, transparent 69%);
   border: 1px solid rgba(165, 243, 252, 0.13);
   border-radius: 50%;
-  height: clamp(13rem, 29vw, 24rem);
+  height: clamp(15rem, 32vw, 27rem);
   left: 50%;
   position: absolute;
   top: 50%;
   transform: translate(-50%, -50%);
-  width: clamp(13rem, 29vw, 24rem);
+  width: clamp(15rem, 32vw, 27rem);
   z-index: -1;
 }
 
 .facs-cinematic-logo {
   color: #f8fdff;
-  font-size: clamp(4.8rem, 11vw, 9.2rem);
+  font-size: clamp(5.2rem, 11.6vw, 10.1rem);
   font-weight: 900;
   letter-spacing: -0.075em;
   line-height: 0.9;
@@ -269,61 +336,79 @@ img {
 .facs-cinematic-divider {
   background: linear-gradient(90deg, transparent, rgba(165, 243, 252, 0.78), transparent);
   height: 1px;
-  margin-top: clamp(1.15rem, 2.5vw, 1.8rem);
+  margin-top: clamp(1.25rem, 2.5vw, 1.95rem);
   transform-origin: center;
-  width: min(58vw, 330px);
+  width: min(58vw, 380px);
 }
 
 .facs-cinematic-core p {
   color: rgba(224, 242, 254, 0.82);
   font-family: Arial, sans-serif;
-  font-size: clamp(0.72rem, 1.1vw, 0.9rem);
+  font-size: clamp(0.76rem, 1.15vw, 0.98rem);
   font-weight: 700;
   letter-spacing: clamp(0.18em, 0.7vw, 0.36em);
-  margin: 1.05rem 0 0;
+  margin: 1.15rem 0 0;
   text-transform: uppercase;
 }
 
 .facs-cinematic-capability {
-  align-items: center;
-  backdrop-filter: blur(10px);
-  background: rgba(7, 18, 31, 0.4);
-  border: 1px solid rgba(165, 243, 252, 0.13);
-  border-radius: 999px;
-  display: flex;
-  font-family: Arial, sans-serif;
-  gap: 0.7rem;
-  padding: 0.56rem 0.88rem 0.56rem 0.58rem;
   position: absolute;
-  transition: opacity 300ms ease, transform 430ms ease;
+  transition: opacity 760ms ease, filter 820ms ease;
+  will-change: opacity, filter, transform;
   z-index: 4;
 }
 
-.facs-cinematic-capability span {
+.facs-cinematic-capability-card {
   align-items: center;
-  background: rgba(34, 211, 238, 0.1);
-  border: 1px solid rgba(103, 232, 249, 0.2);
+  animation: facsCinematicCapabilityFloat 4.8s cubic-bezier(0.45, 0, 0.55, 1) infinite;
+  backdrop-filter: blur(14px);
+  background: linear-gradient(135deg, rgba(12, 31, 49, 0.68), rgba(5, 16, 29, 0.48));
+  border: 1px solid rgba(165, 243, 252, 0.2);
+  border-radius: 999px;
+  box-shadow:
+    inset 0 1px 0 rgba(255, 255, 255, 0.035),
+    0 12px 36px rgba(1, 8, 16, 0.28),
+    0 0 28px rgba(34, 211, 238, 0.035);
+  display: flex;
+  font-family: Arial, sans-serif;
+  gap: 0.85rem;
+  min-height: 3.2rem;
+  padding: 0.62rem 1.15rem 0.62rem 0.66rem;
+  transition: background-color 300ms ease, border-color 300ms ease, box-shadow 300ms ease, filter 850ms ease, opacity 760ms ease, transform 980ms cubic-bezier(0.65, 0, 0.35, 1);
+  will-change: filter, opacity, transform;
+}
+
+.facs-cinematic-capability-card span {
+  align-items: center;
+  background: rgba(34, 211, 238, 0.13);
+  border: 1px solid rgba(103, 232, 249, 0.3);
   border-radius: 50%;
   color: #67e8f9;
   display: flex;
-  font-size: 0.56rem;
-  height: 1.6rem;
+  flex: 0 0 auto;
+  font-size: 0.65rem;
+  font-weight: 700;
+  height: 2rem;
   justify-content: center;
   letter-spacing: 0.04em;
-  width: 1.6rem;
+  width: 2rem;
 }
 
-.facs-cinematic-capability strong {
-  color: rgba(224, 242, 254, 0.78);
-  font-size: 0.66rem;
-  letter-spacing: 0.14em;
+.facs-cinematic-capability-card strong {
+  color: rgba(239, 249, 255, 0.86);
+  font-size: clamp(0.72rem, 0.95vw, 0.82rem);
+  letter-spacing: 0.16em;
   text-transform: uppercase;
 }
 
-.capability-finance { left: 8%; top: 21%; }
-.capability-tax { right: 8%; top: 24%; }
-.capability-legal { bottom: 21%; left: 10%; }
-.capability-operations { bottom: 18%; right: 9%; }
+.capability-finance { left: 5.5%; top: 23%; }
+.capability-tax { --facs-float-x: -3px; right: 7%; top: 23%; }
+.capability-legal { bottom: 22%; left: 6.5%; }
+.capability-operations { --facs-float-x: -3px; bottom: 22%; right: 5.5%; }
+
+.capability-tax .facs-cinematic-capability-card { animation-delay: -1.15s; }
+.capability-legal .facs-cinematic-capability-card { animation-delay: -2.3s; }
+.capability-operations .facs-cinematic-capability-card { animation-delay: -3.45s; }
 
 .facs-cinematic-footer {
   align-items: center;
@@ -331,10 +416,10 @@ img {
   color: rgba(186, 230, 253, 0.45);
   display: grid;
   font-family: Arial, sans-serif;
-  font-size: 0.58rem;
+  font-size: 0.64rem;
   font-weight: 700;
-  gap: clamp(0.85rem, 2vw, 1.8rem);
-  grid-template-columns: auto minmax(80px, 240px) auto;
+  gap: clamp(1rem, 2.4vw, 2.2rem);
+  grid-template-columns: auto minmax(100px, 280px) auto;
   left: 50%;
   letter-spacing: 0.16em;
   position: absolute;
@@ -360,12 +445,58 @@ img {
 }
 
 .facs-cinematic-intro.is-departing .facs-cinematic-core {
-  filter: blur(9px) !important;
+  filter: blur(13px) !important;
   opacity: 0 !important;
-  transform: scale(6.5) !important;
+  transform: translateY(-1.5vh) scale(7.4) !important;
 }
 
-.facs-cinematic-intro.is-departing .facs-cinematic-capability,
+.facs-cinematic-intro.is-departing::before {
+  opacity: 0;
+  transform: translate(-50%, -50%) scale(1.45);
+}
+
+.facs-cinematic-intro.is-departing::after {
+  opacity: 0;
+  transform: translate(-50%, -50%) scale(1.7);
+}
+
+.facs-cinematic-intro.is-departing .facs-cinematic-canvas {
+  filter: blur(6px) brightness(1.16);
+  opacity: 0.58;
+  transform: scale(1.14);
+}
+
+.facs-cinematic-intro.is-departing .facs-cinematic-grid {
+  opacity: 0;
+  transform: perspective(520px) rotateX(64deg) scale(1.2) translateY(8%);
+}
+
+.facs-cinematic-intro.is-departing .facs-cinematic-vignette {
+  opacity: 0.42;
+}
+
+.facs-cinematic-intro.is-departing .facs-cinematic-aperture {
+  animation: none;
+  opacity: 0;
+  transform: translate(-50%, -50%) scale(8.5);
+}
+
+.facs-cinematic-intro.is-departing .facs-cinematic-connectors {
+  filter: blur(5px);
+  opacity: 0 !important;
+  transform: scale(1.08);
+}
+
+.facs-cinematic-intro.is-departing .facs-cinematic-capability {
+  filter: blur(7px) !important;
+  opacity: 0 !important;
+}
+
+.facs-cinematic-intro.is-departing .facs-cinematic-capability-card {
+  animation: none;
+  transform: scale(1.16);
+}
+
 .facs-cinematic-intro.is-departing .facs-cinematic-footer,
 .facs-cinematic-intro.is-departing .facs-cinematic-signature,
 .facs-cinematic-intro.is-departing .facs-cinematic-skip {
@@ -388,28 +519,38 @@ img {
   }
 
   .facs-cinematic-stage {
-    height: 72vh;
+    height: 74vh;
     width: 100vw;
   }
 
+  .facs-cinematic-connectors {
+    display: none;
+  }
+
+  .facs-cinematic-aperture {
+    height: clamp(15rem, 78vw, 23rem);
+    width: clamp(15rem, 78vw, 23rem);
+  }
+
   .facs-cinematic-logo {
-    font-size: clamp(4.6rem, 24vw, 7.2rem);
+    font-size: clamp(4.8rem, 25vw, 7.6rem);
   }
 
-  .facs-cinematic-capability {
-    gap: 0.44rem;
-    padding: 0.42rem 0.68rem 0.42rem 0.42rem;
+  .facs-cinematic-capability-card {
+    gap: 0.55rem;
+    min-height: 2.65rem;
+    padding: 0.48rem 0.78rem 0.48rem 0.48rem;
   }
 
-  .facs-cinematic-capability span {
-    font-size: 0.48rem;
-    height: 1.35rem;
-    width: 1.35rem;
+  .facs-cinematic-capability-card span {
+    font-size: 0.52rem;
+    height: 1.6rem;
+    width: 1.6rem;
   }
 
-  .facs-cinematic-capability strong {
-    font-size: 0.54rem;
-    letter-spacing: 0.08em;
+  .facs-cinematic-capability-card strong {
+    font-size: 0.6rem;
+    letter-spacing: 0.1em;
   }
 
   .capability-finance { left: 5%; top: 18%; }
@@ -432,12 +573,10 @@ img {
 @media (prefers-reduced-motion: reduce) {
   .facs-cinematic-intro:not(.is-force-motion) .facs-cinematic-grid,
   .facs-cinematic-intro:not(.is-force-motion) .facs-cinematic-scanline,
-  .facs-cinematic-intro:not(.is-force-motion) .facs-cinematic-core-halo {
+  .facs-cinematic-intro:not(.is-force-motion) .facs-cinematic-core-halo,
+  .facs-cinematic-intro:not(.is-force-motion) .facs-cinematic-aperture,
+  .facs-cinematic-intro:not(.is-force-motion) .facs-cinematic-capability-card {
     animation: none;
-  }
-
-  .facs-cinematic-intro:not(.is-force-motion) .facs-cinematic-skip {
-    display: none;
   }
 }
 
