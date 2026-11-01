@@ -8,6 +8,7 @@
     "build": "vite build",
     "lint": "eslint .",
     "qa:ar": "node scripts/qa-ar-import.mjs",
+    "qa:email": "node --test scripts/qa-email-tests.mjs",
     "preview": "vite preview"
   },
   "dependencies": {

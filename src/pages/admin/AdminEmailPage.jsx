@@ -20,6 +20,8 @@ import {
 } from "lucide-react";
 import { useSearchParams } from "react-router-dom";
 import AdminLayout from "../../components/admin/AdminLayout";
+import InsightPostPicker from "../../components/admin/InsightPostPicker";
+import { INSIGHT_POST_COLUMNS } from "../../lib/insightPostSearch";
 import { emailStatusLabels, invokeInsightEmail } from "../../lib/emailNotifications";
 import { supabase } from "../../lib/supabaseClient";
 
@@ -115,14 +117,15 @@ export default function AdminEmailPage() {
   const [connection, setConnection] = useState({ connected: false, loading: true });
   const [audience, setAudience] = useState([]);
   const [logs, setLogs] = useState([]);
-  const [posts, setPosts] = useState([]);
+  const [selectedPost, setSelectedPost] = useState(null);
+  const [postPickerOpen, setPostPickerOpen] = useState(false);
+  const [postRefresh, setPostRefresh] = useState(0);
   const [selectedPostId, setSelectedPostId] = useState(() => searchParams.get("post_id") || "");
   const [preview, setPreview] = useState(null);
   const [previewOpen, setPreviewOpen] = useState(false);
   const [confirmationOpen, setConfirmationOpen] = useState(false);
   const [confirmationText, setConfirmationText] = useState("");
   const [workflowBusy, setWorkflowBusy] = useState("");
-  const [testedPostId, setTestedPostId] = useState("");
   const [workflowNow, setWorkflowNow] = useState(() => new Date());
   const [loading, setLoading] = useState(true);
   const [saving, setSaving] = useState(false);
@@ -147,20 +150,15 @@ export default function AdminEmailPage() {
     const [
       { data: contacts, error: contactsError },
       { data: logRows, error: logError },
-      { data: postRows, error: postsError },
     ] = await Promise.all([
       supabase.from("insight_email_audience").select("*").order("created_at", { ascending: false }),
       supabase.from("insight_email_delivery_logs").select("*").order("created_at", { ascending: false }).limit(20),
-      supabase.from("posts").select("*").order("updated_at", { ascending: false }),
     ]);
     if (contactsError) setError(contactsError.message);
     else setAudience(contacts || []);
     if (!logError) setLogs(logRows || []);
-    if (postsError) setError(postsError.message);
-    else {
-      setPosts(postRows || []);
-      setSelectedPostId((current) => current || postRows?.find((post) => post.email_delivery_mode !== "disabled" && post.email_notification_status !== "sent")?.id || postRows?.[0]?.id || "");
-    }
+    setPostRefresh((current) => current + 1);
+    setWorkflowNow(new Date());
     setLoading(false);
   };
 
@@ -182,11 +180,10 @@ export default function AdminEmailPage() {
   useEffect(() => {
     let cancelled = false;
     const initialize = async () => {
-      const [connectionResult, contactsResult, logsResult, postsResult] = await Promise.allSettled([
+      const [connectionResult, contactsResult, logsResult] = await Promise.allSettled([
         invokeInsightEmail("oauth_status"),
         supabase.from("insight_email_audience").select("*").order("created_at", { ascending: false }),
         supabase.from("insight_email_delivery_logs").select("*").order("created_at", { ascending: false }).limit(20),
-        supabase.from("posts").select("*").order("updated_at", { ascending: false }),
       ]);
       if (cancelled) return;
 
@@ -204,11 +201,6 @@ export default function AdminEmailPage() {
       }
 
       if (logsResult.status === "fulfilled" && !logsResult.value.error) setLogs(logsResult.value.data || []);
-      if (postsResult.status === "fulfilled" && !postsResult.value.error) {
-        const postRows = postsResult.value.data || [];
-        setPosts(postRows);
-        setSelectedPostId((current) => current || postRows.find((post) => post.email_delivery_mode !== "disabled" && post.email_notification_status !== "sent")?.id || postRows[0]?.id || "");
-      }
       setLoading(false);
     };
     initialize();
@@ -216,6 +208,36 @@ export default function AdminEmailPage() {
       cancelled = true;
     };
   }, []);
+
+  useEffect(() => {
+    if (!selectedPostId) return;
+    const controller = new AbortController();
+    const loadSelectedPost = async () => {
+      const { data, error: postError } = await supabase.from("posts").select(INSIGHT_POST_COLUMNS)
+        .eq("id", selectedPostId).maybeSingle().abortSignal(controller.signal);
+      if (controller.signal.aborted) return;
+      if (postError || !data) {
+        setSelectedPost(null);
+        setPreview(null);
+        setError(postError?.message || "Bài viết không còn trong danh sách. Vui lòng chọn lại.");
+      } else setSelectedPost(data);
+    };
+    loadSelectedPost();
+    return () => controller.abort();
+  }, [selectedPostId, postRefresh]);
+
+  const choosePost = (post) => {
+    if (post.id !== selectedPostId) {
+      setPreview(null);
+      setConfirmationOpen(false);
+      setConfirmationText("");
+      setMessage("");
+      setError("");
+    }
+    setSelectedPostId(post.id);
+    setSelectedPost(post);
+    setPostPickerOpen(false);
+  };
 
   useEffect(() => {
     const timer = window.setInterval(() => setWorkflowNow(new Date()), 60000);
@@ -232,13 +254,14 @@ export default function AdminEmailPage() {
   }, [audience, query, status]);
 
   const subscribedCount = audience.filter((contact) => contact.status === "subscribed").length;
-  const selectedPost = useMemo(() => posts.find((post) => post.id === selectedPostId) || null, [posts, selectedPostId]);
-  const previewReady = preview?.post_id === selectedPostId;
+  const previewReady = Boolean(preview?.post_id && preview.post_id === selectedPostId
+    && preview.preview_hash && preview.preview_hash === selectedPost?.email_notification_preview_hash);
   const testedAt = selectedPost?.email_notification_tested_at
     ? new Date(selectedPost.email_notification_tested_at).getTime()
     : 0;
-  const testReady = (testedPostId === selectedPostId || Boolean(testedAt))
-    && workflowNow.getTime() - testedAt <= 24 * 60 * 60 * 1000;
+  const testReady = previewReady && testedAt > 0 && testedAt <= workflowNow.getTime()
+    && workflowNow.getTime() - testedAt <= 24 * 60 * 60 * 1000
+    && selectedPost?.email_notification_test_hash === preview?.preview_hash;
   const selectedPostIsPublic = selectedPost?.status === "published"
     && Boolean(selectedPost.published_at)
     && new Date(selectedPost.published_at).getTime() <= workflowNow.getTime();
@@ -251,7 +274,6 @@ export default function AdminEmailPage() {
     try {
       const data = await invokeInsightEmail("preview", { post_id: selectedPostId });
       setPreview(data);
-      setTestedPostId("");
       setPreviewOpen(true);
       await loadData();
     } catch (previewError) {
@@ -268,7 +290,6 @@ export default function AdminEmailPage() {
     setMessage("");
     try {
       await invokeInsightEmail("test", { post_id: selectedPostId });
-      setTestedPostId(selectedPostId);
       setMessage("Đã gửi bản thử đến tunguyen@facs.vn. Audience chưa nhận email.");
       await loadData();
     } catch (testError) {
@@ -291,7 +312,6 @@ export default function AdminEmailPage() {
       setConfirmationOpen(false);
       setConfirmationText("");
       setPreview(null);
-      setTestedPostId("");
       setMessage(`Đã gửi Audience thành công đến ${data.recipients?.bcc_count || 0} địa chỉ Bcc.`);
       await loadData();
     } catch (sendError) {
@@ -441,26 +461,10 @@ export default function AdminEmailPage() {
               Audience chỉ nhận email sau đủ ba bước: xem trước nội dung, gửi thử nội bộ và xác nhận gửi cuối cùng.
             </p>
           </div>
-          <label className="block min-w-0 lg:w-[420px]">
-            <span className="mb-2 block text-xs font-semibold uppercase tracking-[0.12em] text-slate-500">Chọn bài viết</span>
-            <select
-              value={selectedPostId}
-              onChange={(event) => {
-                setSelectedPostId(event.target.value);
-                setPreview(null);
-                setTestedPostId("");
-                setConfirmationOpen(false);
-              }}
-              className="w-full rounded-2xl border border-white/10 bg-[#081321] px-4 py-3 text-sm text-white outline-none focus:border-cyan-300/35"
-            >
-              <option value="">Chọn một bài viết...</option>
-              {posts.map((post) => (
-                <option key={post.id} value={post.id}>
-                  {postTitle(post)} · {deliveryModeLabels[post.email_delivery_mode] || "Chưa cấu hình"}
-                </option>
-              ))}
-            </select>
-          </label>
+          <button type="button" disabled={Boolean(workflowBusy)} onClick={() => setPostPickerOpen(true)} aria-haspopup="dialog"
+            className="inline-flex shrink-0 items-center justify-center gap-2 rounded-2xl border border-cyan-200/25 bg-[#081321] px-5 py-3 text-sm font-semibold text-cyan-100 transition hover:border-cyan-200/60 disabled:opacity-40">
+            <Search size={18} /> Tìm và chọn bài viết
+          </button>
         </div>
 
         {selectedPost ? (
@@ -607,6 +611,8 @@ export default function AdminEmailPage() {
         </div>
       </section>
 
+      {postPickerOpen && <InsightPostPicker selectedId={selectedPostId} onSelect={choosePost} onClose={() => setPostPickerOpen(false)} />}
+
       {previewOpen && preview && (
         <div role="presentation" onClick={() => setPreviewOpen(false)} className="fixed inset-0 z-[130] flex items-center justify-center bg-[#020811]/90 p-4 backdrop-blur-md">
           <section role="dialog" aria-modal="true" aria-label="Xem trước email Insights" onClick={(event) => event.stopPropagation()} className="max-h-[94vh] w-full max-w-5xl overflow-hidden rounded-[30px] border border-cyan-200/20 bg-[#0b1625] shadow-[0_40px_140px_rgba(0,0,0,0.65)]">
@@ -620,9 +626,9 @@ export default function AdminEmailPage() {
               </div>
               <button type="button" onClick={() => setPreviewOpen(false)} className="flex h-10 w-10 shrink-0 items-center justify-center rounded-xl border border-white/10 text-slate-400 transition hover:text-white" aria-label="Đóng xem trước"><X size={19} /></button>
             </div>
-            <div className="max-h-[calc(94vh-120px)] overflow-y-auto bg-white p-5 md:p-8">
-              <div dangerouslySetInnerHTML={{ __html: DOMPurify.sanitize(preview.body_html || "") }} />
-            </div>
+            <iframe title="Nội dung email Insights" sandbox="allow-popups allow-popups-to-escape-sandbox" referrerPolicy="no-referrer"
+              srcDoc={DOMPurify.sanitize(preview.body_html || "", { WHOLE_DOCUMENT: true, ADD_ATTR: ["target"] })}
+              className="block h-[calc(90dvh-150px)] min-h-64 w-full border-0 bg-[#eef1f4]" />
           </section>
         </div>
       )}

@@ -1,6 +1,6 @@
 import { createClient } from "npm:@supabase/supabase-js@2";
 import { corsHeaders } from "../_shared/cors.ts";
-import { buildInsightEmail } from "../_shared/email-template.ts";
+import { buildInsightEmail, INSIGHT_EMAIL_TEMPLATE_VERSION } from "../_shared/email-template.ts";
 import type { InsightPost } from "../_shared/email-template.ts";
 import { getMicrosoftGraphToken, getMicrosoftMailStatus, sendMicrosoftMail } from "../_shared/microsoft-graph.ts";
 
@@ -41,6 +41,7 @@ async function loadPost(admin: AdminClient, postId: string) {
 async function emailContentHash(post: InsightEmailPost, siteUrl: string) {
   const snapshot = JSON.stringify({
     review_schema: EMAIL_REVIEW_SCHEMA_VERSION,
+    template_version: INSIGHT_EMAIL_TEMPLATE_VERSION,
     id: post.id,
     title_vi: post.title_vi || "",
     title_en: post.title_en || "",

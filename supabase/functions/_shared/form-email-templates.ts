@@ -66,29 +66,32 @@ function formatTime(value: string) {
   }).format(new Date(value));
 }
 
-function shell(content: string, siteUrl: string) {
+export function buildEmailShell(content: string, siteUrl: string) {
   const baseUrl = siteUrl.replace(/\/$/, "");
   return `<!doctype html>
 <html><head><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1"></head>
 <body style="margin:0;padding:0;background:#eef1f4;color:#243044;font-family:Arial,Helvetica,sans-serif;">
-  <table role="presentation" width="100%" cellspacing="0" cellpadding="0" border="0" style="background:#eef1f4;">
-    <tr><td align="center" style="padding:34px 14px 44px;">
-      <img src="${baseUrl}/facs-email-signature-banner.png" alt="FACS" width="190" style="display:block;width:190px;max-width:48%;height:auto;margin:0 auto 22px;border:0;">
-      <table role="presentation" width="640" cellspacing="0" cellpadding="0" border="0" style="width:100%;max-width:640px;background:#ffffff;border:1px solid #d8dee6;border-top:4px solid #22d3ee;">
-        <tr><td style="padding:34px 38px;font-size:14px;line-height:1.72;text-align:left;">${content}</td></tr>
+  <table role="presentation" width="100%" cellspacing="0" cellpadding="0" border="0" style="font-family:Arial,Helvetica,sans-serif;background:#eef1f4;">
+    <tr><td align="center" style="font-family:Arial,Helvetica,sans-serif;padding:34px 14px 44px;">
+      <img src="${baseUrl}/facs-email-signature-banner.png" alt="FACS" width="190" style="font-family:Arial,Helvetica,sans-serif;display:block;width:190px;max-width:48%;height:auto;margin:0 auto 22px;border:0;">
+      <table role="presentation" width="640" cellspacing="0" cellpadding="0" border="0" style="font-family:Arial,Helvetica,sans-serif;width:100%;max-width:640px;background:#ffffff;border:1px solid #d8dee6;border-top:4px solid #22d3ee;">
+        <tr><td style="padding:34px 38px;color:#243044;font-family:Arial,Helvetica,sans-serif;font-size:14px;line-height:1.72;text-align:left;">${content}</td></tr>
       </table>
-      <div style="padding-top:18px;font-size:11px;line-height:1.5;color:#8a95a5;">Email này được gửi tự động từ website FACS. Bạn có thể phản hồi trực tiếp email này.<br>This automated email was sent from the FACS website. You may reply directly to this email.</div>
+      <div style="font-family:Arial,Helvetica,sans-serif;padding-top:18px;font-size:11px;line-height:1.5;color:#8a95a5;">Email này được gửi tự động từ website FACS. Bạn có thể phản hồi trực tiếp email này.<br>This automated email was sent from the FACS website. You may reply directly to this email.</div>
     </td></tr>
   </table>
 </body></html>`;
 }
 
-function signature(email: string, signoff: string, department: string) {
-  return `<p style="margin:20px 0 0;">${signoff}</p>
-  <p style="margin:15px 0 0;font-weight:700;color:#0f315a;">${department}</p>
-  <p style="margin:14px 0 0;font-weight:700;">FACS (VIETNAM) TEAM</p>
-  <p style="margin:7px 0 0;">Email: <a href="mailto:${email}" style="color:#067a98;">${email}</a><br>Website: <a href="https://facs.vn" style="color:#067a98;">www.facs.vn</a><br>Hotline: (+84) 972 798 424</p>`;
+export function buildEmailSignature(email: string, signoff: string, department: string) {
+  return `<p style="font-family:Arial,Helvetica,sans-serif;margin:20px 0 0;">${signoff}</p>
+  <p style="font-family:Arial,Helvetica,sans-serif;margin:15px 0 0;font-weight:700;color:#0f315a;">${department}</p>
+  <p style="font-family:Arial,Helvetica,sans-serif;margin:14px 0 0;font-weight:700;">FACS (VIETNAM) TEAM</p>
+  <p style="font-family:Arial,Helvetica,sans-serif;margin:7px 0 0;">Email: <a href="mailto:${email}" style="font-family:Arial,Helvetica,sans-serif;color:#067a98;">${email}</a><br>Website: <a href="https://facs.vn" style="font-family:Arial,Helvetica,sans-serif;color:#067a98;">www.facs.vn</a><br>Hotline: (+84) 972 798 424</p>`;
 }
+
+const shell = buildEmailShell;
+const signature = buildEmailSignature;
 
 function replaceVariables(value: string, variables: Record<string, string>) {
   return Object.entries(variables).reduce((result, [key, replacement]) => result.replaceAll(`{{${key}}}`, replacement), value);

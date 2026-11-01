@@ -3,6 +3,7 @@ import { corsHeaders } from "../_shared/cors.ts";
 import { getMicrosoftGraphToken, getMicrosoftMailStatus, sendMicrosoftMail } from "../_shared/microsoft-graph.ts";
 import { sendSubmissionEmails } from "../_shared/submission-mailer.ts";
 import { DEFAULT_RECEIPT_TEMPLATES } from "../_shared/form-email-templates.ts";
+import { buildFormReceiptTestMail } from "../_shared/form-email-test.ts";
 
 const PUBLIC_MAILBOXES = ["hr@facs.vn", "contact@facs.vn"];
 const FORM_MAILBOX = "tunguyen@facs.vn";
@@ -88,17 +89,18 @@ Deno.serve(async (req) => {
     if (action === "test") {
       const senderEmail = String(body.sender_email || "").toLowerCase();
       if (!PUBLIC_MAILBOXES.includes(senderEmail)) return json({ error: "Hộp thư công khai gửi thử không hợp lệ." }, 400);
-      const senderName = senderEmail === "hr@facs.vn" ? "FACS Careers" : "FACS Contact";
+      const templateKey = senderEmail === "hr@facs.vn" ? "career_receipt" : "contact_receipt";
+      const { data: configuredTemplate, error: templateError } = await admin
+        .from("form_email_templates")
+        .select("template_key,subject,body_vi,body_en")
+        .eq("template_key", templateKey)
+        .maybeSingle();
+      if (templateError && templateError.code !== "42P01") throw new Error(templateError.message);
+      const testMail = buildFormReceiptTestMail({ senderEmail, siteUrl, template: configuredTemplate });
       const token = await getMicrosoftGraphToken();
-      const testTime = new Date().toLocaleString("vi-VN", { timeZone: "Asia/Ho_Chi_Minh" });
       const result = await sendMicrosoftMail({
+        ...testMail,
         accessToken: token,
-        senderEmail,
-        senderName,
-        subject: `[TEST] Kiểm tra gửi từ ${senderEmail}`,
-        bodyHtml: `<div style="font-family:Arial,sans-serif;line-height:1.7"><h2>Kiểm tra FACS Email Automation</h2><p>Email thử đã được gửi thành công từ <strong>${senderEmail}</strong> qua Microsoft 365.</p><p>Thời gian: ${testTime}</p></div>`,
-        to: [{ mail_address: FORM_MAILBOX, name: "Tu Nguyen" }],
-        replyTo: [{ mail_address: senderEmail, name: senderName }],
         dedupeKey: `facs-form-test-${Date.now()}`,
       });
       await admin.from("submission_email_logs").insert({
@@ -111,7 +113,7 @@ Deno.serve(async (req) => {
         lark_thread_id: result.thread_id || null,
         completed_at: new Date().toISOString(),
       });
-      return json({ ok: true, to: FORM_MAILBOX, sender_email: senderEmail });
+      return json({ ok: true, to: FORM_MAILBOX, sender_email: senderEmail, template_key: templateKey });
     }
 
     if (action === "retry") {
