@@ -6,8 +6,8 @@ declare
   contact_id uuid;
   suffix text := gen_random_uuid()::text;
 begin
-  insert into public.posts(title_vi,content_vi,slug,status,published_at,email_delivery_mode)
-  values('Selected Bcc QA','Fixture only','selected-email-qa-'||suffix,'published',now()-interval '1 hour','review_after_publish') returning id into article_id;
+  insert into public.posts(title_vi,content_vi,slug,slug_vi,slug_en,status,published_at,email_delivery_mode)
+  values('Selected Bcc QA','Fixture only','selected-email-qa-'||suffix,'selected-email-qa-vi-'||suffix,'selected-email-qa-en-'||suffix,'published',now()-interval '1 hour','review_after_publish') returning id into article_id;
   perform set_config('facs.qa_post',article_id::text,true);
   insert into public.insight_email_audience(email,status) values('chosen-a-'||suffix||'@example.com','subscribed') returning id into contact_id;
   perform set_config('facs.qa_first',contact_id::text,true);

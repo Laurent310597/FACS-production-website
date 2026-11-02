@@ -7,8 +7,8 @@ declare
   audience_id uuid;
   suffix text := gen_random_uuid()::text;
 begin
-  insert into public.posts(title_vi,content_vi,slug,status,published_at,email_delivery_mode)
-  values('Email delivery QA','Fixture only','email-qa-'||suffix,'published',now()-interval '1 hour','review_after_publish') returning id into post_id;
+  insert into public.posts(title_vi,content_vi,slug,slug_vi,slug_en,status,published_at,email_delivery_mode)
+  values('Email delivery QA','Fixture only','email-qa-'||suffix,'email-qa-vi-'||suffix,'email-qa-en-'||suffix,'published',now()-interval '1 hour','review_after_publish') returning id into post_id;
   perform set_config('facs.qa_post',post_id::text,true);
   insert into public.insight_email_audience(email,status) values('first-'||suffix||'@example.com','subscribed') returning id into audience_id;
   perform set_config('facs.qa_first',audience_id::text,true);
