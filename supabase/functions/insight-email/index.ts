@@ -1,4 +1,5 @@
 import { createClient } from "npm:@supabase/supabase-js@2";
+import { deliverInsightClaim } from "../_shared/insight-delivery.ts";
 import { corsHeaders } from "../_shared/cors.ts";
 import { buildInsightEmail, INSIGHT_EMAIL_TEMPLATE_VERSION } from "../_shared/email-template.ts";
 import type { InsightPost } from "../_shared/email-template.ts";
@@ -10,13 +11,12 @@ const CC = [
   { mail_address: "yendoan@facs.vn", name: "Yen Doan" },
   { mail_address: "thanhhuynh@facs.vn", name: "Thanh Huynh" },
 ];
-const TEST_VALIDITY_MS = 24 * 60 * 60 * 1000;
 const EMAIL_REVIEW_SCHEMA_VERSION = "2026-08-26-v1";
 type AdminClient = ReturnType<typeof createClient<any>>;
 type InsightEmailPost = InsightPost & Record<string, any>;
 
 function json(body: unknown, status = 200) {
-  return new Response(JSON.stringify(body), {
+  return new Response(JSON.stringify({ server_now: new Date().toISOString(), ...(body as Record<string, unknown>) }), {
     status,
     headers: { ...corsHeaders, "Content-Type": "application/json; charset=utf-8" },
   });
@@ -34,7 +34,8 @@ async function requireAdmin(req: Request, admin: AdminClient) {
 async function loadPost(admin: AdminClient, postId: string) {
   if (!postId) throw new Error("Vui lòng chọn bài viết.");
   const { data, error } = await admin.from("posts").select("*").eq("id", postId).single();
-  if (error || !data) throw new Error("Không tìm thấy bài viết.");
+  if (error) throw new Error(`Không thể đọc bài viết: ${error.message}`);
+  if (!data) throw new Error("Không tìm thấy bài viết.");
   return data as InsightEmailPost;
 }
 
@@ -76,13 +77,13 @@ async function getAudienceRecipients(admin: AdminClient) {
   return Array.from(new Map(normalized.map((item) => [item.mail_address, item])).values());
 }
 
-function recipientSummary(bccCount: number) {
+function recipientSummary(bccCount: number, cc = CC.map((item) => item.mail_address)) {
   return {
     sender: SENDER,
     to: TO.map((item) => item.mail_address),
-    cc: CC.map((item) => item.mail_address),
+    cc,
     bcc_count: bccCount,
-    total_recipients: bccCount + TO.length + CC.length,
+    total_recipients: bccCount + TO.length + cc.length,
   };
 }
 
@@ -217,30 +218,44 @@ Deno.serve(async (req) => {
       return json({ ...getMicrosoftMailStatus(), mailbox_email: SENDER });
     }
 
-    if (action === "preview") {
-      const post = await loadPost(admin, String(body.post_id || ""));
-      const hash = await emailContentHash(post, siteUrl);
-      const bcc = await getAudienceRecipients(admin);
-      const email = buildInsightEmail(post, siteUrl, false);
+    if (action === "workflow_status") {
+      return json({ post: await loadPost(admin, String(body.post_id || "")) });
+    }
 
-      await admin.from("posts").update({
+    if (action === "preview" || action === "preview_single") {
+      const post = await loadPost(admin, String(body.post_id || ""));
+      if (post.email_notification_status === "processing") throw new Error("Bài viết đang có lượt gửi. Vui lòng chờ hoàn tất.");
+      const hash = await emailContentHash(post, siteUrl);
+      const email = buildInsightEmail(post, siteUrl, false);
+      if (action === "preview_single") {
+        if (post.email_delivery_mode === "disabled") throw new Error("Bài viết đang ở chế độ Không gửi email.");
+        if (post.status !== "published" || !post.published_at || Date.parse(post.published_at) > Date.now()) {
+          throw new Error("Chỉ được gửi riêng bài viết đã xuất bản công khai.");
+        }
+        const { data: contact, error } = await admin.from("insight_email_audience")
+          .select("id,email,display_name,status").eq("id", String(body.audience_id || "")).single();
+        const address = String(contact?.email || "").trim().toLowerCase();
+        if (error || contact?.status !== "subscribed" || !/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(address)
+          || [SENDER, ...TO.map((item) => item.mail_address), ...CC.map((item) => item.mail_address)].includes(address)) {
+          throw new Error("Khách hàng không còn trong danh sách đang nhận hoặc địa chỉ không hợp lệ.");
+        }
+        return json({ ok: true, post_id: post.id, preview_hash: hash, subject: email.subject,
+          body_html: email.html, contact: { ...contact, email: address },
+          recipients: { ...recipientSummary(1, []), bcc: [address] } });
+      }
+      const bcc = await getAudienceRecipients(admin);
+      const keepTest = post.email_notification_test_hash === hash;
+      const { data: reviewed, error } = await admin.from("posts").update({
         email_notification_previewed_at: new Date().toISOString(),
         email_notification_preview_hash: hash,
-        email_notification_tested_at: null,
-        email_notification_test_hash: null,
+        ...(!keepTest ? { email_notification_tested_at: null, email_notification_test_hash: null } : {}),
         email_notification_confirmed_at: null,
         email_notification_confirmed_by: null,
-      }).eq("id", post.id);
-
-      return json({
-        ok: true,
-        post_id: post.id,
-        preview_hash: hash,
-        subject: email.subject,
-        body_html: email.html,
-        recipients: recipientSummary(bcc.length),
-        warnings: bcc.length === 0 ? ["Danh sách Audience chưa có khách hàng đang ở trạng thái subscribed."] : [],
-      });
+      }).eq("id", post.id).select("*").single();
+      if (error) throw new Error(`Không thể lưu trạng thái xem trước: ${error.message}`);
+      return json({ ok: true, post_id: post.id, post: reviewed, preview_hash: hash,
+        subject: email.subject, body_html: email.html, recipients: recipientSummary(bcc.length),
+        warnings: bcc.length === 0 ? ["Danh sách Audience chưa có khách hàng đang ở trạng thái subscribed."] : [] });
     }
 
     if (action === "test") {
@@ -291,15 +306,18 @@ Deno.serve(async (req) => {
         });
         if (post) {
           const hash = await emailContentHash(post, siteUrl);
-          await admin.from("posts").update({
+          const { data: tested, error: stateError } = await admin.from("posts").update({
             email_notification_tested_at: new Date().toISOString(),
             email_notification_test_hash: hash,
             email_notification_confirmed_at: null,
             email_notification_confirmed_by: null,
-          }).eq("id", post.id);
+          }).eq("id", post.id).select("*").single();
+          if (stateError) throw new Error(`Email thử đã gửi nhưng chưa lưu được trạng thái: ${stateError.message}`);
+          post = tested as InsightEmailPost;
         }
         return json({
           ok: true,
+          post,
           post_id: post?.id || null,
           to: TO[0].mail_address,
           test_hash: post ? await emailContentHash(post, siteUrl) : null,
@@ -311,54 +329,49 @@ Deno.serve(async (req) => {
       }
     }
 
-    if (action === "confirm_send") {
-      if (String(body.confirmation_text || "") !== "SEND-AUDIENCE") {
-        throw new Error("Thiếu xác nhận gửi Audience.");
+    if (action === "confirm_send" || action === "confirm_single") {
+      const single = action === "confirm_single";
+      if (String(body.confirmation_text || "") !== (single ? "SEND-SINGLE" : "SEND-AUDIENCE")) {
+        throw new Error("Thiếu xác nhận gửi email.");
       }
-
       const post = await loadPost(admin, String(body.post_id || ""));
-      if (post.email_delivery_mode === "disabled") {
-        throw new Error("Bài viết đang ở chế độ Không gửi email.");
-      }
-      if (post.email_notification_status === "sent") {
-        throw new Error("Email của bài viết này đã được gửi. Hệ thống không cho phép gửi lặp lại.");
-      }
-      if (post.email_notification_status === "processing") {
-        throw new Error("Email đang được xử lý. Vui lòng không gửi lặp lại.");
-      }
-      if (post.status !== "published" || !post.published_at || new Date(post.published_at).getTime() > Date.now()) {
-        throw new Error("Chỉ được gửi Audience sau khi bài viết đã được xuất bản công khai.");
-      }
-
       const currentHash = await emailContentHash(post, siteUrl);
-      if (!post.email_notification_preview_hash || post.email_notification_preview_hash !== currentHash) {
-        throw new Error("Bản xem trước không còn khớp với bài viết hiện tại. Vui lòng xem trước lại.");
+      if (single && String(body.preview_hash || "") !== currentHash) {
+        throw new Error("Nội dung bài viết đã thay đổi. Hãy mở lại xác nhận gửi riêng.");
       }
-      if (!post.email_notification_test_hash || post.email_notification_test_hash !== currentHash) {
-        throw new Error("Email thử không còn khớp với bài viết hiện tại. Vui lòng gửi thử lại.");
+      const requestId = String(body.request_id || crypto.randomUUID());
+      if (!/^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}$/i.test(requestId)) {
+        throw new Error("Mã lượt gửi không hợp lệ.");
       }
-      const testedAt = post.email_notification_tested_at ? new Date(post.email_notification_tested_at).getTime() : 0;
-      if (!testedAt || Date.now() - testedAt > TEST_VALIDITY_MS) {
-        throw new Error("Lần gửi thử đã quá 24 giờ. Vui lòng xem trước và gửi thử lại.");
-      }
-
-      const bcc = await getAudienceRecipients(admin);
-      if (bcc.length === 0) throw new Error("Danh sách Audience chưa có khách hàng đang ở trạng thái subscribed.");
-      if (bcc.length + TO.length + CC.length > 500) {
-        throw new Error("Tổng số người nhận vượt giới hạn 500 của Microsoft 365. Vui lòng giảm Audience trước khi gửi.");
-      }
-
-      const { data: claimed, error: claimError } = await admin.rpc("confirm_and_claim_insight_email", {
-        p_post_id: post.id,
-        p_confirmed_by: user.id,
-        p_expected_hash: currentHash,
+      const { data: claim, error: claimError } = await admin.rpc("claim_insight_email_delivery", {
+        p_post_id: post.id, p_confirmed_by: user.id, p_expected_hash: currentHash,
+        p_expected_updated_at: post.updated_at, p_request_id: requestId,
+        p_audience_id: single ? String(body.audience_id || "") : null,
       });
-      if (claimError) throw new Error(`Không thể xác nhận và khóa lượt gửi: ${claimError.message}`);
-      if (!claimed?.length) throw new Error("Bài viết hoặc trạng thái kiểm duyệt vừa thay đổi. Vui lòng tải lại và thực hiện lại ba bước.");
-
-      const result = await processPost(admin, claimed[0] as InsightEmailPost, siteUrl);
-      if (result.status !== "sent") throw new Error(result.error || "Microsoft 365 không gửi được email.");
-      return json({ ok: true, result, recipients: recipientSummary(bcc.length) });
+      if (claimError) throw new Error(claimError.message);
+      const result = await deliverInsightClaim(claim, {
+        send: async (recipients) => {
+          const token = await getMicrosoftGraphToken();
+          const email = buildInsightEmail(claim.post as InsightEmailPost, siteUrl, false);
+          return sendMicrosoftMail({ accessToken: token, senderEmail: SENDER, senderName: "FACS Insights",
+            subject: email.subject, bodyHtml: email.html, to: TO, ...recipients,
+            replyTo: [{ mail_address: SENDER, name: "FACS Insights" }] });
+        },
+        finalize: async (sent) => {
+          const { error } = await admin.rpc("finalize_insight_email_delivery", {
+            p_post_id: post.id, p_log_id: claim.log_id,
+            p_message_id: sent.message_id || null, p_thread_id: sent.thread_id || null,
+          });
+          if (error) throw new Error(`Không thể chốt trạng thái gửi: ${error.message}`);
+        },
+        fail: async (message) => {
+          const { error } = await admin.rpc("fail_insight_email_delivery", {
+            p_post_id: post.id, p_log_id: claim.log_id, p_error: message,
+          });
+          if (error) throw new Error(`${message}. Chưa thể lưu trạng thái lỗi; hãy kiểm tra nhật ký trước khi thử lại.`);
+        },
+      });
+      return json({ ok: true, result, recipients: recipientSummary(claim.bcc.length, claim.cc) });
     }
 
     return json({ error: "Action không hợp lệ" }, 400);

@@ -5,9 +5,87 @@ import { buildEditableReceipt } from "../supabase/functions/_shared/form-email-t
 import { buildInsightEmail } from "../supabase/functions/_shared/email-template.ts";
 import { createClient } from "@supabase/supabase-js";
 import { EMPTY_POST_FILTERS, publicationDateBounds, searchInsightPosts } from "../src/lib/insightPostSearch.js";
+import { emailReviewState, workflowTime } from "../src/lib/insightEmailWorkflow.js";
+import { deliverInsightClaim } from "../supabase/functions/_shared/insight-delivery.ts";
 
 const now = new Date("2026-10-31T12:00:00Z");
 const siteUrl = "https://facs.vn";
+
+test("a sent article remains eligible for another deliberately reviewed Audience send", () => {
+  const post = { id: "post", status: "published", published_at: "2026-10-30T12:00:00Z", email_notification_status: "sent",
+    email_notification_preview_hash: "review", email_notification_test_hash: "review", email_notification_tested_at: now.toISOString() };
+  const preview = { post_id: "post", preview_hash: "review" };
+  assert.deepEqual(emailReviewState(post, preview, now.getTime()), { previewReady: true, testReady: true, isPublic: true });
+  assert.equal(emailReviewState(post, preview, now.getTime() + 86400001).testReady, false);
+  assert.equal(emailReviewState({ ...post, email_notification_test_hash: "old-content" }, preview, now.getTime()).testReady, false);
+  assert.equal(emailReviewState(post, { ...preview, post_id: "different" }, now.getTime()).previewReady, false);
+});
+
+test("workflow uses server time immediately even when the customer's PC clock is hours behind", () => {
+  const anchor = { serverMs: now.getTime(), monotonicMs: 5000 };
+  const post = { id: "post", status: "published", published_at: "2026-10-30T12:00:00Z",
+    email_notification_preview_hash: "review", email_notification_test_hash: "review", email_notification_tested_at: now.toISOString() };
+  assert.equal(emailReviewState(post, { post_id: "post", preview_hash: "review" }, workflowTime(anchor, 5001)).testReady, true);
+  assert.equal(workflowTime(anchor, 6500), now.getTime() + 1500);
+});
+
+const singleClaim = { post: { id: "post" }, log_id: "log", status: "processing", request_id: "intent-1", audience_id: "customer-2", bcc: ["second@example.com"], cc: [] };
+
+test("individual delivery gives the transport exactly the selected customer in Bcc", async () => {
+  let sent;
+  let finalized = false;
+  const result = await deliverInsightClaim(singleClaim, {
+    send: async (recipients) => { sent = recipients; return { message_id: "accepted" }; },
+    finalize: async () => { finalized = true; }, fail: async () => { assert.fail("must not fail"); },
+  });
+  assert.deepEqual(sent.bcc, [{ mail_address: "second@example.com" }]);
+  assert.deepEqual(sent.cc, []);
+  assert.equal(result.bcc_count, 1);
+  assert.equal(finalized, true);
+});
+
+test("an idempotent retry never invokes the mail transport again", async () => {
+  const result = await deliverInsightClaim({ ...singleClaim, duplicate: true, status: "sent" }, {
+    send: async () => { assert.fail("duplicate send"); }, finalize: async () => { assert.fail("duplicate finalize"); }, fail: async () => { assert.fail("duplicate failure"); },
+  });
+  assert.equal(result.already_processed, true);
+});
+
+test("separate intentional resend requests have distinct delivery identifiers", async () => {
+  const identifiers = [];
+  for (const request_id of ["first-intent", "second-intent"]) {
+    await deliverInsightClaim({ ...singleClaim, audience_id: null, request_id, bcc: ["first@example.com", "second@example.com"], cc: ["staff@facs.vn"] }, {
+      send: async (recipients) => { identifiers.push(recipients.dedupeKey); return {}; }, finalize: async () => {}, fail: async () => {},
+    });
+  }
+  assert.notEqual(identifiers[0], identifiers[1]);
+});
+
+test("an individual claim cannot accidentally fan out to several Bcc recipients", async () => {
+  await assert.rejects(deliverInsightClaim({ ...singleClaim, bcc: ["first@example.com", "second@example.com"] }, {
+    send: async () => { assert.fail("must not send"); }, finalize: async () => {}, fail: async () => {},
+  }), /phạm vi gửi/);
+});
+
+test("a provider-accepted email with a database failure stays locked for reconciliation", async () => {
+  let failed = false;
+  await assert.rejects(deliverInsightClaim(singleClaim, {
+    send: async () => ({ message_id: "accepted" }), finalize: async () => { throw new Error("database offline"); },
+    fail: async () => { failed = true; },
+  }), /Sent Items/);
+  assert.equal(failed, false);
+});
+
+test("a failure before provider acceptance records a failure and does not retry", async () => {
+  let attempts = 0;
+  let message;
+  await assert.rejects(deliverInsightClaim(singleClaim, {
+    send: async () => { attempts += 1; throw new Error("token rejected"); }, finalize: async () => { assert.fail("must not finalize"); },
+    fail: async (error) => { message = error; },
+  }), /token rejected/);
+  assert.equal(attempts, 1);
+  assert.equal(message, "token rejected");
+});
 
 for (const senderEmail of ["contact@facs.vn", "hr@facs.vn"]) {
   test(`${senderEmail}: receipt test is internal-only and clearly marked`, () => {

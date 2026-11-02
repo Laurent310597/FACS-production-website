@@ -1,4 +1,4 @@
-import { useEffect, useMemo, useState } from "react";
+import { useCallback, useEffect, useMemo, useRef, useState } from "react";
 import DOMPurify from "dompurify";
 import {
   CheckCircle2,
@@ -20,8 +20,9 @@ import {
 } from "lucide-react";
 import { useSearchParams } from "react-router-dom";
 import AdminLayout from "../../components/admin/AdminLayout";
+import InsightSingleSendDialog from "../../components/admin/InsightSingleSendDialog";
+import { emailReviewState, workflowTime } from "../../lib/insightEmailWorkflow";
 import InsightPostPicker from "../../components/admin/InsightPostPicker";
-import { INSIGHT_POST_COLUMNS } from "../../lib/insightPostSearch";
 import { emailStatusLabels, invokeInsightEmail } from "../../lib/emailNotifications";
 import { supabase } from "../../lib/supabaseClient";
 
@@ -125,8 +126,19 @@ export default function AdminEmailPage() {
   const [previewOpen, setPreviewOpen] = useState(false);
   const [confirmationOpen, setConfirmationOpen] = useState(false);
   const [confirmationText, setConfirmationText] = useState("");
-  const [workflowBusy, setWorkflowBusy] = useState("");
+  const [sendRequestId, setSendRequestId] = useState("");
+  const [singlePreview, setSinglePreview] = useState(null);
   const [workflowNow, setWorkflowNow] = useState(() => new Date());
+  const serverClock = useRef(null);
+  const syncWorkflow = useCallback((data) => {
+    const serverMs = Date.parse(data?.server_now || "");
+    if (Number.isFinite(serverMs)) {
+      serverClock.current = { serverMs, monotonicMs: performance.now() };
+      setWorkflowNow(new Date(serverMs));
+    }
+    if (data?.post) setSelectedPost(data.post);
+  }, []);
+  const [workflowBusy, setWorkflowBusy] = useState("");
   const [loading, setLoading] = useState(true);
   const [saving, setSaving] = useState(false);
   const [testing, setTesting] = useState(false);
@@ -158,7 +170,6 @@ export default function AdminEmailPage() {
     else setAudience(contacts || []);
     if (!logError) setLogs(logRows || []);
     setPostRefresh((current) => current + 1);
-    setWorkflowNow(new Date());
     setLoading(false);
   };
 
@@ -211,25 +222,27 @@ export default function AdminEmailPage() {
 
   useEffect(() => {
     if (!selectedPostId) return;
-    const controller = new AbortController();
+    let cancelled = false;
     const loadSelectedPost = async () => {
-      const { data, error: postError } = await supabase.from("posts").select(INSIGHT_POST_COLUMNS)
-        .eq("id", selectedPostId).maybeSingle().abortSignal(controller.signal);
-      if (controller.signal.aborted) return;
-      if (postError || !data) {
+      try {
+        const data = await invokeInsightEmail("workflow_status", { post_id: selectedPostId });
+        if (!cancelled) syncWorkflow(data);
+      } catch (postError) {
+        if (cancelled) return;
         setSelectedPost(null);
         setPreview(null);
-        setError(postError?.message || "Bài viết không còn trong danh sách. Vui lòng chọn lại.");
-      } else setSelectedPost(data);
+        setError(postError.message || "Không thể tải bài viết. Vui lòng chọn lại.");
+      }
     };
     loadSelectedPost();
-    return () => controller.abort();
-  }, [selectedPostId, postRefresh]);
+    return () => { cancelled = true; };
+  }, [selectedPostId, postRefresh, syncWorkflow]);
 
   const choosePost = (post) => {
     if (post.id !== selectedPostId) {
       setPreview(null);
       setConfirmationOpen(false);
+      setSinglePreview(null);
       setConfirmationText("");
       setMessage("");
       setError("");
@@ -240,7 +253,9 @@ export default function AdminEmailPage() {
   };
 
   useEffect(() => {
-    const timer = window.setInterval(() => setWorkflowNow(new Date()), 60000);
+    const timer = window.setInterval(() => {
+      if (serverClock.current) setWorkflowNow(new Date(workflowTime(serverClock.current, performance.now())));
+    }, 1000);
     return () => window.clearInterval(timer);
   }, []);
 
@@ -254,17 +269,52 @@ export default function AdminEmailPage() {
   }, [audience, query, status]);
 
   const subscribedCount = audience.filter((contact) => contact.status === "subscribed").length;
-  const previewReady = Boolean(preview?.post_id && preview.post_id === selectedPostId
-    && preview.preview_hash && preview.preview_hash === selectedPost?.email_notification_preview_hash);
-  const testedAt = selectedPost?.email_notification_tested_at
-    ? new Date(selectedPost.email_notification_tested_at).getTime()
-    : 0;
-  const testReady = previewReady && testedAt > 0 && testedAt <= workflowNow.getTime()
-    && workflowNow.getTime() - testedAt <= 24 * 60 * 60 * 1000
-    && selectedPost?.email_notification_test_hash === preview?.preview_hash;
-  const selectedPostIsPublic = selectedPost?.status === "published"
-    && Boolean(selectedPost.published_at)
-    && new Date(selectedPost.published_at).getTime() <= workflowNow.getTime();
+  const { previewReady, testReady, isPublic: selectedPostIsPublic } = emailReviewState(selectedPost, preview, workflowNow.getTime());
+  const sending = selectedPost?.email_notification_status === "processing";
+  const closeSinglePreview = useCallback(() => {
+    if (workflowBusy !== "single") setSinglePreview(null);
+  }, [workflowBusy]);
+
+  const openAudienceConfirmation = () => {
+    setConfirmationText("");
+    setSendRequestId(crypto.randomUUID());
+    setConfirmationOpen(true);
+  };
+
+  const previewSingleContact = async (contact) => {
+    if (!selectedPostId || workflowBusy) return;
+    setWorkflowBusy("preview-single");
+    setError("");
+    setMessage("");
+    try {
+      const data = await invokeInsightEmail("preview_single", { post_id: selectedPostId, audience_id: contact.id });
+      setSinglePreview({ ...data, request_id: crypto.randomUUID() });
+    } catch (singleError) {
+      setError(singleError.message);
+    } finally {
+      setWorkflowBusy("");
+    }
+  };
+
+  const sendSingleContact = async () => {
+    if (!singlePreview || workflowBusy) return;
+    setWorkflowBusy("single");
+    setError("");
+    try {
+      await invokeInsightEmail("confirm_single", {
+        post_id: singlePreview.post_id, audience_id: singlePreview.contact.id,
+        preview_hash: singlePreview.preview_hash, request_id: singlePreview.request_id,
+        confirmation_text: "SEND-SINGLE",
+      });
+      setMessage(`Đã gửi riêng bài viết đến ${singlePreview.contact.email} trong Bcc.`);
+      setSinglePreview(null);
+      await loadData();
+    } catch (singleError) {
+      setError(singleError.message);
+    } finally {
+      setWorkflowBusy("");
+    }
+  };
 
   const previewSelectedPost = async () => {
     if (!selectedPostId) return;
@@ -274,6 +324,7 @@ export default function AdminEmailPage() {
     try {
       const data = await invokeInsightEmail("preview", { post_id: selectedPostId });
       setPreview(data);
+      syncWorkflow(data);
       setPreviewOpen(true);
       await loadData();
     } catch (previewError) {
@@ -289,7 +340,8 @@ export default function AdminEmailPage() {
     setError("");
     setMessage("");
     try {
-      await invokeInsightEmail("test", { post_id: selectedPostId });
+      const data = await invokeInsightEmail("test", { post_id: selectedPostId });
+      syncWorkflow(data);
       setMessage("Đã gửi bản thử đến tunguyen@facs.vn. Audience chưa nhận email.");
       await loadData();
     } catch (testError) {
@@ -308,6 +360,7 @@ export default function AdminEmailPage() {
       const data = await invokeInsightEmail("confirm_send", {
         post_id: selectedPostId,
         confirmation_text: confirmationText,
+        request_id: sendRequestId,
       });
       setConfirmationOpen(false);
       setConfirmationText("");
@@ -476,11 +529,12 @@ export default function AdminEmailPage() {
               <div><div className="text-xs text-slate-500">Audience Bcc hiện tại</div><div className="mt-1 font-semibold">{subscribedCount} địa chỉ</div></div>
             </div>
 
-            {selectedPost.email_notification_status === "sent" ? (
-              <div className="mt-4 flex items-center gap-2 rounded-2xl border border-emerald-300/20 bg-emerald-300/8 px-4 py-3 text-sm text-emerald-100">
-                <CheckCircle2 size={17} /> Email của bài viết này đã gửi; hệ thống đã khóa gửi lặp lại.
+            {selectedPost.email_notification_status === "sent" && (
+              <div className="mt-4 rounded-2xl border border-emerald-300/20 bg-emerald-300/8 px-4 py-3 text-sm text-emerald-100">
+                Bài viết đã có lượt gửi thành công. Tú có thể gửi lại toàn bộ Audience theo ba bước bên dưới, hoặc bấm biểu tượng email ở từng khách hàng để gửi riêng.
               </div>
-            ) : selectedPost.email_delivery_mode === "disabled" ? (
+            )}
+            {selectedPost.email_delivery_mode === "disabled" ? (
               <div className="mt-4 rounded-2xl border border-amber-300/20 bg-amber-300/8 px-4 py-3 text-sm text-amber-100">
                 Bài viết đang ở chế độ Không gửi email. Hãy thay đổi phương thức trong màn hình chỉnh sửa bài viết.
               </div>
@@ -489,7 +543,7 @@ export default function AdminEmailPage() {
                 <div className={`rounded-2xl border p-4 ${previewReady ? "border-emerald-300/25 bg-emerald-300/8" : "border-white/10 bg-[#081321]/45"}`}>
                   <div className="flex items-center justify-between gap-3"><span className="font-semibold">1. Xem trước email</span>{previewReady && <CheckCircle2 size={18} className="text-emerald-300" />}</div>
                   <p className="mt-2 min-h-10 text-xs leading-relaxed text-slate-500">Kiểm tra tiêu đề, nội dung song ngữ, link bài viết và số lượng người nhận.</p>
-                  <button type="button" disabled={Boolean(workflowBusy)} onClick={previewSelectedPost} className="mt-4 inline-flex w-full items-center justify-center gap-2 rounded-xl border border-cyan-200/25 px-4 py-3 text-sm font-semibold text-cyan-100 disabled:opacity-40">
+                  <button type="button" disabled={Boolean(workflowBusy) || sending} onClick={previewSelectedPost} className="mt-4 inline-flex w-full items-center justify-center gap-2 rounded-xl border border-cyan-200/25 px-4 py-3 text-sm font-semibold text-cyan-100 disabled:opacity-40">
                     {workflowBusy === "preview" ? <Loader2 size={17} className="animate-spin" /> : <Eye size={17} />} Xem trước
                   </button>
                 </div>
@@ -497,7 +551,7 @@ export default function AdminEmailPage() {
                 <div className={`rounded-2xl border p-4 ${testReady ? "border-emerald-300/25 bg-emerald-300/8" : "border-white/10 bg-[#081321]/45"}`}>
                   <div className="flex items-center justify-between gap-3"><span className="font-semibold">2. Gửi thử nội bộ</span>{testReady && <CheckCircle2 size={18} className="text-emerald-300" />}</div>
                   <p className="mt-2 min-h-10 text-xs leading-relaxed text-slate-500">Chỉ gửi tới tunguyen@facs.vn; không Cc và không gửi khách hàng.</p>
-                  <button type="button" disabled={!previewReady || Boolean(workflowBusy)} onClick={testSelectedPost} className="mt-4 inline-flex w-full items-center justify-center gap-2 rounded-xl border border-violet-200/25 px-4 py-3 text-sm font-semibold text-violet-100 disabled:cursor-not-allowed disabled:opacity-35">
+                  <button type="button" disabled={!previewReady || Boolean(workflowBusy) || sending} onClick={testSelectedPost} className="mt-4 inline-flex w-full items-center justify-center gap-2 rounded-xl border border-violet-200/25 px-4 py-3 text-sm font-semibold text-violet-100 disabled:cursor-not-allowed disabled:opacity-35">
                     {workflowBusy === "test" ? <Loader2 size={17} className="animate-spin" /> : <Send size={17} />} Gửi thử
                   </button>
                 </div>
@@ -505,8 +559,8 @@ export default function AdminEmailPage() {
                 <div className="rounded-2xl border border-white/10 bg-[#081321]/45 p-4">
                   <div className="font-semibold">3. Xác nhận Audience</div>
                   <p className="mt-2 min-h-10 text-xs leading-relaxed text-slate-500">Gửi From/To/Cc cố định và toàn bộ khách hàng subscribed dưới dạng Bcc.</p>
-                  <button type="button" disabled={!testReady || !previewReady || !selectedPostIsPublic || subscribedCount === 0 || Boolean(workflowBusy)} onClick={() => setConfirmationOpen(true)} className="mt-4 inline-flex w-full items-center justify-center gap-2 rounded-xl bg-cyan-300 px-4 py-3 text-sm font-bold text-[#071421] disabled:cursor-not-allowed disabled:opacity-35">
-                    <ShieldCheck size={17} /> Xác nhận gửi Audience
+                  <button type="button" disabled={!testReady || !previewReady || !selectedPostIsPublic || subscribedCount === 0 || Boolean(workflowBusy) || sending} onClick={openAudienceConfirmation} className="mt-4 inline-flex w-full items-center justify-center gap-2 rounded-xl bg-cyan-300 px-4 py-3 text-sm font-bold text-[#071421] disabled:cursor-not-allowed disabled:opacity-35">
+                    <ShieldCheck size={17} /> {selectedPost.email_notification_status === "sent" ? "Xác nhận gửi lại Audience" : "Xác nhận gửi Audience"}
                   </button>
                   {!selectedPostIsPublic && <p className="mt-2 text-xs leading-relaxed text-amber-200">Có thể xem trước và gửi thử ngay; xác nhận Audience chỉ mở sau khi bài viết công khai.</p>}
                 </div>
@@ -556,6 +610,7 @@ export default function AdminEmailPage() {
           </select>
         </div>
 
+        <p className="mt-3 text-xs text-slate-400">Đã chọn bài viết: <span className="font-semibold text-cyan-100">{selectedPost ? postTitle(selectedPost) : "Chưa chọn"}</span>. Bấm biểu tượng email ở từng dòng để xem và xác nhận gửi riêng.</p>
         <div className="mt-5 overflow-hidden rounded-2xl border border-white/10">
           {loading ? (
             <div className="flex min-h-48 items-center justify-center"><Loader2 className="animate-spin text-cyan-300" /></div>
@@ -574,6 +629,13 @@ export default function AdminEmailPage() {
                     <span className={`rounded-full px-3 py-1 text-xs font-semibold ${contact.status === "subscribed" ? "bg-emerald-300/10 text-emerald-200" : "bg-amber-300/10 text-amber-200"}`}>
                       {contact.status === "subscribed" ? "Đang nhận" : "Đã ngừng nhận"}
                     </span>
+                    <button type="button" onClick={() => previewSingleContact(contact)}
+                      disabled={!selectedPostIsPublic || selectedPost?.email_delivery_mode === "disabled" || sending || contact.status !== "subscribed" || Boolean(workflowBusy)}
+                      className="flex h-9 w-9 items-center justify-center rounded-xl border border-cyan-200/20 text-cyan-200 transition hover:bg-cyan-300/10 disabled:cursor-not-allowed disabled:opacity-30"
+                      title={selectedPost ? `Gửi riêng bài viết cho ${contact.email}` : "Chọn bài viết trước khi gửi riêng"}
+                      aria-label={`Gửi riêng cho ${contact.email}`}>
+                      <Mail size={16} />
+                    </button>
                     <button type="button" onClick={() => setContactStatus(contact, contact.status === "subscribed" ? "unsubscribed" : "subscribed")} className="flex h-9 w-9 items-center justify-center rounded-xl border border-white/10 text-slate-400 transition hover:text-cyan-200" title={contact.status === "subscribed" ? "Ngừng gửi" : "Kích hoạt lại"}>
                       {contact.status === "subscribed" ? <UserMinus size={16} /> : <UserRoundCheck size={16} />}
                     </button>
@@ -599,9 +661,9 @@ export default function AdminEmailPage() {
               {logs.map((log) => (
                 <tr key={log.id}>
                   <td className="py-3 text-slate-400">{new Date(log.created_at).toLocaleString("vi-VN")}</td>
-                  <td className="py-3">{log.delivery_type === "test" ? "Email thử" : "Thông báo"}</td>
+                  <td className="py-3">{log.delivery_type === "test" ? "Email thử" : log.delivery_scope === "single" ? "Gửi riêng" : "Audience"}</td>
                   <td className="py-3"><span className={`rounded-full px-3 py-1 text-xs font-semibold ${log.status === "sent" ? "bg-emerald-300/10 text-emerald-200" : log.status === "failed" ? "bg-red-300/10 text-red-200" : "bg-violet-300/10 text-violet-200"}`}>{log.status}</span></td>
-                  <td className="py-3 text-slate-400">{log.bcc_count}</td>
+                  <td className="py-3 text-slate-400">{log.delivery_scope === "single" ? log.bcc_addresses?.[0] || "1 khách hàng" : log.bcc_count}</td>
                   <td className="max-w-md truncate py-3 text-red-200/80">{log.error_message || "—"}</td>
                 </tr>
               ))}
@@ -633,15 +695,18 @@ export default function AdminEmailPage() {
         </div>
       )}
 
+      {singlePreview && <InsightSingleSendDialog preview={singlePreview} busy={workflowBusy === "single"}
+        error={error} onClose={closeSinglePreview} onSend={sendSingleContact} />}
+
       {confirmationOpen && selectedPost && (
-        <div role="presentation" onClick={() => setConfirmationOpen(false)} className="fixed inset-0 z-[140] flex items-center justify-center bg-[#020811]/90 p-4 backdrop-blur-md">
+        <div role="presentation" onClick={() => { if (workflowBusy !== "confirm") setConfirmationOpen(false); }} className="fixed inset-0 z-[140] flex items-center justify-center bg-[#020811]/90 p-4 backdrop-blur-md">
           <section role="dialog" aria-modal="true" aria-label="Xác nhận gửi Audience" onClick={(event) => event.stopPropagation()} className="w-full max-w-xl rounded-[28px] border border-red-200/20 bg-[#0b1625] p-6 shadow-[0_40px_140px_rgba(0,0,0,0.65)] md:p-8">
             <div className="flex items-start justify-between gap-4">
               <div>
                 <div className="text-xs font-bold uppercase tracking-[0.18em] text-red-300">Xác nhận cuối cùng</div>
-                <h2 className="mt-2 text-2xl font-bold">Gửi email đến Audience?</h2>
+                <h2 className="mt-2 text-2xl font-bold">{selectedPost.email_notification_status === "sent" ? "Gửi lại bài viết đến Audience?" : "Gửi email đến Audience?"}</h2>
               </div>
-              <button type="button" onClick={() => setConfirmationOpen(false)} className="flex h-10 w-10 shrink-0 items-center justify-center rounded-xl border border-white/10 text-slate-400" aria-label="Đóng"><X size={19} /></button>
+              <button type="button" onClick={() => { if (workflowBusy !== "confirm") setConfirmationOpen(false); }} className="flex h-10 w-10 shrink-0 items-center justify-center rounded-xl border border-white/10 text-slate-400" aria-label="Đóng"><X size={19} /></button>
             </div>
             <div className="mt-5 rounded-2xl border border-white/10 bg-[#081321]/70 p-4 text-sm leading-relaxed text-slate-300">
               <div className="font-semibold text-white">{postTitle(selectedPost)}</div>
@@ -650,12 +715,13 @@ export default function AdminEmailPage() {
               <div>Cc: yendoan@facs.vn, thanhhuynh@facs.vn</div>
               <div className="mt-2 font-semibold text-amber-100">Bcc: {subscribedCount} khách hàng subscribed</div>
             </div>
+            {error && <p role="alert" className="mt-4 text-sm text-red-200">{error}</p>}
             <label className="mt-5 block">
               <span className="mb-2 block text-sm text-slate-300">Nhập <strong className="text-white">SEND-AUDIENCE</strong> để xác nhận:</span>
               <input autoFocus value={confirmationText} onChange={(event) => setConfirmationText(event.target.value)} className="w-full rounded-2xl border border-white/10 bg-[#081321] px-4 py-3 font-mono text-white outline-none focus:border-red-300/40" />
             </label>
             <div className="mt-6 grid gap-3 sm:grid-cols-2">
-              <button type="button" onClick={() => setConfirmationOpen(false)} className="rounded-2xl border border-white/10 px-4 py-3 font-semibold text-slate-300">Hủy</button>
+              <button type="button" onClick={() => { if (workflowBusy !== "confirm") setConfirmationOpen(false); }} className="rounded-2xl border border-white/10 px-4 py-3 font-semibold text-slate-300">Hủy</button>
               <button type="button" disabled={confirmationText !== "SEND-AUDIENCE" || workflowBusy === "confirm"} onClick={confirmAudienceSend} className="inline-flex items-center justify-center gap-2 rounded-2xl bg-red-300 px-4 py-3 font-bold text-[#210707] disabled:cursor-not-allowed disabled:opacity-35">
                 {workflowBusy === "confirm" ? <Loader2 size={17} className="animate-spin" /> : <Send size={17} />} Gửi Audience
               </button>

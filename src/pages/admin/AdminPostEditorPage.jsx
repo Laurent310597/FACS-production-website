@@ -455,7 +455,7 @@ export default function AdminPostEditorPage() {
                       name="email-delivery-mode"
                       value={value}
                       checked={form.email_delivery_mode === value}
-                      disabled={form.email_notification_status === "sent"}
+                      disabled={form.email_notification_status === "processing"}
                       onChange={(event) => updateField("email_delivery_mode", event.target.value)}
                       className="mt-1 h-4 w-4 accent-cyan-300"
                     />
@@ -467,7 +467,7 @@ export default function AdminPostEditorPage() {
                 ))}
               </div>
               {form.email_notification_status === "sent" && (
-                <div className="mt-3 rounded-xl border border-emerald-300/20 bg-emerald-300/8 px-3 py-2 text-xs text-emerald-100">Email đã gửi được khóa để tránh gửi lặp lại khi chỉnh sửa bài viết.</div>
+                <div className="mt-3 rounded-xl border border-emerald-300/20 bg-emerald-300/8 px-3 py-2 text-xs text-emerald-100">Bài viết đã có lượt gửi email. Có thể gửi lại hoặc gửi riêng cho khách hàng tại Email Insights; chỉnh sửa bài viết không tự gửi email.</div>
               )}
             </div>
 
