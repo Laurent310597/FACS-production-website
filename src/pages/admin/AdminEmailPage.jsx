@@ -306,7 +306,7 @@ export default function AdminEmailPage() {
         preview_hash: singlePreview.preview_hash, request_id: singlePreview.request_id,
         confirmation_text: "SEND-SINGLE",
       });
-      setMessage(`Đã gửi riêng bài viết đến ${singlePreview.contact.email} trong Bcc.`);
+      setMessage(`Microsoft 365 đã tiếp nhận yêu cầu gửi riêng tới ${singlePreview.contact.email} trong Bcc. Chưa xác nhận thư đã đến hộp thư người nhận.`);
       setSinglePreview(null);
       await loadData();
     } catch (singleError) {
@@ -365,7 +365,7 @@ export default function AdminEmailPage() {
       setConfirmationOpen(false);
       setConfirmationText("");
       setPreview(null);
-      setMessage(`Đã gửi Audience thành công đến ${data.recipients?.bcc_count || 0} địa chỉ Bcc.`);
+      setMessage(`Microsoft 365 đã tiếp nhận yêu cầu gửi tới ${data.recipients?.bcc_count || 0} địa chỉ Bcc. Chưa xác nhận giao thư đến từng hộp thư.`);
       await loadData();
     } catch (sendError) {
       setError(sendError.message);
@@ -531,7 +531,7 @@ export default function AdminEmailPage() {
 
             {selectedPost.email_notification_status === "sent" && (
               <div className="mt-4 rounded-2xl border border-emerald-300/20 bg-emerald-300/8 px-4 py-3 text-sm text-emerald-100">
-                Bài viết đã có lượt gửi thành công. Tú có thể gửi lại toàn bộ Audience theo ba bước bên dưới, hoặc bấm biểu tượng email ở từng khách hàng để gửi riêng.
+                Bài viết đã có yêu cầu gửi được Microsoft 365 tiếp nhận. Tú có thể gửi lại toàn bộ Audience theo ba bước bên dưới, hoặc bấm biểu tượng email ở từng khách hàng để gửi riêng.
               </div>
             )}
             {selectedPost.email_delivery_mode === "disabled" ? (
@@ -652,6 +652,7 @@ export default function AdminEmailPage() {
 
       <section className="mt-6 rounded-[28px] border border-white/10 bg-white/[0.035] p-5 md:p-7">
         <h2 className="text-xl font-semibold">Nhật ký gửi gần nhất</h2>
+        <p className="mt-2 text-xs leading-relaxed text-slate-400">Đã chuyển Microsoft 365: dịch vụ đã tiếp nhận yêu cầu gửi; chưa xác nhận thư đã đến hộp thư người nhận. Cần đối chiếu thư báo lỗi hoặc Message Trace để biết kết quả giao nhận.</p>
         <div className="mt-5 overflow-x-auto">
           <table className="w-full min-w-[780px] text-left text-sm">
             <thead className="text-xs uppercase tracking-[0.12em] text-slate-500">
@@ -662,7 +663,7 @@ export default function AdminEmailPage() {
                 <tr key={log.id}>
                   <td className="py-3 text-slate-400">{new Date(log.created_at).toLocaleString("vi-VN")}</td>
                   <td className="py-3">{log.delivery_type === "test" ? "Email thử" : log.delivery_scope === "single" ? "Gửi riêng" : "Audience"}</td>
-                  <td className="py-3"><span className={`rounded-full px-3 py-1 text-xs font-semibold ${log.status === "sent" ? "bg-emerald-300/10 text-emerald-200" : log.status === "failed" ? "bg-red-300/10 text-red-200" : "bg-violet-300/10 text-violet-200"}`}>{log.status}</span></td>
+                  <td className="py-3"><span className={`rounded-full px-3 py-1 text-xs font-semibold ${log.status === "sent" ? "bg-emerald-300/10 text-emerald-200" : log.status === "failed" ? "bg-red-300/10 text-red-200" : "bg-violet-300/10 text-violet-200"}`}>{log.status === "sent" ? "Đã chuyển Microsoft 365" : log.status}</span></td>
                   <td className="py-3 text-slate-400">{log.delivery_scope === "single" ? log.bcc_addresses?.[0] || "1 khách hàng" : log.bcc_count}</td>
                   <td className="max-w-md truncate py-3 text-red-200/80">{log.error_message || "—"}</td>
                 </tr>

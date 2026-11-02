@@ -23,7 +23,7 @@ const emailStatusLabels = {
   awaiting_review: "Chờ kiểm duyệt email",
   pending: "Chờ gửi email",
   processing: "Đang gửi email",
-  sent: "Email đã gửi",
+  sent: "Đã chuyển Microsoft 365",
   failed: "Email lỗi",
   cancelled: "Đã hủy email",
 };

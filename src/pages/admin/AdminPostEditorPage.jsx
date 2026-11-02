@@ -467,7 +467,7 @@ export default function AdminPostEditorPage() {
                 ))}
               </div>
               {form.email_notification_status === "sent" && (
-                <div className="mt-3 rounded-xl border border-emerald-300/20 bg-emerald-300/8 px-3 py-2 text-xs text-emerald-100">Bài viết đã có lượt gửi email. Có thể gửi lại hoặc gửi riêng cho khách hàng tại Email Insights; chỉnh sửa bài viết không tự gửi email.</div>
+                <div className="mt-3 rounded-xl border border-emerald-300/20 bg-emerald-300/8 px-3 py-2 text-xs text-emerald-100">Bài viết đã có yêu cầu gửi được Microsoft 365 tiếp nhận. Có thể gửi lại hoặc gửi riêng cho khách hàng tại Email Insights; chỉnh sửa bài viết không tự gửi email.</div>
               )}
             </div>
 

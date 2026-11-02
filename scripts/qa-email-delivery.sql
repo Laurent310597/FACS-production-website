@@ -18,6 +18,8 @@ begin
   perform set_config('facs.qa_optout',audience_id::text,true);
 end;
 $$;
+-- Mirror production: the mail server may read Audience but cannot update it.
+revoke update on public.insight_email_audience from service_role;
 set local role service_role;
 do $$
 declare
@@ -33,6 +35,8 @@ declare
   rejected boolean;
   expected_email text;
 begin
+  assert not has_any_column_privilege('service_role','public.insight_email_audience','UPDATE');
+  assert has_table_privilege('service_role','public.insight_email_audience','SELECT');
   assert not has_function_privilege('anon','public.claim_insight_email_delivery(uuid,uuid,text,timestamptz,uuid,uuid)','execute');
   assert not has_function_privilege('authenticated','public.claim_insight_email_delivery(uuid,uuid,text,timestamptz,uuid,uuid)','execute');
   update public.posts set email_notification_preview_hash='reviewed',email_notification_test_hash='reviewed',email_notification_tested_at=now() where id=post_id returning * into article;

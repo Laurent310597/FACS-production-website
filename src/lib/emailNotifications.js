@@ -6,7 +6,7 @@ export const emailStatusLabels = {
   pending: "Chờ gửi",
   cancelled: "Đã hủy gửi",
   processing: "Đang gửi",
-  sent: "Đã gửi",
+  sent: "Đã chuyển Microsoft 365",
   failed: "Gửi thất bại",
 };
 
