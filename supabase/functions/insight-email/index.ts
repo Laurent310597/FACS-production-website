@@ -1,5 +1,6 @@
 import { createClient } from "npm:@supabase/supabase-js@2";
 import { deliverInsightClaim } from "../_shared/insight-delivery.ts";
+import { selectedAudienceIds, selectedAudienceSnapshot } from "../_shared/insight-selection.ts";
 import { corsHeaders } from "../_shared/cors.ts";
 import { buildInsightEmail, INSIGHT_EMAIL_TEMPLATE_VERSION } from "../_shared/email-template.ts";
 import type { InsightPost } from "../_shared/email-template.ts";
@@ -222,11 +223,22 @@ Deno.serve(async (req) => {
       return json({ post: await loadPost(admin, String(body.post_id || "")) });
     }
 
-    if (action === "preview" || action === "preview_single") {
+    if (action === "preview" || action === "preview_single" || action === "preview_selected") {
       const post = await loadPost(admin, String(body.post_id || ""));
       if (post.email_notification_status === "processing") throw new Error("Bài viết đang có lượt gửi. Vui lòng chờ hoàn tất.");
       const hash = await emailContentHash(post, siteUrl);
       const email = buildInsightEmail(post, siteUrl, false);
+      if (action === "preview_selected") {
+        if (post.email_delivery_mode === "disabled" || post.status !== "published" || !post.published_at || Date.parse(post.published_at) > Date.now()) {
+          throw new Error("Chỉ được gửi bài viết đã xuất bản và cho phép gửi email.");
+        }
+        const ids = selectedAudienceIds(body.audience_ids);
+        const { data, error } = await admin.from("insight_email_audience").select("id,email,display_name,status").in("id", ids).order("email");
+        if (error) throw new Error(`Không thể tải khách đã chọn: ${error.message}`);
+        const snapshot = selectedAudienceSnapshot(ids, data || []);
+        return json({ ok: true, post_id: post.id, preview_hash: hash, subject: email.subject,
+          body_html: email.html, contacts: snapshot.contacts, recipients: { ...recipientSummary(snapshot.bcc.length), bcc: snapshot.bcc } });
+      }
       if (action === "preview_single") {
         if (post.email_delivery_mode === "disabled") throw new Error("Bài viết đang ở chế độ Không gửi email.");
         if (post.status !== "published" || !post.published_at || Date.parse(post.published_at) > Date.now()) {
@@ -329,24 +341,30 @@ Deno.serve(async (req) => {
       }
     }
 
-    if (action === "confirm_send" || action === "confirm_single") {
+    if (action === "confirm_send" || action === "confirm_single" || action === "confirm_selected") {
       const single = action === "confirm_single";
-      if (String(body.confirmation_text || "") !== (single ? "SEND-SINGLE" : "SEND-AUDIENCE")) {
+      const selected = action === "confirm_selected";
+      if (String(body.confirmation_text || "") !== (single ? "SEND-SINGLE" : selected ? "SEND-SELECTED" : "SEND-AUDIENCE")) {
         throw new Error("Thiếu xác nhận gửi email.");
       }
       const post = await loadPost(admin, String(body.post_id || ""));
       const currentHash = await emailContentHash(post, siteUrl);
-      if (single && String(body.preview_hash || "") !== currentHash) {
-        throw new Error("Nội dung bài viết đã thay đổi. Hãy mở lại xác nhận gửi riêng.");
+      if ((single || selected) && String(body.preview_hash || "") !== currentHash) {
+        throw new Error("Nội dung bài viết đã thay đổi. Hãy mở lại xác nhận gửi.");
       }
       const requestId = String(body.request_id || crypto.randomUUID());
       if (!/^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}$/i.test(requestId)) {
         throw new Error("Mã lượt gửi không hợp lệ.");
       }
-      const { data: claim, error: claimError } = await admin.rpc("claim_insight_email_delivery", {
+      const selectionIds = selected ? selectedAudienceIds(body.audience_ids) : null;
+      if (selected && (!Array.isArray(body.expected_bcc) || !body.expected_bcc.length || body.expected_bcc.length > 497 || body.expected_bcc.some((email: unknown) => typeof email !== "string"))) {
+        throw new Error("Thiếu danh sách Bcc đã xem trước. Hãy chọn lại khách hàng.");
+      }
+      const { data: claim, error: claimError } = await admin.rpc(selected ? "claim_insight_email_selected_delivery" : "claim_insight_email_delivery", {
         p_post_id: post.id, p_confirmed_by: user.id, p_expected_hash: currentHash,
         p_expected_updated_at: post.updated_at, p_request_id: requestId,
-        p_audience_id: single ? String(body.audience_id || "") : null,
+        ...(selected ? { p_audience_ids: selectionIds, p_expected_bcc: body.expected_bcc }
+          : { p_audience_id: single ? String(body.audience_id || "") : null }),
       });
       if (claimError) throw new Error(claimError.message);
       const result = await deliverInsightClaim(claim, {

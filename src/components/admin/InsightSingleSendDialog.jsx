@@ -4,6 +4,7 @@ import { Loader2, Mail, X } from "lucide-react";
 
 export default function InsightSingleSendDialog({ preview, busy, error, onClose, onSend }) {
   const dialog = useRef(null);
+  const selected = preview.scope === "selected";
   useEffect(() => {
     const previous = document.activeElement;
     dialog.current?.focus();
@@ -30,10 +31,11 @@ export default function InsightSingleSendDialog({ preview, busy, error, onClose,
         className="flex max-h-[94dvh] w-full max-w-3xl flex-col overflow-hidden rounded-3xl border border-cyan-200/20 bg-[#0b1625] shadow-2xl outline-none">
         <div className="flex items-start justify-between gap-4 p-5">
           <div className="min-w-0">
-            <h2 id="single-send-title" className="text-xl font-bold text-white">Xác nhận gửi riêng bài viết</h2>
+            <h2 id="single-send-title" className="text-xl font-bold text-white">{selected ? "Xác nhận gửi khách đã chọn" : "Xác nhận gửi riêng bài viết"}</h2>
             <p className="mt-2 break-words text-sm text-slate-300">{preview.subject}</p>
-            <p className="mt-2 break-all text-sm font-semibold text-cyan-100">Bcc: {preview.contact.email}</p>
-            <p className="mt-1 text-xs text-slate-400">To: tunguyen@facs.vn · Cc: không có · 1 khách hàng nhận bản tin</p>
+            <p className="mt-2 text-sm font-semibold text-cyan-100">Bcc: {selected ? `${preview.recipients.bcc_count} khách hàng đã chọn` : preview.contact.email}</p>
+            {selected && <ul aria-label="Khách hàng Bcc đã chọn" className="mt-2 max-h-28 overflow-y-auto break-all text-xs text-cyan-100">{preview.recipients.bcc.map((email) => <li key={email}>{email}</li>)}</ul>}
+            <p className="mt-1 text-xs text-slate-400">To: tunguyen@facs.vn · Cc: {selected ? "yendoan@facs.vn, thanhhuynh@facs.vn" : "không có"}</p>
           </div>
           <button type="button" disabled={busy} onClick={onClose} aria-label="Đóng gửi riêng" className="rounded-xl border border-white/10 p-2 text-slate-300 disabled:opacity-30"><X size={19} /></button>
         </div>
@@ -44,7 +46,7 @@ export default function InsightSingleSendDialog({ preview, busy, error, onClose,
         <div className="flex flex-wrap justify-end gap-3 p-5">
           <button type="button" disabled={busy} onClick={onClose} className="rounded-xl border border-white/10 px-4 py-3 text-sm font-semibold text-slate-200 disabled:opacity-30">Hủy</button>
           <button type="button" disabled={busy} onClick={onSend} className="inline-flex items-center gap-2 rounded-xl bg-cyan-300 px-5 py-3 text-sm font-bold text-[#071421] disabled:opacity-40">
-            {busy ? <Loader2 size={17} className="animate-spin" /> : <Mail size={17} />} Gửi riêng cho khách hàng này
+            {busy ? <Loader2 size={17} className="animate-spin" /> : <Mail size={17} />} {selected ? "Gửi cho khách đã chọn" : "Gửi riêng cho khách hàng này"}
           </button>
         </div>
       </section>

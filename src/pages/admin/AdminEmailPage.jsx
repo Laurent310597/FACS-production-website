@@ -20,6 +20,9 @@ import {
 } from "lucide-react";
 import { useSearchParams } from "react-router-dom";
 import AdminLayout from "../../components/admin/AdminLayout";
+import EmailPagination from "../../components/admin/EmailPagination";
+import EmailSendHistory from "../../components/admin/EmailSendHistory";
+import { canSelectContact, loadEmailAudience } from "../../lib/emailAudience";
 import InsightSingleSendDialog from "../../components/admin/InsightSingleSendDialog";
 import { emailReviewState, workflowTime } from "../../lib/insightEmailWorkflow";
 import InsightPostPicker from "../../components/admin/InsightPostPicker";
@@ -117,7 +120,9 @@ export default function AdminEmailPage() {
   const [searchParams] = useSearchParams();
   const [connection, setConnection] = useState({ connected: false, loading: true });
   const [audience, setAudience] = useState([]);
-  const [logs, setLogs] = useState([]);
+  const [audiencePage, setAudiencePage] = useState(0);
+  const [audiencePageSize, setAudiencePageSize] = useState(10);
+  const [selectedContactIds, setSelectedContactIds] = useState(() => new Set());
   const [selectedPost, setSelectedPost] = useState(null);
   const [postPickerOpen, setPostPickerOpen] = useState(false);
   const [postRefresh, setPostRefresh] = useState(0);
@@ -159,16 +164,9 @@ export default function AdminEmailPage() {
 
   const loadData = async () => {
     setLoading(true);
-    const [
-      { data: contacts, error: contactsError },
-      { data: logRows, error: logError },
-    ] = await Promise.all([
-      supabase.from("insight_email_audience").select("*").order("created_at", { ascending: false }),
-      supabase.from("insight_email_delivery_logs").select("*").order("created_at", { ascending: false }).limit(20),
-    ]);
-    if (contactsError) setError(contactsError.message);
-    else setAudience(contacts || []);
-    if (!logError) setLogs(logRows || []);
+    try {
+      setAudience(await loadEmailAudience(supabase));
+    } catch (issue) { setError(issue.message); }
     setPostRefresh((current) => current + 1);
     setLoading(false);
   };
@@ -191,10 +189,9 @@ export default function AdminEmailPage() {
   useEffect(() => {
     let cancelled = false;
     const initialize = async () => {
-      const [connectionResult, contactsResult, logsResult] = await Promise.allSettled([
+      const [connectionResult, contactsResult] = await Promise.allSettled([
         invokeInsightEmail("oauth_status"),
-        supabase.from("insight_email_audience").select("*").order("created_at", { ascending: false }),
-        supabase.from("insight_email_delivery_logs").select("*").order("created_at", { ascending: false }).limit(20),
+        loadEmailAudience(supabase),
       ]);
       if (cancelled) return;
 
@@ -204,14 +201,13 @@ export default function AdminEmailPage() {
         setConnection({ connected: false, loading: false, error: connectionResult.reason?.message || "Không thể kiểm tra Microsoft 365." });
       }
 
-      if (contactsResult.status === "fulfilled" && !contactsResult.value.error) {
-        setAudience(contactsResult.value.data || []);
+      if (contactsResult.status === "fulfilled") {
+        setAudience(contactsResult.value || []);
       } else {
-        const reason = contactsResult.status === "fulfilled" ? contactsResult.value.error?.message : contactsResult.reason?.message;
+        const reason = contactsResult.reason?.message;
         setError(reason || "Không thể tải audience.");
       }
 
-      if (logsResult.status === "fulfilled" && !logsResult.value.error) setLogs(logsResult.value.data || []);
       setLoading(false);
     };
     initialize();
@@ -268,11 +264,22 @@ export default function AdminEmailPage() {
     });
   }, [audience, query, status]);
 
-  const subscribedCount = audience.filter((contact) => contact.status === "subscribed").length;
+  const subscribedCount = audience.filter(canSelectContact).length;
+  const currentAudiencePage = Math.min(audiencePage, Math.max(0, Math.ceil(filteredAudience.length / audiencePageSize) - 1));
+  const pageAudience = filteredAudience.slice(currentAudiencePage * audiencePageSize, (currentAudiencePage + 1) * audiencePageSize);
+  const selectedContacts = audience.filter((contact) => selectedContactIds.has(contact.id) && canSelectContact(contact));
+  const eligiblePage = pageAudience.filter(canSelectContact);
+  const pageChecked = eligiblePage.length > 0 && eligiblePage.every((contact) => selectedContactIds.has(contact.id));
+  const pagePartlyChecked = !pageChecked && eligiblePage.some((contact) => selectedContactIds.has(contact.id));
+  const toggleContacts = (contacts, checked) => setSelectedContactIds((current) => {
+    const next = new Set(current);
+    contacts.filter(canSelectContact).forEach((contact) => checked ? next.add(contact.id) : next.delete(contact.id));
+    return next;
+  });
   const { previewReady, testReady, isPublic: selectedPostIsPublic } = emailReviewState(selectedPost, preview, workflowNow.getTime());
   const sending = selectedPost?.email_notification_status === "processing";
   const closeSinglePreview = useCallback(() => {
-    if (workflowBusy !== "single") setSinglePreview(null);
+    if (workflowBusy !== "single" && workflowBusy !== "selected") setSinglePreview(null);
   }, [workflowBusy]);
 
   const openAudienceConfirmation = () => {
@@ -296,17 +303,32 @@ export default function AdminEmailPage() {
     }
   };
 
+  const previewSelectedContacts = async () => {
+    if (!selectedPostId || !selectedContacts.length || workflowBusy) return;
+    setWorkflowBusy("preview-selected"); setError(""); setMessage("");
+    try {
+      const data = await invokeInsightEmail("preview_selected", { post_id: selectedPostId, audience_ids: selectedContacts.map((contact) => contact.id) });
+      setSinglePreview({ ...data, scope: "selected", request_id: crypto.randomUUID() });
+    } catch (issue) { setError(issue.message); }
+    finally { setWorkflowBusy(""); }
+  };
+
   const sendSingleContact = async () => {
     if (!singlePreview || workflowBusy) return;
-    setWorkflowBusy("single");
+    const selected = singlePreview.scope === "selected";
+    setWorkflowBusy(selected ? "selected" : "single");
     setError("");
     try {
-      await invokeInsightEmail("confirm_single", {
-        post_id: singlePreview.post_id, audience_id: singlePreview.contact.id,
+      const data = await invokeInsightEmail(selected ? "confirm_selected" : "confirm_single", {
+        post_id: singlePreview.post_id,
+        ...(selected ? { audience_ids: singlePreview.contacts.map((contact) => contact.id), expected_bcc: singlePreview.recipients.bcc } : { audience_id: singlePreview.contact.id }),
         preview_hash: singlePreview.preview_hash, request_id: singlePreview.request_id,
-        confirmation_text: "SEND-SINGLE",
+        confirmation_text: selected ? "SEND-SELECTED" : "SEND-SINGLE",
       });
-      setMessage(`Microsoft 365 đã tiếp nhận yêu cầu gửi riêng tới ${singlePreview.contact.email} trong Bcc. Chưa xác nhận thư đã đến hộp thư người nhận.`);
+      setMessage(selected
+        ? `Microsoft 365 đã tiếp nhận yêu cầu gửi tới ${data.recipients?.bcc_count || 0} khách hàng đã chọn trong Bcc. Chưa xác nhận giao thư đến từng hộp thư.`
+        : `Microsoft 365 đã tiếp nhận yêu cầu gửi riêng tới ${singlePreview.contact.email} trong Bcc. Chưa xác nhận thư đã đến hộp thư người nhận.`);
+      if (selected) setSelectedContactIds(new Set());
       setSinglePreview(null);
       await loadData();
     } catch (singleError) {
@@ -410,6 +432,7 @@ export default function AdminEmailPage() {
       return;
     }
     setAudience((current) => current.map((item) => item.id === contact.id ? { ...item, status: nextStatus } : item));
+    if (nextStatus !== "subscribed") setSelectedContactIds((current) => { const next = new Set(current); next.delete(contact.id); return next; });
   };
 
   const deleteContact = async (contact) => {
@@ -420,6 +443,7 @@ export default function AdminEmailPage() {
       return;
     }
     setAudience((current) => current.filter((item) => item.id !== contact.id));
+    setSelectedContactIds((current) => { const next = new Set(current); next.delete(contact.id); return next; });
   };
 
   const importCsv = async (event) => {
@@ -531,7 +555,7 @@ export default function AdminEmailPage() {
 
             {selectedPost.email_notification_status === "sent" && (
               <div className="mt-4 rounded-2xl border border-emerald-300/20 bg-emerald-300/8 px-4 py-3 text-sm text-emerald-100">
-                Bài viết đã có yêu cầu gửi được Microsoft 365 tiếp nhận. Tú có thể gửi lại toàn bộ Audience theo ba bước bên dưới, hoặc bấm biểu tượng email ở từng khách hàng để gửi riêng.
+                Bài viết đã có yêu cầu gửi được Microsoft 365 tiếp nhận. Tú có thể gửi lại toàn bộ Audience theo ba bước bên dưới, tick chọn một nhóm khách hàng để gửi, hoặc bấm biểu tượng email ở từng khách hàng để gửi riêng.
               </div>
             )}
             {selectedPost.email_delivery_mode === "disabled" ? (
@@ -558,9 +582,9 @@ export default function AdminEmailPage() {
 
                 <div className="rounded-2xl border border-white/10 bg-[#081321]/45 p-4">
                   <div className="font-semibold">3. Xác nhận Audience</div>
-                  <p className="mt-2 min-h-10 text-xs leading-relaxed text-slate-500">Gửi From/To/Cc cố định và toàn bộ khách hàng subscribed dưới dạng Bcc.</p>
-                  <button type="button" disabled={!testReady || !previewReady || !selectedPostIsPublic || subscribedCount === 0 || Boolean(workflowBusy) || sending} onClick={openAudienceConfirmation} className="mt-4 inline-flex w-full items-center justify-center gap-2 rounded-xl bg-cyan-300 px-4 py-3 text-sm font-bold text-[#071421] disabled:cursor-not-allowed disabled:opacity-35">
-                    <ShieldCheck size={17} /> {selectedPost.email_notification_status === "sent" ? "Xác nhận gửi lại Audience" : "Xác nhận gửi Audience"}
+                  <p className="mt-2 min-h-10 text-xs leading-relaxed text-slate-500">{selectedContacts.length ? `Gửi ${selectedContacts.length} khách đã tick dưới dạng Bcc, với To/Cc nội bộ cố định.` : "Gửi From/To/Cc cố định và toàn bộ khách hàng subscribed dưới dạng Bcc."}</p>
+                  <button type="button" disabled={!testReady || !previewReady || !selectedPostIsPublic || subscribedCount === 0 || selectedContacts.length > 497 || Boolean(workflowBusy) || sending} onClick={selectedContacts.length ? previewSelectedContacts : openAudienceConfirmation} className="mt-4 inline-flex w-full items-center justify-center gap-2 rounded-xl bg-cyan-300 px-4 py-3 text-sm font-bold text-[#071421] disabled:cursor-not-allowed disabled:opacity-35">
+                    <ShieldCheck size={17} /> {selectedContacts.length ? `Xác nhận gửi ${selectedContacts.length} khách đã chọn` : selectedPost.email_notification_status === "sent" ? "Xác nhận gửi lại Audience" : "Xác nhận gửi Audience"}
                   </button>
                   {!selectedPostIsPublic && <p className="mt-2 text-xs leading-relaxed text-amber-200">Có thể xem trước và gửi thử ngay; xác nhận Audience chỉ mở sau khi bài viết công khai.</p>}
                 </div>
@@ -601,9 +625,9 @@ export default function AdminEmailPage() {
         <div className="mt-5 grid gap-3 md:grid-cols-[1fr_auto]">
           <label className="flex items-center rounded-2xl border border-white/10 bg-[#081321]/70 px-4 focus-within:border-cyan-300/35">
             <Search size={18} className="text-slate-500" />
-            <input value={query} onChange={(event) => setQuery(event.target.value)} placeholder="Tìm email, tên hoặc công ty..." className="w-full bg-transparent px-3 py-3 text-sm text-white outline-none placeholder:text-slate-600" />
+            <input value={query} onChange={(event) => { setQuery(event.target.value); setAudiencePage(0); }} placeholder="Tìm email, tên hoặc công ty..." className="w-full bg-transparent px-3 py-3 text-sm text-white outline-none placeholder:text-slate-600" />
           </label>
-          <select value={status} onChange={(event) => setStatus(event.target.value)} className="rounded-2xl border border-white/10 bg-[#081321] px-4 py-3 text-sm text-white outline-none">
+          <select value={status} onChange={(event) => { setStatus(event.target.value); setAudiencePage(0); }} className="rounded-2xl border border-white/10 bg-[#081321] px-4 py-3 text-sm text-white outline-none">
             <option value="all">Tất cả</option>
             <option value="subscribed">Đang nhận</option>
             <option value="unsubscribed">Đã ngừng nhận</option>
@@ -611,21 +635,47 @@ export default function AdminEmailPage() {
         </div>
 
         <p className="mt-3 text-xs text-slate-400">Đã chọn bài viết: <span className="font-semibold text-cyan-100">{selectedPost ? postTitle(selectedPost) : "Chưa chọn"}</span>. Bấm biểu tượng email ở từng dòng để xem và xác nhận gửi riêng.</p>
-        <div className="mt-5 overflow-hidden rounded-2xl border border-white/10">
+        <div className="mt-4 flex flex-wrap items-center justify-between gap-4 rounded-2xl border border-cyan-200/15 bg-cyan-300/5 p-4">
+        <div>
+          <label className="flex items-center gap-3 text-sm font-semibold text-slate-200">
+            <input type="checkbox" aria-label="Chọn khách trên trang này" checked={pageChecked}
+              ref={(node) => { if (node) node.indeterminate = pagePartlyChecked; }}
+              disabled={!eligiblePage.length || Boolean(workflowBusy)} onChange={(event) => toggleContacts(eligiblePage, event.target.checked)}
+              className="h-4 w-4 accent-cyan-300" /> Chọn trang này
+          </label>
+          <p className="mt-2 text-xs text-slate-400" aria-live="polite">Đã chọn {selectedContacts.length} khách trên tất cả các trang. Lựa chọn được giữ khi tìm kiếm hoặc chuyển trang.</p>
+        </div>
+        <div className="flex flex-wrap gap-3">
+          <button type="button" disabled={!selectedContacts.length || Boolean(workflowBusy)} onClick={() => setSelectedContactIds(new Set())}
+            className="rounded-xl border border-white/10 px-4 py-3 text-sm text-slate-300 disabled:opacity-30">Bỏ chọn tất cả</button>
+          <button type="button" onClick={previewSelectedContacts}
+            disabled={!selectedContacts.length || selectedContacts.length > 497 || !testReady || !previewReady || !selectedPostIsPublic || selectedPost?.email_delivery_mode === "disabled" || sending || Boolean(workflowBusy)}
+            className="inline-flex items-center gap-2 rounded-xl bg-cyan-300 px-4 py-3 text-sm font-bold text-[#071421] disabled:cursor-not-allowed disabled:opacity-35">
+            <Mail size={17} /> Gửi {selectedContacts.length} khách đã chọn
+          </button>
+        </div>
+        <p className="w-full text-xs text-slate-400">Chọn bài viết, hoàn tất xem trước và gửi thử ở trên, rồi tick khách cần gửi. Khách đã chọn sẽ nằm trong Bcc; To/Cc nội bộ giữ như quy trình Audience.</p>
+        {selectedContacts.length > 497 && <p role="alert" className="text-xs text-amber-200">Mỗi lượt chọn tối đa 497 khách hàng.</p>}
+      </div>
+
+      <div className="mt-5 overflow-hidden rounded-2xl border border-white/10">
           {loading ? (
             <div className="flex min-h-48 items-center justify-center"><Loader2 className="animate-spin text-cyan-300" /></div>
           ) : filteredAudience.length === 0 ? (
             <div className="px-6 py-12 text-center text-sm text-slate-500">Chưa có người nhận phù hợp.</div>
           ) : (
             <div className="divide-y divide-white/10">
-              {filteredAudience.map((contact) => (
-                <div key={contact.id} className="grid gap-3 p-4 md:grid-cols-[minmax(0,1.2fr)_minmax(0,1fr)_auto] md:items-center">
+              {pageAudience.map((contact) => (
+                <div key={contact.id} className="grid grid-cols-[auto_minmax(0,1fr)] gap-3 p-4 md:grid-cols-[auto_minmax(0,1.2fr)_minmax(0,1fr)_auto] md:items-center">
+                  <input type="checkbox" aria-label={`Chọn ${contact.email}`} checked={canSelectContact(contact) && selectedContactIds.has(contact.id)}
+                    disabled={!canSelectContact(contact) || Boolean(workflowBusy)} onChange={(event) => toggleContacts([contact], event.target.checked)}
+                    className="h-4 w-4 accent-cyan-300 disabled:opacity-30" />
                   <div className="min-w-0">
                     <div className="truncate font-semibold text-white">{contact.email}</div>
                     <div className="mt-1 truncate text-xs text-slate-500">{contact.display_name || "Chưa có tên"}</div>
                   </div>
-                  <div className="text-sm text-slate-400">{contact.company_name || "—"}</div>
-                  <div className="flex items-center gap-2 md:justify-end">
+                  <div className="col-start-2 text-sm text-slate-400 md:col-start-auto">{contact.company_name || "—"}</div>
+                  <div className="col-start-2 flex flex-wrap items-center gap-2 md:col-start-auto md:justify-end">
                     <span className={`rounded-full px-3 py-1 text-xs font-semibold ${contact.status === "subscribed" ? "bg-emerald-300/10 text-emerald-200" : "bg-amber-300/10 text-amber-200"}`}>
                       {contact.status === "subscribed" ? "Đang nhận" : "Đã ngừng nhận"}
                     </span>
@@ -648,31 +698,11 @@ export default function AdminEmailPage() {
             </div>
           )}
         </div>
+        <EmailPagination count={filteredAudience.length} page={currentAudiencePage} pageSize={audiencePageSize}
+          onPageChange={setAudiencePage} onPageSizeChange={(size) => { setAudiencePageSize(size); setAudiencePage(0); }} busy={loading} />
       </section>
 
-      <section className="mt-6 rounded-[28px] border border-white/10 bg-white/[0.035] p-5 md:p-7">
-        <h2 className="text-xl font-semibold">Nhật ký gửi gần nhất</h2>
-        <p className="mt-2 text-xs leading-relaxed text-slate-400">Đã chuyển Microsoft 365: dịch vụ đã tiếp nhận yêu cầu gửi; chưa xác nhận thư đã đến hộp thư người nhận. Cần đối chiếu thư báo lỗi hoặc Message Trace để biết kết quả giao nhận.</p>
-        <div className="mt-5 overflow-x-auto">
-          <table className="w-full min-w-[780px] text-left text-sm">
-            <thead className="text-xs uppercase tracking-[0.12em] text-slate-500">
-              <tr><th className="pb-3">Thời gian</th><th className="pb-3">Loại</th><th className="pb-3">Trạng thái</th><th className="pb-3">BCC</th><th className="pb-3">Lỗi</th></tr>
-            </thead>
-            <tbody className="divide-y divide-white/10">
-              {logs.map((log) => (
-                <tr key={log.id}>
-                  <td className="py-3 text-slate-400">{new Date(log.created_at).toLocaleString("vi-VN")}</td>
-                  <td className="py-3">{log.delivery_type === "test" ? "Email thử" : log.delivery_scope === "single" ? "Gửi riêng" : "Audience"}</td>
-                  <td className="py-3"><span className={`rounded-full px-3 py-1 text-xs font-semibold ${log.status === "sent" ? "bg-emerald-300/10 text-emerald-200" : log.status === "failed" ? "bg-red-300/10 text-red-200" : "bg-violet-300/10 text-violet-200"}`}>{log.status === "sent" ? "Đã chuyển Microsoft 365" : log.status}</span></td>
-                  <td className="py-3 text-slate-400">{log.delivery_scope === "single" ? log.bcc_addresses?.[0] || "1 khách hàng" : log.bcc_count}</td>
-                  <td className="max-w-md truncate py-3 text-red-200/80">{log.error_message || "—"}</td>
-                </tr>
-              ))}
-              {!logs.length && <tr><td colSpan={5} className="py-8 text-center text-slate-500">Chưa có nhật ký gửi.</td></tr>}
-            </tbody>
-          </table>
-        </div>
-      </section>
+      <EmailSendHistory refresh={postRefresh} />
 
       {postPickerOpen && <InsightPostPicker selectedId={selectedPostId} onSelect={choosePost} onClose={() => setPostPickerOpen(false)} />}
 
@@ -696,7 +726,7 @@ export default function AdminEmailPage() {
         </div>
       )}
 
-      {singlePreview && <InsightSingleSendDialog preview={singlePreview} busy={workflowBusy === "single"}
+      {singlePreview && <InsightSingleSendDialog preview={singlePreview} busy={workflowBusy === "single" || workflowBusy === "selected"}
         error={error} onClose={closeSinglePreview} onSend={sendSingleContact} />}
 
       {confirmationOpen && selectedPost && (

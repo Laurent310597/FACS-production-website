@@ -75,7 +75,7 @@ export function buildEmailShell(content: string, siteUrl: string) {
     <tr><td align="center" style="font-family:Arial,Helvetica,sans-serif;padding:34px 14px 44px;">
       <img src="${baseUrl}/facs-email-signature-banner.png" alt="FACS" width="190" style="font-family:Arial,Helvetica,sans-serif;display:block;width:190px;max-width:48%;height:auto;margin:0 auto 22px;border:0;">
       <table role="presentation" width="640" cellspacing="0" cellpadding="0" border="0" style="font-family:Arial,Helvetica,sans-serif;width:100%;max-width:640px;background:#ffffff;border:1px solid #d8dee6;border-top:4px solid #22d3ee;">
-        <tr><td style="padding:34px 38px;color:#243044;font-family:Arial,Helvetica,sans-serif;font-size:14px;line-height:1.72;text-align:left;">${content}</td></tr>
+        <tr><td align="justify" style="padding:34px 38px;color:#243044;font-family:Arial,Helvetica,sans-serif;font-size:14px;line-height:1.72;text-align:justify;text-justify:inter-word;">${content}</td></tr>
       </table>
       <div style="font-family:Arial,Helvetica,sans-serif;padding-top:18px;font-size:11px;line-height:1.5;color:#8a95a5;">Email này được gửi tự động từ website FACS. Bạn có thể phản hồi trực tiếp email này.<br>This automated email was sent from the FACS website. You may reply directly to this email.</div>
     </td></tr>
@@ -84,10 +84,10 @@ export function buildEmailShell(content: string, siteUrl: string) {
 }
 
 export function buildEmailSignature(email: string, signoff: string, department: string) {
-  return `<p style="font-family:Arial,Helvetica,sans-serif;margin:20px 0 0;">${signoff}</p>
-  <p style="font-family:Arial,Helvetica,sans-serif;margin:15px 0 0;font-weight:700;color:#0f315a;">${department}</p>
-  <p style="font-family:Arial,Helvetica,sans-serif;margin:14px 0 0;font-weight:700;">FACS (VIETNAM) TEAM</p>
-  <p style="font-family:Arial,Helvetica,sans-serif;margin:7px 0 0;">Email: <a href="mailto:${email}" style="font-family:Arial,Helvetica,sans-serif;color:#067a98;">${email}</a><br>Website: <a href="https://facs.vn" style="font-family:Arial,Helvetica,sans-serif;color:#067a98;">www.facs.vn</a><br>Hotline: (+84) 972 798 424</p>`;
+  return `<p style="font-family:Arial,Helvetica,sans-serif;text-align:left;margin:20px 0 0;">${signoff}</p>
+  <p style="font-family:Arial,Helvetica,sans-serif;text-align:left;margin:15px 0 0;font-weight:700;color:#0f315a;">${department}</p>
+  <p style="font-family:Arial,Helvetica,sans-serif;text-align:left;margin:14px 0 0;font-weight:700;">FACS (VIETNAM) TEAM</p>
+  <p style="font-family:Arial,Helvetica,sans-serif;text-align:left;margin:7px 0 0;">Email: <a href="mailto:${email}" style="font-family:Arial,Helvetica,sans-serif;color:#067a98;">${email}</a><br>Website: <a href="https://facs.vn" style="font-family:Arial,Helvetica,sans-serif;color:#067a98;">www.facs.vn</a><br>Hotline: (+84) 972 798 424</p>`;
 }
 
 const shell = buildEmailShell;
@@ -98,7 +98,7 @@ function replaceVariables(value: string, variables: Record<string, string>) {
 }
 
 function bodyToHtml(value: string) {
-  return value.split(/\n\s*\n/).map((paragraph) => `<p style="margin:0 0 16px;white-space:pre-line;">${escapeHtml(paragraph)}</p>`).join("");
+  return value.split(/\n\s*\n/).map((paragraph) => `<p align="justify" style="text-align:justify;text-justify:inter-word;margin:0 0 16px;white-space:pre-line;">${escapeHtml(paragraph)}</p>`).join("");
 }
 
 export function buildEditableReceipt(
@@ -138,12 +138,12 @@ export function buildCareerInternalEmail(application: CareerApplication, adminUr
     ["Thời gian gửi", formatTime(application.submitted_at)],
   ];
   const html = shell(`<p style="margin:0 0 18px;font-size:17px;font-weight:700;color:#0f315a;">FACS vừa nhận được một hồ sơ ứng tuyển mới.</p>
-    <table role="presentation" width="100%" cellspacing="0" cellpadding="0" style="border-collapse:collapse;">
+    <table role="presentation" width="100%" cellspacing="0" cellpadding="0" style="border-collapse:collapse;text-align:left;">
       ${rows.map(([label, value]) => `<tr><td style="width:135px;padding:8px 10px;border-bottom:1px solid #edf0f4;color:#687386;">${escapeHtml(label)}</td><td style="padding:8px 10px;border-bottom:1px solid #edf0f4;font-weight:600;">${escapeHtml(value)}</td></tr>`).join("")}
     </table>
     <p style="margin:20px 0 6px;font-weight:700;color:#0f315a;">Lời nhắn</p>
     <p style="margin:0;white-space:pre-line;">${escapeHtml(application.message || "Không có lời nhắn.")}</p>
-    <p style="margin:22px 0 0;"><a href="${adminUrl}" style="display:inline-block;background:#0f315a;color:#fff;text-decoration:none;padding:11px 17px;font-weight:700;">Mở hồ sơ trong Admin</a></p>`, "https://facs.vn");
+    <p style="text-align:left;margin:22px 0 0;"><a href="${adminUrl}" style="display:inline-block;background:#0f315a;color:#fff;text-decoration:none;padding:11px 17px;font-weight:700;">Mở hồ sơ trong Admin</a></p>`, "https://facs.vn");
   const plainText = `FACS vừa nhận được một hồ sơ ứng tuyển mới.\n\nMã hồ sơ: ${shortId}\nHọ và tên: ${application.full_name}\nEmail: ${application.email}\nĐiện thoại: ${application.phone}\nVị trí: ${position}\nThời gian gửi: ${formatTime(application.submitted_at)}\n\nLời nhắn:\n${application.message || "Không có lời nhắn."}\n\nAdmin: ${adminUrl}`;
   return { subject: `[FACS Careers] Hồ sơ mới – ${position} – ${application.full_name}`, html, plainText };
 }
@@ -179,12 +179,12 @@ export function buildContactInternalEmail(inquiry: ContactInquiry, adminUrl: str
     ["Thời gian gửi", formatTime(inquiry.submitted_at)],
   ];
   const html = shell(`<p style="margin:0 0 18px;font-size:17px;font-weight:700;color:#0f315a;">FACS vừa nhận được một yêu cầu liên hệ mới.</p>
-    <table role="presentation" width="100%" cellspacing="0" cellpadding="0" style="border-collapse:collapse;">
+    <table role="presentation" width="100%" cellspacing="0" cellpadding="0" style="border-collapse:collapse;text-align:left;">
       ${rows.map(([label, value]) => `<tr><td style="width:135px;padding:8px 10px;border-bottom:1px solid #edf0f4;color:#687386;">${escapeHtml(label)}</td><td style="padding:8px 10px;border-bottom:1px solid #edf0f4;font-weight:600;">${escapeHtml(value)}</td></tr>`).join("")}
     </table>
     <p style="margin:20px 0 6px;font-weight:700;color:#0f315a;">Nội dung</p>
     <p style="margin:0;white-space:pre-line;">${escapeHtml(inquiry.message)}</p>
-    <p style="margin:22px 0 0;"><a href="${adminUrl}" style="display:inline-block;background:#0f315a;color:#fff;text-decoration:none;padding:11px 17px;font-weight:700;">Mở yêu cầu trong Admin</a></p>`, "https://facs.vn");
+    <p style="text-align:left;margin:22px 0 0;"><a href="${adminUrl}" style="display:inline-block;background:#0f315a;color:#fff;text-decoration:none;padding:11px 17px;font-weight:700;">Mở yêu cầu trong Admin</a></p>`, "https://facs.vn");
   const plainText = `FACS vừa nhận được một yêu cầu liên hệ mới.\n\nMã yêu cầu: ${shortId}\nHọ và tên: ${inquiry.full_name}\nCông ty: ${inquiry.company_name || "—"}\nEmail: ${inquiry.email}\nĐiện thoại: ${inquiry.phone || "—"}\nDịch vụ quan tâm: ${inquiry.service_interest || "—"}\nThời gian gửi: ${formatTime(inquiry.submitted_at)}\n\nNội dung:\n${inquiry.message}\n\nAdmin: ${adminUrl}`;
   return { subject: `[FACS Contact] Yêu cầu mới – ${inquiry.company_name || inquiry.full_name}`, html, plainText };
 }

@@ -7,9 +7,80 @@ import { createClient } from "@supabase/supabase-js";
 import { EMPTY_POST_FILTERS, publicationDateBounds, searchInsightPosts } from "../src/lib/insightPostSearch.js";
 import { emailReviewState, workflowTime } from "../src/lib/insightEmailWorkflow.js";
 import { deliverInsightClaim } from "../supabase/functions/_shared/insight-delivery.ts";
+import { selectedAudienceIds, selectedAudienceSnapshot } from "../supabase/functions/_shared/insight-selection.ts";
+import { canSelectContact, loadEmailAudience } from "../src/lib/emailAudience.js";
+import { countEmailHistory, listEmailHistory, vietnamToday } from "../src/lib/emailHistory.js";
 
 const now = new Date("2026-10-31T12:00:00Z");
 const siteUrl = "https://facs.vn";
+
+test("selected recipients require a nonempty bounded list of IDs and every contact must still be subscribed", () => {
+  const first = "00000000-0000-4000-8000-000000000001";
+  const second = "00000000-0000-4000-8000-000000000002";
+  assert.deepEqual(selectedAudienceIds([second, first, first]), [first, second]);
+  for (const value of [null, [], ["bad"], Array(498).fill(first)]) assert.throws(() => selectedAudienceIds(value));
+  const rows = [{ id: first, email: " FIRST@example.com ", status: "subscribed" }, { id: second, email: "second@example.com", status: "subscribed" }];
+  assert.deepEqual(selectedAudienceSnapshot([first, second], rows).bcc, ["first@example.com", "second@example.com"]);
+  assert.throws(() => selectedAudienceSnapshot([first, second], rows.slice(1)));
+  assert.throws(() => selectedAudienceSnapshot([first, second], [{ ...rows[0], status: "unsubscribed" }, rows[1]]));
+  assert.throws(() => selectedAudienceSnapshot([first], [{ ...rows[0], email: "tunguyen@facs.vn" }]));
+  assert.equal(canSelectContact(rows[0]), true);
+  assert.equal(canSelectContact({ ...rows[0], status: "unsubscribed" }), false);
+  assert.equal(canSelectContact({ ...rows[0], email: "infor@facs.vn" }), false);
+});
+
+test("selected group transport never expands the snapshot to the full audience", async () => {
+  let recipients;
+  await deliverInsightClaim({ post: {}, log_id: "log", status: "processing", request_id: "selected", audience_id: null,
+    bcc: ["chosen1@example.com", "chosen2@example.com"], cc: ["yendoan@facs.vn", "thanhhuynh@facs.vn"] }, {
+    send: async (value) => { recipients = value; return {}; }, finalize: async () => {}, fail: async () => assert.fail(),
+  });
+  assert.deepEqual(recipients.bcc.map((row) => row.mail_address), ["chosen1@example.com", "chosen2@example.com"]);
+  assert.equal(recipients.cc.length, 2);
+});
+
+test("Vietnam history day remains correct around midnight regardless of the PC timezone", () => {
+  assert.equal(vietnamToday(new Date("2026-11-02T16:59:59Z")), "2026-11-02");
+  assert.equal(vietnamToday(new Date("2026-11-02T17:00:00Z")), "2026-11-03");
+});
+
+test("history filters and exact counts run on the entire requested range, with bounded detail pages", async () => {
+  const requests = [];
+  const client = createClient("https://test.invalid", "fixture-public-key", { auth: { persistSession: false, autoRefreshToken: false }, global: { fetch: async (url, init) => {
+    const parsed = new URL(url); requests.push({ url: parsed, method: init.method });
+    const count = ({ "eq.sent": 24, "eq.failed": 2, "eq.processing": 1 })[parsed.searchParams.get("status")] ?? 27;
+    return new Response(init.method === "HEAD" ? null : JSON.stringify([{ id: "page-entry" }]), { status: 200, headers: { "Content-Type": "application/json", "Content-Range": `0-0/${count}` } });
+  } } });
+  const filters = { from: "2026-11-01", to: "2026-11-02" };
+  assert.deepEqual(await countEmailHistory(client, filters), { total: 27, sent: 24, failed: 2, processing: 1 });
+  const rows = await listEmailHistory(client, filters, 2, 5);
+  assert.equal(rows.count, 27);
+  assert.equal(requests.length, 5);
+  assert.ok(requests.slice(0, 4).every((request) => request.method === "HEAD"));
+  for (const request of requests) assert.deepEqual(request.url.searchParams.getAll("created_at"), ["gte.2026-10-31T17:00:00.000Z", "lt.2026-11-02T17:00:00.000Z"]);
+  assert.equal(requests[4].url.searchParams.get("offset"), "10");
+  assert.equal(requests[4].url.searchParams.get("limit"), "5");
+});
+
+test("Audience loading reads past Supabase's first 1000 rows for selection and CSV", async () => {
+  const ranges = [];
+  const rows = Array.from({ length: 1001 }, (_, index) => ({ id: String(index) }));
+  const client = { from: () => ({ select: () => ({ order() { return this; }, async range(from, to) { ranges.push([from, to]); return { data: rows.slice(from, to + 1) }; } }) }) };
+  assert.equal((await loadEmailAudience(client)).length, 1001);
+  assert.deepEqual(ranges, [[0, 999], [1000, 1999]]);
+});
+
+test("Insights, HR and Contact justify body paragraphs while preserving readable signatures and actions", () => {
+  const insight = buildInsightEmail({ id: "sample", slug: "sample", title_vi: "Tiêu đề", excerpt_vi: "Đoạn văn dài cần căn đều.", excerpt_en: "A paragraph to justify." }, siteUrl);
+  assert.match(insight.html, /<p align="justify"[^>]*text-align:justify[^>]*>Đoạn văn dài/);
+  assert.match(insight.html, /<h2 style="text-align:left/);
+  for (const senderEmail of ["hr@facs.vn", "contact@facs.vn"]) {
+    const mail = buildFormReceiptTestMail({ senderEmail, siteUrl, now, template: { body_vi: "Đoạn văn tiếng Việt.", body_en: "An English paragraph." } });
+    assert.match(mail.bodyHtml, /<p align="justify"[^>]*text-align:justify[^>]*>Đoạn văn tiếng Việt/);
+    assert.match(mail.bodyHtml, /text-align:left[^>]*>FACS \(VIETNAM\) TEAM/);
+    assert.match(mail.bodyHtml, /font-family:Arial,Helvetica,sans-serif/);
+  }
+});
 
 test("a sent article remains eligible for another deliberately reviewed Audience send", () => {
   const post = { id: "post", status: "published", published_at: "2026-10-30T12:00:00Z", email_notification_status: "sent",

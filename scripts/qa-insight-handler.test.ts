@@ -28,16 +28,21 @@ Deno.test("Insights handler: targeted sends, repeat campaigns and request idempo
       if (init.method === "PATCH") Object.assign(post, body);
       return response(post);
     }
-    if (url.pathname === "/rest/v1/insight_email_audience") return response(contacts.find((contact) => url.searchParams.get("id") === `eq.${contact.id}`));
+    if (url.pathname === "/rest/v1/insight_email_audience") {
+      const id = url.searchParams.get("id");
+      if (id?.startsWith("eq.")) return response(contacts.find((contact) => id === `eq.${contact.id}`));
+      return response(contacts.filter((contact) => (!id || id.includes(contact.id)) && (!url.searchParams.has("status") || url.searchParams.get("status") === `eq.${contact.status}`)));
+    }
     if (url.pathname === "/rest/v1/insight_email_delivery_logs") return response({ id: crypto.randomUUID() });
-    if (url.pathname.endsWith("/rpc/claim_insight_email_delivery")) {
+    if (url.pathname.endsWith("/rpc/claim_insight_email_delivery") || url.pathname.endsWith("/rpc/claim_insight_email_selected_delivery")) {
       claimedArguments.push(body);
       const saved = claims.get(body.p_request_id);
       if (saved) return response({ ...saved, duplicate: true, status: "sent" });
       const target = contacts.find((contact) => contact.id === body.p_audience_id);
+      const selection = body.p_audience_ids ? contacts.filter((contact) => body.p_audience_ids.includes(contact.id)) : null;
       if (body.p_audience_id && target?.status !== "subscribed") return response({ message: "Khách hàng không còn trong danh sách đang nhận." }, 400);
       const claim = { post: { ...post }, log_id: crypto.randomUUID(), request_id: body.p_request_id, status: "processing",
-        audience_id: body.p_audience_id, bcc: target ? [target.email] : contacts.filter((contact) => contact.status === "subscribed").map((contact) => contact.email),
+        audience_id: body.p_audience_id, bcc: selection ? selection.map((contact) => contact.email).sort() : target ? [target.email] : contacts.filter((contact) => contact.status === "subscribed").map((contact) => contact.email),
         cc: target ? [] : ["yendoan@facs.vn", "thanhhuynh@facs.vn"] };
       claims.set(body.p_request_id, claim);
       return response(claim);
@@ -95,6 +100,27 @@ Deno.test("Insights handler: targeted sends, repeat campaigns and request idempo
       const repeated = await invoke("confirm_send", { post_id: post.id, request_id: crypto.randomUUID(), confirmation_text: "SEND-AUDIENCE" });
       check(repeated.status === 200, "A new deliberate request must remain possible");
       check(last.internetMessageHeaders[0].value !== messages.at(-1).internetMessageHeaders[0].value, "Distinct sends must have distinct delivery keys");
+    });
+    await test.step("selected-group preview and Graph payload include exactly the chosen Bcc contacts", async () => {
+      contacts.push({ id: crypto.randomUUID(), email: "not-selected@example.com", status: "subscribed" });
+      const ids = [contacts[0].id, contacts[1].id];
+      const preview = await invoke("preview_selected", { post_id: post.id, audience_ids: ids });
+      check(preview.status === 200 && preview.data.contacts.length === 2, "Selection preview failed");
+      const payload = { post_id: post.id, audience_ids: ids, expected_bcc: preview.data.recipients.bcc,
+        preview_hash: preview.data.preview_hash, confirmation_text: "SEND-SELECTED", request_id: crypto.randomUUID() };
+      const before = messages.length;
+      const sent = await invoke("confirm_selected", payload);
+      check(sent.status === 200 && sent.data.recipients.bcc_count === 2, "Selected send failed");
+      const addresses = messages.at(-1).bccRecipients.map((recipient: any) => recipient.emailAddress.address).sort();
+      check(JSON.stringify(addresses) === JSON.stringify([contacts[0].email, contacts[1].email].sort()), "Selected Bcc expanded beyond selection");
+      check(messages.at(-1).ccRecipients.length === 2, "Selected groups preserve the Audience Cc");
+      check(messages.at(-1).toRecipients[0].emailAddress.address === "tunguyen@facs.vn", "To must remain internal");
+      check(claimedArguments.at(-1).p_audience_ids.length === 2 && !claimedArguments.at(-1).p_audience_id, "Must use the selected-group claim");
+      await invoke("confirm_selected", payload);
+      check(messages.length === before + 1, "Repeated selected request submitted a duplicate email");
+      check((await invoke("confirm_selected", { ...payload, audience_ids: [], request_id: crypto.randomUUID() })).status !== 200, "Empty selection must be rejected");
+      check((await invoke("preview_selected", { post_id: post.id, audience_ids: [contacts[2].id] })).status !== 200, "Opt-out selection must be rejected");
+      check(messages.length === before + 1, "Invalid selection must not send");
     });
   } finally {
     globalThis.fetch = originalFetch;

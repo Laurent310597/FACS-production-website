@@ -1,6 +1,6 @@
 import { buildEmailShell, buildEmailSignature } from "./form-email-templates.ts";
 
-export const INSIGHT_EMAIL_TEMPLATE_VERSION = "2026-11-01-arial-v3";
+export const INSIGHT_EMAIL_TEMPLATE_VERSION = "2026-11-03-arial-justify-v4";
 
 export type InsightPost = {
   id: string;
@@ -58,22 +58,22 @@ export function buildInsightEmail(post: InsightPost, siteUrl: string, isTest = f
   const baseSubject = `[FACS Insight] - ${titleVi} | ${titleEn}`;
   const subject = isTest ? `[TEST] ${baseSubject}` : baseSubject;
 
-  const link = (url: string, label: string) => `<p style="font-family:Arial,Helvetica,sans-serif;margin:20px 0 0;"><a href="${escapeHtml(url)}" target="_blank" rel="noopener noreferrer" style="font-family:Arial,Helvetica,sans-serif;display:inline-block;background:#0f315a;color:#ffffff;text-decoration:none;padding:11px 17px;font-weight:700;">${label}</a></p><p style="font-family:Arial,Helvetica,sans-serif;margin:12px 0 0;font-size:12px;overflow-wrap:anywhere;"><a href="${escapeHtml(url)}" target="_blank" rel="noopener noreferrer" style="font-family:Arial,Helvetica,sans-serif;color:#067a98;">${escapeHtml(url)}</a></p>`;
+  const link = (url: string, label: string) => `<p style="font-family:Arial,Helvetica,sans-serif;text-align:left;margin:20px 0 0;"><a href="${escapeHtml(url)}" target="_blank" rel="noopener noreferrer" style="font-family:Arial,Helvetica,sans-serif;display:inline-block;background:#0f315a;color:#ffffff;text-decoration:none;padding:11px 17px;font-weight:700;">${label}</a></p><p style="font-family:Arial,Helvetica,sans-serif;text-align:left;margin:12px 0 0;font-size:12px;overflow-wrap:anywhere;"><a href="${escapeHtml(url)}" target="_blank" rel="noopener noreferrer" style="font-family:Arial,Helvetica,sans-serif;color:#067a98;">${escapeHtml(url)}</a></p>`;
   const html = buildEmailShell(`
     ${isTest ? '<p style="font-family:Arial,Helvetica,sans-serif;margin:0 0 20px;padding:10px 14px;border:1px solid #f59e0b;background:#fffbeb;color:#92400e;font-weight:700;">EMAIL THỬ NỘI BỘ / INTERNAL TEST — KHÔNG GỬI KHÁCH HÀNG</p>' : ''}
-    <p style="font-family:Arial,Helvetica,sans-serif;margin:0 0 16px;">Kính gửi Quý Khách hàng,</p>
-    <p style="font-family:Arial,Helvetica,sans-serif;margin:0 0 16px;">FACS trân trọng giới thiệu bài viết mới trên chuyên mục Insights:</p>
-    <h2 style="margin:0 0 10px;font-family:Arial,Helvetica,sans-serif;font-size:20px;line-height:1.4;color:#0f315a;">${escapeHtml(titleVi)}</h2>
-    <p style="font-family:Arial,Helvetica,sans-serif;margin:0 0 16px;font-size:12px;color:#687386;">Ngày đăng: ${escapeHtml(formatDateVi(post.published_at))}</p>
-    <p style="font-family:Arial,Helvetica,sans-serif;margin:0 0 16px;white-space:pre-line;">${escapeHtml(excerptVi || "Thông tin chi tiết được trình bày trong bài viết.")}</p>
+    <p align="justify" style="font-family:Arial,Helvetica,sans-serif;text-align:justify;text-justify:inter-word;margin:0 0 16px;">Kính gửi Quý Khách hàng,</p>
+    <p align="justify" style="font-family:Arial,Helvetica,sans-serif;text-align:justify;text-justify:inter-word;margin:0 0 16px;">FACS trân trọng giới thiệu bài viết mới trên chuyên mục Insights:</p>
+    <h2 style="text-align:left;margin:0 0 10px;font-family:Arial,Helvetica,sans-serif;font-size:20px;line-height:1.4;color:#0f315a;">${escapeHtml(titleVi)}</h2>
+    <p align="justify" style="font-family:Arial,Helvetica,sans-serif;text-align:justify;text-justify:inter-word;margin:0 0 16px;font-size:12px;color:#687386;">Ngày đăng: ${escapeHtml(formatDateVi(post.published_at))}</p>
+    <p align="justify" style="font-family:Arial,Helvetica,sans-serif;text-align:justify;text-justify:inter-word;margin:0 0 16px;white-space:pre-line;">${escapeHtml(excerptVi || "Thông tin chi tiết được trình bày trong bài viết.")}</p>
     ${link(articleUrlVi, "Đọc toàn bộ bài viết")}
     ${buildEmailSignature("infor@facs.vn", "Trân trọng,", "PHÒNG THÔNG TIN &amp; TRUYỀN THÔNG")}
     <div style="font-family:Arial,Helvetica,sans-serif;margin:30px 0;text-align:center;color:#a3acb9;letter-spacing:1px;">-------------------</div>
-    <p style="font-family:Arial,Helvetica,sans-serif;margin:0 0 16px;">Dear Valued Clients,</p>
-    <p style="font-family:Arial,Helvetica,sans-serif;margin:0 0 16px;">We are pleased to share a new article from FACS Insights:</p>
-    <h2 style="margin:0 0 10px;font-family:Arial,Helvetica,sans-serif;font-size:20px;line-height:1.4;color:#0f315a;">${escapeHtml(titleEn)}</h2>
-    <p style="font-family:Arial,Helvetica,sans-serif;margin:0 0 16px;font-size:12px;color:#687386;">Publication date: ${escapeHtml(formatDateEn(post.published_at))}</p>
-    <p style="font-family:Arial,Helvetica,sans-serif;margin:0 0 16px;white-space:pre-line;">${escapeHtml(excerptEn || "Further details are available in the full article.")}</p>
+    <p align="justify" style="font-family:Arial,Helvetica,sans-serif;text-align:justify;text-justify:inter-word;margin:0 0 16px;">Dear Valued Clients,</p>
+    <p align="justify" style="font-family:Arial,Helvetica,sans-serif;text-align:justify;text-justify:inter-word;margin:0 0 16px;">We are pleased to share a new article from FACS Insights:</p>
+    <h2 style="text-align:left;margin:0 0 10px;font-family:Arial,Helvetica,sans-serif;font-size:20px;line-height:1.4;color:#0f315a;">${escapeHtml(titleEn)}</h2>
+    <p align="justify" style="font-family:Arial,Helvetica,sans-serif;text-align:justify;text-justify:inter-word;margin:0 0 16px;font-size:12px;color:#687386;">Publication date: ${escapeHtml(formatDateEn(post.published_at))}</p>
+    <p align="justify" style="font-family:Arial,Helvetica,sans-serif;text-align:justify;text-justify:inter-word;margin:0 0 16px;white-space:pre-line;">${escapeHtml(excerptEn || "Further details are available in the full article.")}</p>
     ${link(articleUrlEn, "Read the full article")}
     ${buildEmailSignature("infor@facs.vn", "Sincerely,", "INFORMATION &amp; COMMUNICATION DEPARTMENT")}
   `, siteUrl);
