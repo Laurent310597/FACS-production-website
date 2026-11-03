@@ -32,13 +32,13 @@ const weekDays = {
 };
 
 const calendarCategoryColors = {
-  tax: "#0e7490",
-  accounting: "#2563eb",
-  labor: "#7c3aed",
-  insurance: "#047857",
-  hse: "#a16207",
-  corporate: "#be123c",
-  other: "#475569",
+  tax: "#0b5067",
+  accounting: "#173f92",
+  labor: "#5a229b",
+  insurance: "#07533e",
+  hse: "#714407",
+  corporate: "#8b1739",
+  other: "#36475c",
 };
 
 function monthRange(year, month) {
@@ -328,7 +328,7 @@ export default function LegalCalendarPage() {
                       onClick={() => toggleCategory(category.value)}
                       className="whitespace-nowrap rounded-full border px-3.5 py-2 text-sm font-semibold transition"
                       style={{
-                        color: enabled ? calendarCategoryColors[category.value] : "#64748b",
+                        color: enabled ? calendarCategoryColors[category.value] : "#43546b",
                         borderColor: enabled ? `${category.color}55` : "rgba(100,116,139,.22)",
                         backgroundColor: enabled ? `${category.color}1c` : "rgba(241,245,249,.65)",
                       }}

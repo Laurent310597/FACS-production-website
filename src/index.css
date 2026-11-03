@@ -1,5 +1,10 @@
 @import "tailwindcss";
 
+@theme {
+  --font-sans: Arial, Helvetica, sans-serif;
+  --font-serif: Cambria, Georgia, serif;
+}
+
 html {
   scroll-behavior: smooth;
 }
@@ -8,7 +13,64 @@ body {
   margin: 0;
   background: radial-gradient(circle at top right, rgba(0,183,255,0.10), transparent 30%), linear-gradient(135deg, #0d1726 0%, #101b2f 48%, #132238 100%);
   color: white;
-  font-family: Cambria, Georgia, serif;
+  font-family: var(--font-sans);
+  --facs-copy: #bdcadd;
+  --facs-muted: #a9bbd2;
+  --facs-hint: #9dafc8;
+  --facs-field-border: #70849d;
+  --facs-focus: #67e8f9;
+}
+
+h1, h2, h3, h4, h5, h6, [role="heading"] {
+  font-family: var(--font-serif);
+}
+
+input, select, textarea, button, input::file-selector-button {
+  font-family: var(--font-sans);
+}
+
+/* Retain the existing wordmark/slogan typography. */
+header [class*="facsSloganShine"] {
+  font-family: var(--font-serif);
+}
+
+/* The calendar and receipt preview have light surfaces. */
+.text-\[\#0d1726\], .text-\[\#243044\] {
+  --facs-copy: #364b65;
+  --facs-muted: #3d5069;
+  --facs-hint: #43546b;
+  --facs-field-border: #62758b;
+  --facs-focus: #07566e;
+}
+
+@layer utilities {
+  .text-slate-400 { color: var(--facs-copy); }
+  .text-slate-500 { color: var(--facs-muted); }
+  .text-slate-600 { color: var(--facs-hint); }
+  .placeholder\:text-slate-600::placeholder { color: var(--facs-hint); }
+
+  .bg-cyan-500.text-white { color: #062636; }
+  .text-\[\#0d1726\] .text-cyan-700 { color: #07566e; }
+}
+
+input::placeholder, textarea::placeholder {
+  color: var(--facs-hint);
+}
+
+input:not([type="checkbox"]):not([type="radio"]):not([type="hidden"]):not([type="file"]),
+select, textarea,
+label:has(> input:not([type="checkbox"]):not([type="radio"]):not([type="hidden"]):not([type="file"])),
+label:has(> select), label:has(> textarea) {
+  border-color: var(--facs-field-border);
+}
+
+input:focus-visible, select:focus-visible, textarea:focus-visible,
+label:has(> input):focus-within, label:has(> select):focus-within, label:has(> textarea):focus-within {
+  border-color: var(--facs-focus);
+}
+
+input::file-selector-button {
+  color: #062636;
 }
 
 ::selection {
@@ -16,7 +78,7 @@ body {
 }
 
 button, a, input, textarea {
-  outline-color: rgba(34, 211, 238, 0.45);
+  outline-color: var(--facs-focus);
 }
 
 h1, h2, h3, .text-balance {
@@ -127,7 +189,7 @@ img {
 }
 
 .admin-rich-editor:empty::before {
-  color: rgb(71 85 105);
+  color: var(--facs-hint);
   content: attr(data-placeholder);
   pointer-events: none;
 }
