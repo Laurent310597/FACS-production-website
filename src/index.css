@@ -17,7 +17,7 @@ body {
   --facs-copy: #bdcadd;
   --facs-muted: #a9bbd2;
   --facs-hint: #9dafc8;
-  --facs-field-border: #70849d;
+  --facs-field-border: #7e92aa;
   --facs-focus: #67e8f9;
 }
 
@@ -34,12 +34,18 @@ header [class*="facsSloganShine"] {
   font-family: var(--font-serif);
 }
 
+/* Font metrics only: keep the existing navigation within its desktop row. */
+@media (min-width: 1280px) and (max-width: 1535px) {
+  header nav { font-size: 13px; }
+  header .shrink-0 > a { font-size: 14px; }
+}
+
 /* The calendar and receipt preview have light surfaces. */
 .text-\[\#0d1726\], .text-\[\#243044\] {
   --facs-copy: #364b65;
   --facs-muted: #3d5069;
   --facs-hint: #43546b;
-  --facs-field-border: #62758b;
+  --facs-field-border: #526981;
   --facs-focus: #07566e;
 }
 
@@ -64,7 +70,7 @@ label:has(> select), label:has(> textarea) {
   border-color: var(--facs-field-border);
 }
 
-input:focus-visible, select:focus-visible, textarea:focus-visible,
+input:focus, select:focus, textarea:focus,
 label:has(> input):focus-within, label:has(> select):focus-within, label:has(> textarea):focus-within {
   border-color: var(--facs-focus);
 }
