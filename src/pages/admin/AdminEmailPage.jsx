@@ -29,8 +29,6 @@ import { emailReviewState, workflowTime } from "../../lib/insightEmailWorkflow";
 import InsightPostPicker from "../../components/admin/InsightPostPicker";
 import { emailStatusLabels, invokeInsightEmail } from "../../lib/emailNotifications";
 import { supabase } from "../../lib/supabaseClient";
-import { isEmailDataPreview } from "../../lib/emailPreviewAccess";
-import { getMinimumVietnamDateTimeInput, vietnamDateTimeInputToIso } from "../../lib/publication";
 
 const emptyContact = {
   email: "",
@@ -131,7 +129,6 @@ export default function AdminEmailPage() {
   const [postRefresh, setPostRefresh] = useState(0);
   const [selectedPostId, setSelectedPostId] = useState(() => searchParams.get("post_id") || "");
   const [schedule, setSchedule] = useState(null);
-  const [simulatedTime, setSimulatedTime] = useState(() => isEmailDataPreview ? getMinimumVietnamDateTimeInput(60) : "");
   const [preview, setPreview] = useState(null);
   const [previewOpen, setPreviewOpen] = useState(false);
   const [confirmationOpen, setConfirmationOpen] = useState(false);
@@ -177,32 +174,13 @@ export default function AdminEmailPage() {
     setLoading(false);
   };
 
-  const runSimulation = async (action) => {
-    setWorkflowBusy(action);
-    setError("");
-    setMessage("");
-    try {
-      const result = await invokeInsightEmail(action, {
-        post_id: selectedPostId,
-        published_at: vietnamDateTimeInputToIso(simulatedTime),
-      });
-      syncWorkflow(result);
-      if (action === "simulate_publication_time") setPreview(null);
-      setMessage(action === "simulate_due" ? "Đã mô phỏng xử lý lịch đến hạn." : "Đã áp dụng giờ đăng mô phỏng cho bài đang chọn.");
-    } catch (issue) {
-      setError(issue.message);
-    } finally {
-      setWorkflowBusy("");
-    }
-  };
-
   const testMailbox = async () => {
     setTesting(true);
     setMessage("");
     setError("");
     try {
       await invokeInsightEmail("test");
-      setMessage(isEmailDataPreview ? "Đã mô phỏng gửi email thử nội bộ." : "Đã gửi email thử từ infor@facs.vn đến tunguyen@facs.vn. Hãy kiểm tra địa chỉ From trong Outlook.");
+      setMessage("Đã gửi email thử từ infor@facs.vn đến tunguyen@facs.vn. Hãy kiểm tra địa chỉ From trong Outlook.");
       await loadData();
     } catch (testError) {
       setError(testError.message);
@@ -357,7 +335,7 @@ export default function AdminEmailPage() {
         preview_hash: singlePreview.preview_hash, request_id: singlePreview.request_id,
         confirmation_text: selected ? "SEND-SELECTED" : "SEND-SINGLE",
       });
-      setMessage(isEmailDataPreview ? `Đã mô phỏng gửi đến ${data.recipients?.bcc_count || 0} địa chỉ Bcc.` : selected
+      setMessage(selected
         ? `Microsoft 365 đã tiếp nhận yêu cầu gửi tới ${data.recipients?.bcc_count || 0} khách hàng đã chọn trong Bcc. Chưa xác nhận giao thư đến từng hộp thư.`
         : `Microsoft 365 đã tiếp nhận yêu cầu gửi riêng tới ${singlePreview.contact.email} trong Bcc. Chưa xác nhận thư đã đến hộp thư người nhận.`);
       if (selected) setSelectedContactIds(new Set());
@@ -396,7 +374,7 @@ export default function AdminEmailPage() {
     try {
       const data = await invokeInsightEmail("test", { post_id: selectedPostId });
       syncWorkflow(data);
-      setMessage(isEmailDataPreview ? "Đã mô phỏng gửi thử đến tunguyen@facs.vn." : "Đã gửi bản thử đến tunguyen@facs.vn. Audience chưa nhận email.");
+      setMessage("Đã gửi bản thử đến tunguyen@facs.vn. Audience chưa nhận email.");
       await loadData();
     } catch (testError) {
       setError(testError.message);
@@ -419,7 +397,7 @@ export default function AdminEmailPage() {
       setConfirmationOpen(false);
       setConfirmationText("");
       setPreview(null);
-      setMessage(isEmailDataPreview ? `Đã mô phỏng gửi đến ${data.recipients?.bcc_count || 0} địa chỉ Bcc.` : `Microsoft 365 đã tiếp nhận yêu cầu gửi tới ${data.recipients?.bcc_count || 0} địa chỉ Bcc. Chưa xác nhận giao thư đến từng hộp thư.`);
+      setMessage(`Microsoft 365 đã tiếp nhận yêu cầu gửi tới ${data.recipients?.bcc_count || 0} địa chỉ Bcc. Chưa xác nhận giao thư đến từng hộp thư.`);
       await loadData();
     } catch (sendError) {
       setError(sendError.message);
@@ -524,12 +502,6 @@ export default function AdminEmailPage() {
         </p>
       </div>
 
-      {isEmailDataPreview && (
-        <p className="mt-5 rounded-2xl border border-amber-200/30 bg-amber-300/5 p-4 text-sm text-amber-100">
-          Preview dùng bài viết và Audience hiện có. Gửi thử, gửi chính thức và đặt lịch đều mô phỏng. Lịch thử được giữ đến khi tải lại trang.
-        </p>
-      )}
-
       {(message || error) && (
         <div className={`mt-6 rounded-2xl border px-5 py-4 text-sm ${error ? "border-red-300/20 bg-red-400/8 text-red-200" : "border-emerald-300/20 bg-emerald-300/8 text-emerald-200"}`}>
           {error || message}
@@ -547,7 +519,7 @@ export default function AdminEmailPage() {
               {connection.loading ? (
                 <><Loader2 size={16} className="animate-spin text-slate-400" /> Đang kiểm tra...</>
               ) : connection.connected ? (
-                <><CheckCircle2 size={17} className="text-emerald-300" /> <span className="text-emerald-200">{isEmailDataPreview ? "Chế độ mô phỏng gửi từ" : "Đã cấu hình gửi từ"} {connection.mailbox_email}</span></>
+                <><CheckCircle2 size={17} className="text-emerald-300" /> <span className="text-emerald-200">Đã cấu hình gửi từ {connection.mailbox_email}</span></>
               ) : (
                 <><XCircle size={17} className="text-amber-300" /> <span className="text-amber-200">Chưa cấu hình Microsoft Graph</span></>
               )}
@@ -591,27 +563,6 @@ export default function AdminEmailPage() {
               <div><div className="text-xs text-slate-500">Audience Bcc hiện tại</div><div className="mt-1 font-semibold">{subscribedCount} địa chỉ</div></div>
             </div>
 
-            {isEmailDataPreview && (
-              <div className="mt-4 flex flex-wrap items-end gap-3 rounded-2xl border border-amber-200/20 p-4">
-                <label className="grid gap-2 text-sm text-slate-200">
-                  Giờ đăng mô phỏng (giờ Việt Nam)
-                  <input type="datetime-local" value={simulatedTime}
-                    onChange={(event) => setSimulatedTime(event.target.value)}
-                    className="rounded-xl border border-white/15 bg-[#081321] p-2 [color-scheme:dark]" />
-                </label>
-                <button type="button" disabled={!simulatedTime || Boolean(workflowBusy)}
-                  onClick={() => runSimulation("simulate_publication_time")}
-                  className="rounded-xl border border-cyan-200/25 px-4 py-2 text-sm text-cyan-100 disabled:opacity-40">
-                  Áp dụng giờ đăng mô phỏng
-                </button>
-                {schedule?.status === "scheduled" && (
-                  <button type="button" disabled={Boolean(workflowBusy)} onClick={() => runSimulation("simulate_due")}
-                    className="rounded-xl border border-cyan-200/25 px-4 py-2 text-sm text-cyan-100 disabled:opacity-40">
-                    Mô phỏng đến giờ gửi
-                  </button>
-                )}
-              </div>
-            )}
             {schedule && !["scheduled", "processing"].includes(schedule.status) && selectedPostIsPublic && (
               <div role="status" className="mt-4 rounded-2xl border border-cyan-200/20 p-4 text-sm text-cyan-100">
                 Lịch gửi: {{ sent: "Đã chuyển Microsoft 365", failed: "Gửi thất bại", cancelled: "Đã huỷ", invalidated: "Cần xác nhận lại" }[schedule.status]}
@@ -630,7 +581,7 @@ export default function AdminEmailPage() {
             ) : ((selectedPost.status === "published" && Date.parse(selectedPost.published_at) > workflowNow.getTime()) || ["scheduled", "processing"].includes(schedule?.status)) ? (
               <InsightScheduledWorkflow key={selectedPost.id} post={selectedPost} schedule={schedule}
                 previewReady={previewReady} testReady={testReady} busy={workflowBusy}
-                onPreview={previewSelectedPost} onTest={testSelectedPost} onChanged={loadData} simulated={isEmailDataPreview}
+                onPreview={previewSelectedPost} onTest={testSelectedPost} onChanged={loadData}
                 selectedIds={selectedContacts.map((contact) => contact.id)} />
             ) : (
               <div className="mt-5 grid gap-4 lg:grid-cols-3">
@@ -672,7 +623,7 @@ export default function AdminEmailPage() {
             <h2 className="text-xl font-semibold">Danh sách khách hàng nhận Bcc</h2>
             <p className="mt-1 text-sm text-slate-500">{subscribedCount} địa chỉ đang được phép nhận email; tổng cộng {audience.length} bản ghi.</p>
           </div>
-          {!isEmailDataPreview && <div className="flex flex-wrap gap-3">
+          <div className="flex flex-wrap gap-3">
             <label className="inline-flex cursor-pointer items-center gap-2 rounded-2xl border border-white/10 px-4 py-3 text-sm font-semibold text-slate-300 transition hover:border-cyan-200/30 hover:text-cyan-100">
               <Upload size={17} /> Nhập CSV
               <input type="file" accept=".csv,text/csv" onChange={importCsv} className="hidden" />
@@ -680,17 +631,17 @@ export default function AdminEmailPage() {
             <button type="button" onClick={exportCsv} className="inline-flex items-center gap-2 rounded-2xl border border-white/10 px-4 py-3 text-sm font-semibold text-slate-300 transition hover:border-cyan-200/30 hover:text-cyan-100">
               <Download size={17} /> Xuất CSV
             </button>
-          </div>}
+          </div>
         </div>
 
-        {!isEmailDataPreview && <form onSubmit={addContact} className="mt-6 grid gap-3 rounded-2xl border border-white/10 bg-[#081321]/55 p-4 lg:grid-cols-[1.2fr_1fr_1fr_auto]">
+        <form onSubmit={addContact} className="mt-6 grid gap-3 rounded-2xl border border-white/10 bg-[#081321]/55 p-4 lg:grid-cols-[1.2fr_1fr_1fr_auto]">
           <input required type="email" value={form.email} onChange={(event) => setForm((current) => ({ ...current, email: event.target.value }))} placeholder="customer@example.com" className="rounded-xl border border-white/10 bg-[#081321] px-4 py-3 text-sm text-white outline-none focus:border-cyan-300/35" />
           <input value={form.display_name} onChange={(event) => setForm((current) => ({ ...current, display_name: event.target.value }))} placeholder="Tên khách hàng" className="rounded-xl border border-white/10 bg-[#081321] px-4 py-3 text-sm text-white outline-none focus:border-cyan-300/35" />
           <input value={form.company_name} onChange={(event) => setForm((current) => ({ ...current, company_name: event.target.value }))} placeholder="Công ty" className="rounded-xl border border-white/10 bg-[#081321] px-4 py-3 text-sm text-white outline-none focus:border-cyan-300/35" />
           <button disabled={saving} className="inline-flex items-center justify-center gap-2 rounded-xl bg-cyan-300 px-5 py-3 text-sm font-bold text-[#071421] disabled:opacity-50">
             {saving ? <Loader2 size={17} className="animate-spin" /> : <Plus size={17} />} Thêm
           </button>
-        </form>}
+        </form>
 
         <div className="mt-5 grid gap-3 md:grid-cols-[1fr_auto]">
           <label className="flex items-center rounded-2xl border border-white/10 bg-[#081321]/70 px-4 focus-within:border-cyan-300/35">
@@ -756,14 +707,12 @@ export default function AdminEmailPage() {
                       aria-label={`Gửi riêng cho ${contact.email}`}>
                       <Mail size={16} />
                     </button>
-                    {!isEmailDataPreview && <>
                     <button type="button" onClick={() => setContactStatus(contact, contact.status === "subscribed" ? "unsubscribed" : "subscribed")} className="flex h-9 w-9 items-center justify-center rounded-xl border border-white/10 text-slate-400 transition hover:text-cyan-200" title={contact.status === "subscribed" ? "Ngừng gửi" : "Kích hoạt lại"}>
                       {contact.status === "subscribed" ? <UserMinus size={16} /> : <UserRoundCheck size={16} />}
                     </button>
                     <button type="button" onClick={() => deleteContact(contact)} className="flex h-9 w-9 items-center justify-center rounded-xl border border-white/10 text-slate-400 transition hover:text-red-200" title="Xóa">
                       <Trash2 size={16} />
                     </button>
-                    </>}
                   </div>
                 </div>
               ))}
@@ -774,7 +723,7 @@ export default function AdminEmailPage() {
           onPageChange={setAudiencePage} onPageSizeChange={(size) => { setAudiencePageSize(size); setAudiencePage(0); }} busy={loading} />
       </section>
 
-      {!isEmailDataPreview && <EmailSendHistory refresh={postRefresh} />}
+      <EmailSendHistory refresh={postRefresh} />
 
       {postPickerOpen && <InsightPostPicker selectedId={selectedPostId} onSelect={choosePost} onClose={() => setPostPickerOpen(false)} />}
 

@@ -102,15 +102,6 @@ function HomeIntroOverlay() {
 
 function AnimatedRoutes() {
   const location = useLocation();
-  if (import.meta.env.VITE_EMAIL_DATA_PREVIEW === "true") {
-    return (
-      <Routes>
-        <Route path="/admin/login" element={<AdminLoginPage />} />
-        <Route path="/admin/email" element={<ProtectedAdminRoute><AdminEmailPage /></ProtectedAdminRoute>} />
-        <Route path="*" element={<Navigate to="/admin/email" replace />} />
-      </Routes>
-    );
-  }
 
   return (
     <AnimatePresence mode="wait">
@@ -163,7 +154,7 @@ export default function App() {
       <LanguageProvider>
         <ScrollToTop />
         <MouseGlow />
-        {import.meta.env.VITE_EMAIL_DATA_PREVIEW !== "true" && <HomeIntroOverlay />}
+        <HomeIntroOverlay />
         <AnimatedRoutes />
       </LanguageProvider>
     </BrowserRouter>

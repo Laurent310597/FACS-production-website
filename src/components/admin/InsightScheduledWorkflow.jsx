@@ -24,7 +24,6 @@ export default function InsightScheduledWorkflow({
   onTest,
   onChanged,
   selectedIds = [],
-  simulated = false,
   invoke = invokeInsightEmail,
 }) {
   const [choice, setChoice] = useState("no");
@@ -101,7 +100,7 @@ export default function InsightScheduledWorkflow({
           role="status"
           className="rounded-2xl border border-cyan-200/25 bg-cyan-300/5 p-4 text-sm text-cyan-100"
         >
-          <strong>{simulated && schedule.status === "sent" ? "Đã mô phỏng gửi Audience" : labels[schedule.status]}</strong>
+          <strong>{labels[schedule.status]}</strong>
           <p className="mt-2">
             {formatVietnamDateTime(schedule.scheduled_at)} · Giờ Việt Nam ·{" "}
             {schedule.bcc_addresses.length} người nhận đã xác nhận
@@ -278,9 +277,8 @@ export default function InsightScheduledWorkflow({
               </details>
             </div>
             <p className="mt-4 text-sm text-slate-300">
-              {simulated
-                ? "Lịch này dùng để kiểm thử. Bấm Mô phỏng đến giờ gửi để kiểm tra kết quả."
-                : "Sau khi xác nhận, hệ thống sẽ tự gửi khi đến hạn. Sửa nội dung hoặc giờ đăng sẽ yêu cầu xác nhận lịch lại."}
+              Sau khi xác nhận, hệ thống sẽ tự gửi khi đến hạn. Sửa nội dung
+              hoặc giờ đăng sẽ yêu cầu xác nhận lịch lại.
             </p>
             {error && (
               <p role="alert" className="mt-3 text-red-200">

@@ -4,8 +4,6 @@ import { Link, useLocation, useNavigate } from "react-router-dom";
 import AdminConfigurationNotice from "../../components/admin/AdminConfigurationNotice";
 import { isSupabaseConfigured, supabase } from "../../lib/supabaseClient";
 
-const defaultAdminPath = import.meta.env.VITE_EMAIL_DATA_PREVIEW === "true" ? "/admin/email" : "/admin/posts";
-
 export default function AdminLoginPage() {
   const navigate = useNavigate();
   const location = useLocation();
@@ -18,7 +16,7 @@ export default function AdminLoginPage() {
   useEffect(() => {
     if (!supabase) return;
     supabase.auth.getSession().then(({ data }) => {
-      if (data.session) navigate(defaultAdminPath, { replace: true });
+      if (data.session) navigate("/admin/posts", { replace: true });
     });
   }, [navigate]);
 
@@ -41,7 +39,7 @@ export default function AdminLoginPage() {
       return;
     }
 
-    navigate(location.state?.from || defaultAdminPath, { replace: true });
+    navigate(location.state?.from || "/admin/posts", { replace: true });
   };
 
   return (
