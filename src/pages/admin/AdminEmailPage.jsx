@@ -19,6 +19,7 @@ import {
   XCircle,
 } from "lucide-react";
 import { useSearchParams } from "react-router-dom";
+import InsightScheduledWorkflow from "../../components/admin/InsightScheduledWorkflow";
 import AdminLayout from "../../components/admin/AdminLayout";
 import EmailPagination from "../../components/admin/EmailPagination";
 import EmailSendHistory from "../../components/admin/EmailSendHistory";
@@ -127,6 +128,7 @@ export default function AdminEmailPage() {
   const [postPickerOpen, setPostPickerOpen] = useState(false);
   const [postRefresh, setPostRefresh] = useState(0);
   const [selectedPostId, setSelectedPostId] = useState(() => searchParams.get("post_id") || "");
+  const [schedule, setSchedule] = useState(null);
   const [preview, setPreview] = useState(null);
   const [previewOpen, setPreviewOpen] = useState(false);
   const [confirmationOpen, setConfirmationOpen] = useState(false);
@@ -142,6 +144,7 @@ export default function AdminEmailPage() {
       setWorkflowNow(new Date(serverMs));
     }
     if (data?.post) setSelectedPost(data.post);
+    if (Object.hasOwn(data || {}, "schedule")) setSchedule(data.schedule);
   }, []);
   const [workflowBusy, setWorkflowBusy] = useState("");
   const [loading, setLoading] = useState(true);
@@ -234,9 +237,16 @@ export default function AdminEmailPage() {
     return () => { cancelled = true; };
   }, [selectedPostId, postRefresh, syncWorkflow]);
 
+  useEffect(() => {
+    if (!["scheduled", "processing"].includes(schedule?.status)) return;
+    const timer = window.setInterval(() => setPostRefresh((current) => current + 1), 15000);
+    return () => window.clearInterval(timer);
+  }, [schedule?.status, selectedPostId]);
+
   const choosePost = (post) => {
     if (post.id !== selectedPostId) {
       setPreview(null);
+      setSchedule(null);
       setConfirmationOpen(false);
       setSinglePreview(null);
       setConfirmationText("");
@@ -553,6 +563,12 @@ export default function AdminEmailPage() {
               <div><div className="text-xs text-slate-500">Audience Bcc hiện tại</div><div className="mt-1 font-semibold">{subscribedCount} địa chỉ</div></div>
             </div>
 
+            {schedule && !["scheduled", "processing"].includes(schedule.status) && selectedPostIsPublic && (
+              <div role="status" className="mt-4 rounded-2xl border border-cyan-200/20 p-4 text-sm text-cyan-100">
+                Lịch gửi: {{ sent: "Đã chuyển Microsoft 365", failed: "Gửi thất bại", cancelled: "Đã huỷ", invalidated: "Cần xác nhận lại" }[schedule.status]}
+                {schedule.error_message && <p className="mt-2 text-amber-100">{schedule.error_message}</p>}
+              </div>
+            )}
             {selectedPost.email_notification_status === "sent" && (
               <div className="mt-4 rounded-2xl border border-emerald-300/20 bg-emerald-300/8 px-4 py-3 text-sm text-emerald-100">
                 Bài viết đã có yêu cầu gửi được Microsoft 365 tiếp nhận. Tú có thể gửi lại toàn bộ Audience theo ba bước bên dưới, tick chọn một nhóm khách hàng để gửi, hoặc bấm biểu tượng email ở từng khách hàng để gửi riêng.
@@ -562,6 +578,11 @@ export default function AdminEmailPage() {
               <div className="mt-4 rounded-2xl border border-amber-300/20 bg-amber-300/8 px-4 py-3 text-sm text-amber-100">
                 Bài viết đang ở chế độ Không gửi email. Hãy thay đổi phương thức trong màn hình chỉnh sửa bài viết.
               </div>
+            ) : ((selectedPost.status === "published" && Date.parse(selectedPost.published_at) > workflowNow.getTime()) || ["scheduled", "processing"].includes(schedule?.status)) ? (
+              <InsightScheduledWorkflow key={selectedPost.id} post={selectedPost} schedule={schedule}
+                previewReady={previewReady} testReady={testReady} busy={workflowBusy}
+                onPreview={previewSelectedPost} onTest={testSelectedPost} onChanged={loadData}
+                selectedIds={selectedContacts.map((contact) => contact.id)} />
             ) : (
               <div className="mt-5 grid gap-4 lg:grid-cols-3">
                 <div className={`rounded-2xl border p-4 ${previewReady ? "border-emerald-300/25 bg-emerald-300/8" : "border-white/10 bg-[#081321]/45"}`}>
