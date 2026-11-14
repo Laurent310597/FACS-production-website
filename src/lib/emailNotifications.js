@@ -28,6 +28,10 @@ export function deriveEmailStatus({ enabled, currentStatus, action }) {
 }
 
 export async function invokeInsightEmail(action, payload = {}) {
+  if (import.meta.env.VITE_EMAIL_DATA_PREVIEW === "true") {
+    const { simulateInsightEmail } = await import("./emailPreviewSimulation");
+    return simulateInsightEmail(action, payload);
+  }
   const { data, error } = await supabase.functions.invoke("insight-email", {
     body: { action, ...payload },
   });

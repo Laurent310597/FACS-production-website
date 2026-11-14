@@ -20,7 +20,6 @@ import AdminJobEditorPage from "./pages/admin/AdminJobEditorPage";
 import AdminApplicationsPage from "./pages/admin/AdminApplicationsPage";
 import AdminInquiriesPage from "./pages/admin/AdminInquiriesPage";
 import AdminFormEmailPage from "./pages/admin/AdminFormEmailPage";
-import EmailSchedulePreviewPage from "./pages/admin/EmailSchedulePreviewPage";
 import AdminEmailPage from "./pages/admin/AdminEmailPage";
 import AdminLegalCalendarPage from "./pages/admin/AdminLegalCalendarPage";
 import AdminLegalDashboardPage from "./pages/admin/AdminLegalDashboardPage";
@@ -103,11 +102,19 @@ function HomeIntroOverlay() {
 
 function AnimatedRoutes() {
   const location = useLocation();
+  if (import.meta.env.VITE_EMAIL_DATA_PREVIEW === "true") {
+    return (
+      <Routes>
+        <Route path="/admin/login" element={<AdminLoginPage />} />
+        <Route path="/admin/email" element={<ProtectedAdminRoute><AdminEmailPage /></ProtectedAdminRoute>} />
+        <Route path="*" element={<Navigate to="/admin/email" replace />} />
+      </Routes>
+    );
+  }
 
   return (
     <AnimatePresence mode="wait">
       <Routes location={location} key={location.pathname}>
-          {import.meta.env.VITE_EMAIL_SCHEDULE_DEMO === "true" && <Route path="/preview/email-schedule" element={<EmailSchedulePreviewPage />} />}
         <Route path="/" element={<PageTransition><HomePage /></PageTransition>} />
         <Route path="/about" element={<PageTransition><AboutPage /></PageTransition>} />
         <Route path="/about/team/:slug" element={<PageTransition><TeamMemberDetailPage /></PageTransition>} />
@@ -156,7 +163,7 @@ export default function App() {
       <LanguageProvider>
         <ScrollToTop />
         <MouseGlow />
-        <HomeIntroOverlay />
+        {import.meta.env.VITE_EMAIL_DATA_PREVIEW !== "true" && <HomeIntroOverlay />}
         <AnimatedRoutes />
       </LanguageProvider>
     </BrowserRouter>

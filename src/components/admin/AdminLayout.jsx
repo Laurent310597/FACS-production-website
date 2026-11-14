@@ -1,6 +1,7 @@
 import { Link, NavLink, useNavigate } from "react-router-dom";
 import { BarChart3, Briefcase, CalendarRange, ExternalLink, FilePlus2, LayoutDashboard, LogOut, Mail, MailCheck, MessagesSquare, Newspaper, Radar, ReceiptText, UserRoundSearch, Users } from "lucide-react";
 import { supabase } from "../../lib/supabaseClient";
+import { isEmailDataPreview } from "../../lib/emailPreviewAccess";
 
 const navClass = ({ isActive }) =>
   `flex items-center gap-3 rounded-2xl px-4 py-3 text-sm font-semibold transition-all ${
@@ -13,7 +14,7 @@ export default function AdminLayout({ children }) {
   const navigate = useNavigate();
 
   const handleLogout = async () => {
-    await supabase.auth.signOut();
+    await supabase.auth.signOut(isEmailDataPreview ? { scope: "local" } : undefined);
     navigate("/admin/login", { replace: true });
   };
 
