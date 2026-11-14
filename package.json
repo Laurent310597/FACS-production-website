@@ -9,7 +9,8 @@
     "lint": "eslint .",
     "qa:ar": "node scripts/qa-ar-import.mjs",
     "qa:email": "node --test scripts/qa-email-tests.mjs",
-    "preview": "vite preview"
+    "preview": "vite preview",
+    "qa:email-schedule": "node scripts/qa-scheduled-email-db.mjs"
   },
   "dependencies": {
     "@supabase/supabase-js": "^2.108.2",
@@ -23,6 +24,7 @@
     "read-excel-file": "^6.0.3"
   },
   "devDependencies": {
+    "@electric-sql/pglite": "0.5.16",
     "@eslint/js": "^10.0.1",
     "@types/react": "^19.2.14",
     "@types/react-dom": "^19.2.3",

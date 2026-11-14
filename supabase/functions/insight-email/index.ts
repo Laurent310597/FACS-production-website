@@ -52,12 +52,19 @@ async function emailContentHash(post: InsightEmailPost, siteUrl: string) {
     slug: post.slug || "",
     slug_vi: post.slug_vi || "",
     slug_en: post.slug_en || "",
+    content_vi: post.content_vi || "",
+    content_en: post.content_en || "",
     status: post.status || "",
     published_at: post.published_at || "",
     site_url: siteUrl,
   });
   const digest = await crypto.subtle.digest("SHA-256", new TextEncoder().encode(snapshot));
   return Array.from(new Uint8Array(digest)).map((byte) => byte.toString(16).padStart(2, "0")).join("");
+}
+
+function buildScheduledMessage(post: InsightEmailPost, siteUrl: string) {
+  const email = buildInsightEmail(post, siteUrl, false);
+  return { subject: email.subject, bodyHtml: email.html };
 }
 
 async function getAudienceRecipients(admin: AdminClient) {
@@ -199,6 +206,50 @@ Deno.serve(async (req) => {
     const cronSecret = Deno.env.get("FACS_CRON_SECRET") || "";
     const cronAuthorized = Boolean(cronSecret && req.headers.get("x-facs-cron-secret") === cronSecret);
 
+    if (action === "process_scheduled") {
+      const { data: verified, error: tokenError } = await admin.rpc("verify_insight_schedule_token", {
+        p_token: req.headers.get("x-facs-cron-secret") || "",
+      });
+      if (tokenError || !verified) throw new Error("UNAUTHORIZED");
+      const { data: schedules, error } = await admin.from("insight_email_schedules")
+        .select("id,post_id").eq("status", "scheduled").lte("scheduled_at", new Date().toISOString())
+        .order("scheduled_at").limit(10);
+      if (error) throw new Error(error.message);
+      const results = [];
+      for (const schedule of schedules || []) {
+        try {
+          const post = await loadPost(admin, schedule.post_id);
+          const { data: claim, error: claimError } = await admin.rpc("claim_scheduled_insight_email", {
+            p_schedule_id: schedule.id, p_current_hash: await emailContentHash(post, siteUrl),
+          });
+          if (claimError) throw new Error(claimError.message);
+          if (!claim) continue;
+          const result = await deliverInsightClaim(claim, {
+            send: async (recipients) => sendMicrosoftMail({ accessToken: await getMicrosoftGraphToken(),
+              senderEmail: SENDER, senderName: "FACS Insights", ...buildScheduledMessage(claim.post, siteUrl),
+              to: TO, ...recipients, replyTo: [{ mail_address: SENDER, name: "FACS Insights" }] }),
+            finalize: async (sent) => {
+              const { error } = await admin.rpc("finalize_insight_email_delivery", {
+                p_post_id: claim.post.id, p_log_id: claim.log_id,
+                p_message_id: sent.message_id || null, p_thread_id: sent.thread_id || null,
+              });
+              if (error) throw new Error(error.message);
+            },
+            fail: async (message) => {
+              const { error } = await admin.rpc("fail_insight_email_delivery", {
+                p_post_id: claim.post.id, p_log_id: claim.log_id, p_error: message,
+              });
+              if (error) throw new Error(error.message);
+            },
+          });
+          results.push({ id: schedule.id, ...result });
+        } catch (error) {
+          results.push({ id: schedule.id, error: error instanceof Error ? error.message : String(error) });
+        }
+      }
+      return json({ results });
+    }
+
     if (action === "process") {
       if (!cronAuthorized) await requireAdmin(req, admin);
       const postId = body.post_id ? String(body.post_id) : null;
@@ -220,7 +271,50 @@ Deno.serve(async (req) => {
     }
 
     if (action === "workflow_status") {
-      return json({ post: await loadPost(admin, String(body.post_id || "")) });
+      const post = await loadPost(admin, String(body.post_id || ""));
+      const { data: schedules, error } = await admin.from("insight_email_schedules")
+        .select("*").eq("post_id", post.id).order("confirmed_at", { ascending: false }).limit(1);
+      if (error) throw new Error(`Không thể đọc lịch gửi: ${error.message}`);
+      return json({ post, schedule: schedules?.[0] || null });
+    }
+
+    if (action === "prepare_schedule") {
+      const post = await loadPost(admin, String(body.post_id || ""));
+      if (post.status !== "published" || !post.published_at || Date.parse(post.published_at) <= Date.now()
+        || post.email_delivery_mode === "disabled") throw new Error("Chỉ đặt lịch cho bài đang hẹn đăng và cho phép gửi email.");
+      const ids = body.audience_ids?.length ? selectedAudienceIds(body.audience_ids) : null;
+      let query = admin.from("insight_email_audience").select("id,email,display_name,status").eq("status", "subscribed").order("email");
+      if (ids) query = query.in("id", ids);
+      const { data, error } = await query;
+      if (error) throw new Error(error.message);
+      const excluded = [SENDER, ...TO.map((item) => item.mail_address), ...CC.map((item) => item.mail_address)];
+      const contacts = (data || []).filter((contact) => !excluded.includes(String(contact.email).trim().toLowerCase()));
+      const snapshot = selectedAudienceSnapshot(ids || selectedAudienceIds(contacts.map((contact) => contact.id)), contacts);
+      return json({ post, scheduled_at: post.published_at, preview_hash: await emailContentHash(post, siteUrl),
+        contacts: snapshot.contacts, bcc: snapshot.bcc, request_id: crypto.randomUUID() });
+    }
+
+    if (action === "confirm_schedule") {
+      if (body.confirmation_text !== "SCHEDULE-AUDIENCE") throw new Error("Thiếu xác nhận lịch gửi.");
+      const post = await loadPost(admin, String(body.post_id || ""));
+      const hash = await emailContentHash(post, siteUrl);
+      if (hash !== body.preview_hash) throw new Error("Nội dung đã thay đổi. Vui lòng xem trước lại.");
+      const { data: schedule, error } = await admin.rpc("confirm_insight_email_schedule", {
+        p_post_id: post.id, p_confirmed_by: user.id, p_request_id: body.request_id,
+        p_expected_hash: hash, p_expected_updated_at: body.expected_updated_at,
+        p_scheduled_at: body.scheduled_at, p_audience_ids: selectedAudienceIds(body.audience_ids),
+        p_expected_bcc: body.expected_bcc,
+      });
+      if (error) throw new Error(error.message);
+      return json({ post, schedule });
+    }
+
+    if (action === "cancel_schedule") {
+      const { error } = await admin.rpc("cancel_insight_email_schedule", {
+        p_post_id: body.post_id, p_schedule_id: body.schedule_id,
+      });
+      if (error) throw new Error(error.message);
+      return json({ ok: true });
     }
 
     if (action === "preview" || action === "preview_single" || action === "preview_selected") {

@@ -442,7 +442,7 @@ export default function AdminPostEditorPage() {
 
             <div className="mt-4">
               <div className="text-sm font-semibold text-slate-200">Phương thức gửi Email Insights</div>
-              <p className="mt-1 text-xs leading-relaxed text-slate-500">Đăng bài không tự gửi email. Audience luôn cần xem trước, gửi thử và xác nhận riêng.</p>
+              <p className="mt-1 text-xs leading-relaxed text-slate-500">Email Audience cần xem trước, gửi thử và xác nhận. Với bài hẹn đăng, có thể xác nhận lịch gửi cùng giờ đăng tại Email & Audience.</p>
               <div className="mt-3 space-y-2">
                 {[
                   ["disabled", "Không gửi email", "Chỉ xuất bản bài viết; không tạo quy trình email."],
