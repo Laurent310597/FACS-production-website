@@ -3,7 +3,7 @@ import { BarChart3, Briefcase, Building2, CalendarRange, FolderOpen, ExternalLin
 import { supabase } from "../../lib/supabaseClient";
 
 // Địa chỉ Văn phòng AI ảo (FACS AI Office trên Cloudflare Pages). Đổi bằng biến VITE_AI_OFFICE_URL trên Vercel nếu cần.
-const AI_OFFICE_URL = import.meta.env.VITE_AI_OFFICE_URL || "https://office.facs.vn";
+const AI_OFFICE_URL = import.meta.env.VITE_AI_OFFICE_URL || "https://facs-ai-office.pages.dev/";
 
 const navClass = ({ isActive }) =>
   `flex items-center gap-3 rounded-2xl px-4 py-3 text-sm font-semibold transition-all ${
