@@ -71,3 +71,14 @@ test("chỉ nhận ảnh đầu vào đúng thư mục", () => {
   for (const bad of ["inputs/../secret.png", "guidelines/x.png", "inputs/123e4567-e89b-12d3-a456-426614174000/a.pdf", "inputs/abc/a.png", null])
     assert.equal(validateInputPath(bad), null, String(bad));
 });
+
+import { extractUrls, meaningfulLength } from "../supabase/functions/_shared/hub-content.ts";
+
+test("bỏ tham số theo dõi và nhận ra ô dán chỉ có link", () => {
+  const u = validateSourceUrl("https://thuvienphapluat.vn/bai-viet-236327.html?fbclid=IwY2xjawVl&utm_source=fb&id=5#top");
+  assert.equal(u.toString(), "https://thuvienphapluat.vn/bai-viet-236327.html?id=5");
+  const onlyLink = "https://thuvienphapluat.vn/ma-so-thue/huong-dan-nop-bao-cao-tinh-hinh-su-dung-lao-dong-cuoi-nam-2026-236327.html?fbclid=IwY2xjawVlVthleHRuA2FlbQIxMABwZG9mBWJyaWQ";
+  assert.ok(meaningfulLength(onlyLink) < 80);
+  assert.deepEqual(extractUrls(onlyLink + "\n" + onlyLink).length, 1);
+  assert.ok(meaningfulLength("Doanh nghiệp phải nộp báo cáo tình hình sử dụng lao động cuối năm trước ngày 05/12 theo quy định hiện hành. Xem thêm https://a.vn/x") >= 80);
+});

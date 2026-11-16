@@ -3,6 +3,7 @@ import { corsHeaders } from "../_shared/cors.ts";
 import {
   buildLibraryPrompt,
   buildUserMessage,
+  extractUrls,
   formatExamples,
   formatGuidelines,
   htmlToText,
@@ -11,6 +12,7 @@ import {
   MAX_BRIEF_CHARS,
   MAX_PASTED_CHARS,
   MAX_SOURCES,
+  meaningfulLength,
   normalizeOutputs,
   pickExamples,
   selectGuidelines,
@@ -93,7 +95,11 @@ async function fetchSource(raw: string): Promise<HubSource> {
     res = await fetch(url, {
       redirect: "manual",
       signal: AbortSignal.timeout(FETCH_TIMEOUT_MS),
-      headers: { "User-Agent": "Mozilla/5.0 (compatible; FACS-Hub/1.0; +https://facs.vn)", Accept: "text/html,application/xhtml+xml" },
+      headers: {
+        "User-Agent": "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/130.0.0.0 Safari/537.36",
+        Accept: "text/html,application/xhtml+xml,application/xml;q=0.9,*/*;q=0.8",
+        "Accept-Language": "vi-VN,vi;q=0.9,en;q=0.8",
+      },
     });
     if (res.status >= 300 && res.status < 400 && res.headers.get("location")) {
       url = validateSourceUrl(new URL(res.headers.get("location")!, url).toString());
@@ -102,7 +108,14 @@ async function fetchSource(raw: string): Promise<HubSource> {
     }
     break;
   }
-  if (!res || !res.ok) throw new Error(`Không tải được ${url.hostname} (mã ${res?.status ?? "?"}). Hãy dán nội dung bài vào ô "Dán nội dung".`);
+  if (!res || !res.ok) {
+    const blocked = res?.status === 403 || res?.status === 401 || res?.status === 429;
+    throw new Error(
+      blocked
+        ? `Trang ${url.hostname} chặn việc đọc tự động (mã ${res?.status}). Hãy mở bài, chép phần chữ của bài viết và dán vào ô "Dán nội dung".`
+        : `Không tải được ${url.hostname} (mã ${res?.status ?? "?"}). Hãy chép phần chữ của bài viết và dán vào ô "Dán nội dung".`,
+    );
+  }
   const type = res.headers.get("content-type") || "";
   if (!/text\/html|application\/xhtml|text\/plain/i.test(type)) {
     await res.body?.cancel();
@@ -152,11 +165,16 @@ Deno.serve(async (req) => {
 
     const outputs = normalizeOutputs(body.outputs);
     const brief = String(body.brief ?? "").slice(0, MAX_BRIEF_CHARS);
-    const pastedText = String(body.source_text ?? "").slice(0, MAX_PASTED_CHARS);
-    const urls: string[] = (Array.isArray(body.source_urls) ? body.source_urls : [])
-      .map((u: unknown) => String(u ?? "").trim())
-      .filter(Boolean)
-      .slice(0, MAX_SOURCES);
+    const rawPasted = String(body.source_text ?? "").slice(0, MAX_PASTED_CHARS);
+    // Ô "Dán nội dung" chỉ chứa link (không có chữ của bài) thì coi các link đó là link nguồn, không phải nội dung.
+    const pastedIsOnlyLinks = meaningfulLength(rawPasted) < 80;
+    const pastedText = pastedIsOnlyLinks ? "" : rawPasted;
+    const urls: string[] = [
+      ...new Set([
+        ...(Array.isArray(body.source_urls) ? body.source_urls : []).map((u: unknown) => String(u ?? "").trim()).filter(Boolean),
+        ...(pastedIsOnlyLinks ? extractUrls(rawPasted) : []),
+      ]),
+    ].slice(0, MAX_SOURCES);
     const hasImages = Array.isArray(body.input_files) && body.input_files.length > 0;
     if (!urls.length && !hasImages && pastedText.trim().length < 80 && brief.trim().length < 40) {
       return json({ error: "Hãy nhập ít nhất một link, hoặc dán nội dung nguồn, hoặc mô tả yêu cầu chi tiết hơn." }, 400);
@@ -173,8 +191,10 @@ Deno.serve(async (req) => {
     }
     const images = await loadInputImages(admin, body.input_files);
     warnings.push(...images.warnings);
-    if ((urls.length || hasImages) && !sources.length && !images.urls.length && pastedText.trim().length < 80 && brief.trim().length < 40) {
-      return json({ error: warnings.join(" ") || "Không đọc được nguồn nào." }, 422);
+    // Người dùng có gửi link/ảnh nhưng không đọc được cái nào và cũng không có nội dung dán:
+    // dừng lại, KHÔNG để AI tự viết từ tiêu đề hay đường dẫn (dễ bịa số liệu, quy định).
+    if ((urls.length || hasImages) && !sources.length && !images.urls.length && pastedText.trim().length < 80) {
+      return json({ error: `${warnings.join(" ") || "Không đọc được nguồn nào."} Chưa tạo nội dung vì không có tài liệu nguồn để viết.` }, 422);
     }
 
     const library = await loadLibrary(admin, outputs, `${brief} ${sources.map((s) => s.title).join(" ")} ${pastedText.slice(0, 500)}`);

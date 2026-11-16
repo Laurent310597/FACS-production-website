@@ -32,7 +32,24 @@ export function validateSourceUrl(raw: string): URL {
     /^0x/i.test(host) ||
     /^(\d{1,3})(\.\d{1,3}){3}$/.test(host); // mọi IPv4 literal: nguồn bài viết luôn có tên miền
   if (privateHost) throw new Error("Link trỏ tới địa chỉ không được phép.");
+  // Bỏ tham số theo dõi (fbclid, utm_…): không cần để đọc bài và dễ khiến trang nguồn từ chối.
+  for (const key of [...url.searchParams.keys()]) {
+    if (/^(fbclid|gclid|msclkid|igshid|mc_cid|mc_eid|utm_.+)$/i.test(key)) url.searchParams.delete(key);
+  }
+  url.hash = "";
   return url;
+}
+
+const URL_PATTERN = /https?:\/\/[^\s<>"']+/gi;
+
+/** Các link nằm trong đoạn văn bản người dùng dán. */
+export function extractUrls(text: string): string[] {
+  return [...new Set(text.match(URL_PATTERN) ?? [])];
+}
+
+/** Độ dài phần chữ thật sự (không tính link). Dùng để biết ô "Dán nội dung" có nội dung hay chỉ có link. */
+export function meaningfulLength(text: string): number {
+  return text.replace(URL_PATTERN, " ").replace(/\s+/g, " ").trim().length;
 }
 
 const ENTITIES: Record<string, string> = { amp: "&", lt: "<", gt: ">", quot: '"', apos: "'", nbsp: " ", ndash: "–", mdash: "—", hellip: "…" };
