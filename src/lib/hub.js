@@ -68,6 +68,7 @@ export async function saveHubItem(item) {
     brief: item.brief || "",
     requested_outputs: item.requested_outputs || [],
     outputs: item.outputs || {},
+    input_files: item.input_files || [],
     status: item.status || "draft",
     post_id: item.post_id || null,
   };
@@ -135,4 +136,158 @@ export async function createPostDraftFromHub(website) {
     if (error.code !== "23505") throw new Error(error.message);
   }
   throw new Error("Đường dẫn bài viết bị trùng. Hãy đổi tiêu đề rồi thử lại.");
+}
+
+// ───────────────────────── Thư viện FACS Hub ─────────────────────────
+
+export const guidelineKinds = [
+  { value: "rule", label: "Quy tắc" },
+  { value: "style", label: "Văn phong" },
+  { value: "skill", label: "Kỹ năng" },
+  { value: "reference", label: "Tài liệu tham chiếu" },
+];
+
+const LIBRARY_BUCKET = "hub-library";
+
+function cleanFileName(name = "anh") {
+  const extension = (name.split(".").pop() || "png").toLowerCase().replace("jpeg", "jpg");
+  const base = slugify(name.replace(/\.[^/.]+$/, "")).slice(0, 80) || "anh";
+  return `${base}.${extension}`;
+}
+
+/** Tải ảnh đầu vào (infographic, bảng biểu…) lên thư mục riêng tư inputs/ của Hub. */
+export async function uploadHubInputImage(file) {
+  if (!/^image\/(png|jpeg|webp)$/.test(file.type)) throw new Error("Chỉ nhận ảnh PNG, JPG hoặc WEBP.");
+  if (file.size > 4 * 1024 * 1024) throw new Error("Mỗi ảnh tối đa 4 MB.");
+  const path = `inputs/${crypto.randomUUID()}/${cleanFileName(file.name)}`;
+  const { error } = await supabase.storage.from(LIBRARY_BUCKET).upload(path, file, { contentType: file.type, upsert: false });
+  if (error) throw new Error(error.message);
+  return { path, name: file.name, type: file.type, size: file.size };
+}
+
+export async function signedInputUrls(files = []) {
+  const paths = files.map((f) => f.path).filter(Boolean);
+  if (!paths.length) return {};
+  const { data, error } = await supabase.storage.from(LIBRARY_BUCKET).createSignedUrls(paths, 3600);
+  if (error) return {};
+  return Object.fromEntries((data || []).filter((d) => d.signedUrl).map((d) => [d.path, d.signedUrl]));
+}
+
+export async function removeHubInputImage(path) {
+  await supabase.storage.from(LIBRARY_BUCKET).remove([path]);
+}
+
+// Thư mục 1 – Hướng dẫn, quy tắc, kỹ năng
+export async function listGuidelines() {
+  const { data, error } = await supabase.from("hub_guidelines").select("*").order("sort_order").order("created_at");
+  if (error) throw new Error(error.message);
+  return data || [];
+}
+
+export async function saveGuideline(guideline) {
+  const row = {
+    title: (guideline.title || "").trim().slice(0, 200),
+    kind: guideline.kind || "rule",
+    applies_to: guideline.applies_to || [],
+    content: (guideline.content || "").trim(),
+    is_active: guideline.is_active !== false,
+    sort_order: Number(guideline.sort_order) || 0,
+  };
+  if (!row.title) throw new Error("Hãy đặt tên cho hướng dẫn.");
+  if (!row.content) throw new Error("Nội dung hướng dẫn đang trống.");
+  if (row.content.length > 20000) throw new Error("Mỗi hướng dẫn tối đa 20.000 ký tự. Hãy tách thành nhiều mục.");
+  const { data: authData } = await supabase.auth.getSession();
+  const request = guideline.id
+    ? supabase.from("hub_guidelines").update(row).eq("id", guideline.id)
+    : supabase.from("hub_guidelines").insert({ ...row, created_by: authData.session?.user?.id || null });
+  const { error } = await request;
+  if (error) throw new Error(error.message);
+}
+
+export async function deleteGuideline(id) {
+  const { error } = await supabase.from("hub_guidelines").delete().eq("id", id);
+  if (error) throw new Error(error.message);
+}
+
+// Thư mục 2 – Đầu vào đã gửi
+export async function listHubInputs() {
+  const { data, error } = await supabase
+    .from("hub_content_items")
+    .select("id,title,status,source_urls,source_text,brief,input_files,requested_outputs,created_at,updated_at")
+    .order("created_at", { ascending: false })
+    .limit(100);
+  if (error) throw new Error(error.message);
+  return data || [];
+}
+
+// Thư mục 3 – Kết quả đã duyệt
+export async function listApprovedExamples() {
+  const { data, error } = await supabase.from("hub_approved_examples").select("*").order("approved_at", { ascending: false }).limit(200);
+  if (error) throw new Error(error.message);
+  return data || [];
+}
+
+export async function setExampleReference(id, isReference) {
+  const { error } = await supabase.from("hub_approved_examples").update({ is_reference: isReference }).eq("id", id);
+  if (error) throw new Error(error.message);
+}
+
+export async function deleteApprovedExample(id) {
+  const { error } = await supabase.from("hub_approved_examples").delete().eq("id", id);
+  if (error) throw new Error(error.message);
+}
+
+/** Tách bộ nội dung thành từng kết quả theo kênh (chỉ kênh được yêu cầu và có nội dung). */
+export function buildApprovedRows(itemId, title, requested, outputs, userId) {
+  const rows = [];
+  const website = outputs?.website || {};
+  for (const channel of requested) {
+    let content = null;
+    let rowTitle = title;
+    if (channel === "website" && (website.title_vi || website.title_en) && (website.content_vi || website.content_en)) {
+      content = {
+        category: website.category,
+        title_vi: website.title_vi,
+        title_en: website.title_en,
+        excerpt_vi: website.excerpt_vi,
+        excerpt_en: website.excerpt_en,
+        content_vi: sanitizeArticleHtml(website.content_vi),
+        content_en: sanitizeArticleHtml(website.content_en),
+      };
+      rowTitle = website.title_vi || website.title_en;
+    } else if (["facebook", "linkedin", "instagram"].includes(channel) && (outputs?.[channel] || "").trim()) {
+      content = { text: outputs[channel].trim() };
+    } else if (channel === "infographic" && outputs?.infographic?.title) {
+      content = outputs.infographic;
+      rowTitle = outputs.infographic.title;
+    }
+    if (content) {
+      rows.push({
+        content_item_id: itemId,
+        channel,
+        title: (rowTitle || title || "").slice(0, 200),
+        category: website.category || null,
+        content,
+        approved_by: userId,
+      });
+    }
+  }
+  return rows;
+}
+
+/**
+ * Duyệt bộ nội dung: lưu bản cuối cùng vào thư mục "Kết quả đã duyệt".
+ * Duyệt lại sau khi sửa sẽ thay bản đã duyệt cũ của chính bộ nội dung đó.
+ */
+export async function approveHubItem(itemId, title, requested, outputs) {
+  const { data: authData } = await supabase.auth.getSession();
+  const rows = buildApprovedRows(itemId, title, requested, outputs, authData.session?.user?.id || null);
+  if (!rows.length) throw new Error("Chưa có nội dung nào để duyệt.");
+  const { error: deleteError } = await supabase.from("hub_approved_examples").delete().eq("content_item_id", itemId);
+  if (deleteError) throw new Error(deleteError.message);
+  const { error } = await supabase.from("hub_approved_examples").insert(rows);
+  if (error) throw new Error(error.message);
+  const { error: statusError } = await supabase.from("hub_content_items").update({ status: "approved" }).eq("id", itemId);
+  if (statusError) throw new Error(statusError.message);
+  return rows.length;
 }

@@ -1,7 +1,10 @@
 import { createClient } from "npm:@supabase/supabase-js@2";
 import { corsHeaders } from "../_shared/cors.ts";
 import {
+  buildLibraryPrompt,
   buildUserMessage,
+  formatExamples,
+  formatGuidelines,
   htmlToText,
   HUB_RESPONSE_SCHEMA,
   HUB_SYSTEM_PROMPT,
@@ -9,14 +12,70 @@ import {
   MAX_PASTED_CHARS,
   MAX_SOURCES,
   normalizeOutputs,
+  pickExamples,
+  selectGuidelines,
+  validateInputPath,
   validateSourceUrl,
 } from "../_shared/hub-content.ts";
-import type { HubSource } from "../_shared/hub-content.ts";
+import type { HubExample, HubGuideline, HubSource } from "../_shared/hub-content.ts";
 
 // FACS Hub – Content Studio. Chỉ quản trị viên đã đăng nhập mới gọi được.
 // Hàm này KHÔNG ghi vào bảng posts và KHÔNG gửi email: nó chỉ trả bản nháp để người dùng xem, sửa và tự lưu.
 
 const MAX_FETCH_BYTES = 1_500_000;
+const MAX_IMAGES = 3;
+const MAX_IMAGE_BYTES = 4 * 1024 * 1024;
+
+function toBase64(bytes: Uint8Array): string {
+  let binary = "";
+  for (let i = 0; i < bytes.length; i += 0x8000) binary += String.fromCharCode(...bytes.subarray(i, i + 0x8000));
+  return btoa(binary);
+}
+
+type AdminClient = ReturnType<typeof createClient<any>>;
+
+/** Tải ảnh đầu vào từ bucket riêng tư hub-library và chuyển thành data URL cho mô hình đọc. */
+async function loadInputImages(admin: AdminClient, raw: unknown): Promise<{ urls: string[]; warnings: string[] }> {
+  const paths = (Array.isArray(raw) ? raw : []).map(validateInputPath).filter((p): p is string => !!p).slice(0, MAX_IMAGES);
+  const urls: string[] = [];
+  const warnings: string[] = [];
+  for (const path of paths) {
+    const { data, error } = await admin.storage.from("hub-library").download(path);
+    if (error || !data) {
+      warnings.push(`Không đọc được ảnh ${path.split("/").pop()}.`);
+      continue;
+    }
+    if (data.size > MAX_IMAGE_BYTES || !/^image\/(png|jpeg|webp)$/.test(data.type)) {
+      warnings.push(`Ảnh ${path.split("/").pop()} quá lớn hoặc sai định dạng.`);
+      continue;
+    }
+    urls.push(`data:${data.type};base64,${toBase64(new Uint8Array(await data.arrayBuffer()))}`);
+  }
+  return { urls, warnings };
+}
+
+/** Đọc thư mục 1 (hướng dẫn đang bật) và thư mục 3 (bài đã duyệt dùng làm mẫu). Lỗi đọc thư viện không chặn việc tạo bài. */
+async function loadLibrary(admin: AdminClient, outputs: ReturnType<typeof normalizeOutputs>, queryText: string) {
+  const [guides, examples] = await Promise.all([
+    admin.from("hub_guidelines").select("title,kind,applies_to,content").eq("is_active", true).order("sort_order").order("created_at"),
+    admin
+      .from("hub_approved_examples")
+      .select("id,channel,title,category,content,approved_at")
+      .eq("is_reference", true)
+      .in("channel", outputs)
+      .order("approved_at", { ascending: false })
+      .limit(60),
+  ]);
+  if (guides.error) console.error("hub-content guidelines", guides.error.message);
+  if (examples.error) console.error("hub-content examples", examples.error.message);
+  const guidelineList = selectGuidelines((guides.data ?? []) as HubGuideline[], outputs);
+  const exampleList = pickExamples((examples.data ?? []) as HubExample[], outputs, queryText);
+  return {
+    prompt: buildLibraryPrompt(formatGuidelines(guidelineList), formatExamples(exampleList)),
+    guidelineCount: guidelineList.length,
+    exampleCount: exampleList.length,
+  };
+}
 const FETCH_TIMEOUT_MS = 12_000;
 
 function json(body: unknown, status = 200) {
@@ -98,7 +157,8 @@ Deno.serve(async (req) => {
       .map((u: unknown) => String(u ?? "").trim())
       .filter(Boolean)
       .slice(0, MAX_SOURCES);
-    if (!urls.length && pastedText.trim().length < 80 && brief.trim().length < 40) {
+    const hasImages = Array.isArray(body.input_files) && body.input_files.length > 0;
+    if (!urls.length && !hasImages && pastedText.trim().length < 80 && brief.trim().length < 40) {
       return json({ error: "Hãy nhập ít nhất một link, hoặc dán nội dung nguồn, hoặc mô tả yêu cầu chi tiết hơn." }, 400);
     }
 
@@ -111,9 +171,18 @@ Deno.serve(async (req) => {
         warnings.push(error instanceof Error ? error.message : String(error));
       }
     }
-    if (urls.length && !sources.length && pastedText.trim().length < 80) {
-      return json({ error: warnings.join(" ") || "Không đọc được link nào." }, 422);
+    const images = await loadInputImages(admin, body.input_files);
+    warnings.push(...images.warnings);
+    if ((urls.length || hasImages) && !sources.length && !images.urls.length && pastedText.trim().length < 80 && brief.trim().length < 40) {
+      return json({ error: warnings.join(" ") || "Không đọc được nguồn nào." }, 422);
     }
+
+    const library = await loadLibrary(admin, outputs, `${brief} ${sources.map((s) => s.title).join(" ")} ${pastedText.slice(0, 500)}`);
+    const systemPrompt = library.prompt ? `${HUB_SYSTEM_PROMPT}\n\n${library.prompt}` : HUB_SYSTEM_PROMPT;
+    const userText = buildUserMessage({ outputs, brief, pastedText, sources, imageCount: images.urls.length });
+    const userContent = images.urls.length
+      ? [{ type: "text", text: userText }, ...images.urls.map((url) => ({ type: "image_url", image_url: { url, detail: "high" } }))]
+      : userText;
 
     const ai = await fetch("https://api.openai.com/v1/chat/completions", {
       method: "POST",
@@ -125,8 +194,8 @@ Deno.serve(async (req) => {
         max_completion_tokens: 6000,
         response_format: { type: "json_schema", json_schema: HUB_RESPONSE_SCHEMA },
         messages: [
-          { role: "system", content: HUB_SYSTEM_PROMPT },
-          { role: "user", content: buildUserMessage({ outputs, brief, pastedText, sources }) },
+          { role: "system", content: systemPrompt },
+          { role: "user", content: userContent },
         ],
       }),
     });
@@ -153,6 +222,7 @@ Deno.serve(async (req) => {
       sources: sources.map((s) => ({ url: s.url, title: s.title })),
       warnings,
       model,
+      library: { guidelines: library.guidelineCount, examples: library.exampleCount },
       remaining_today: Math.max(0, dailyLimit - (count ?? 0) - 1),
     });
   } catch (error) {

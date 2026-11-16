@@ -39,3 +39,35 @@ test("schema hợp lệ cho chế độ strict của OpenAI", () => {
   };
   check(HUB_RESPONSE_SCHEMA.schema, "root");
 });
+
+import { buildLibraryPrompt, formatExamples, formatGuidelines, pickExamples, selectGuidelines, validateInputPath } from "../supabase/functions/_shared/hub-content.ts";
+
+test("thư mục 1: chọn hướng dẫn đang áp dụng cho đúng kênh", () => {
+  const all = [
+    { title: "Chung", kind: "rule", applies_to: [], content: "Luôn xưng FACS" },
+    { title: "LinkedIn", kind: "style", applies_to: ["linkedin"], content: "Giọng chuyên gia" },
+    { title: "Instagram", kind: "style", applies_to: ["instagram"], content: "Ngắn" },
+  ];
+  const picked = selectGuidelines(all, ["website", "linkedin"]).map((g) => g.title);
+  assert.deepEqual(picked, ["Chung", "LinkedIn"]);
+  const text = formatGuidelines(selectGuidelines(all, ["website"]));
+  assert.ok(text.includes("Quy tắc: Chung") && !text.includes("Giọng chuyên gia"));
+  assert.ok(formatGuidelines([{ title: "Dài", kind: "rule", applies_to: [], content: "x".repeat(30000) }]).length === 0, "hướng dẫn vượt trần bị bỏ, không cắt giữa chừng");
+});
+
+test("thư mục 3: chọn bài mẫu liên quan, mới hơn, tối đa 2 mỗi kênh", () => {
+  const ex = (id, channel, title, day) => ({ id, channel, title, category: "tax", content: { text: `Nội dung ${id}`, title_vi: title, content_vi: "<p>Bài</p>" }, approved_at: `2026-11-${day}T00:00:00Z` });
+  const all = [ex("a", "facebook", "Lịch nộp thuế quý 4", "01"), ex("b", "facebook", "Tuyển dụng kế toán", "10"), ex("c", "facebook", "Hóa đơn điện tử", "12"), ex("d", "website", "Thuế GTGT quý 4", "02")];
+  const picked = pickExamples(all, ["facebook"], "hạn nộp tờ khai thuế quý 4");
+  assert.deepEqual(picked.map((e) => e.id), ["a", "c"]);
+  assert.equal(pickExamples(all, ["linkedin"], "thuế").length, 0);
+  const prompt = buildLibraryPrompt("", formatExamples(pickExamples(all, ["website", "facebook"], "thuế")));
+  assert.ok(prompt.includes("KHÔNG chép câu chữ") && prompt.includes('kenh="website"'));
+  assert.equal(buildLibraryPrompt("", ""), "");
+});
+
+test("chỉ nhận ảnh đầu vào đúng thư mục", () => {
+  assert.ok(validateInputPath("inputs/123e4567-e89b-12d3-a456-426614174000/bang-thue.png"));
+  for (const bad of ["inputs/../secret.png", "guidelines/x.png", "inputs/123e4567-e89b-12d3-a456-426614174000/a.pdf", "inputs/abc/a.png", null])
+    assert.equal(validateInputPath(bad), null, String(bad));
+});

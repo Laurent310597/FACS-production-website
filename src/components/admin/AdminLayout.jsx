@@ -1,5 +1,5 @@
 import { Link, NavLink, useNavigate } from "react-router-dom";
-import { BarChart3, Briefcase, CalendarRange, ExternalLink, FilePlus2, LayoutDashboard, LogOut, Mail, MailCheck, MessagesSquare, Newspaper, Radar, ReceiptText, Sparkles, UserRoundSearch, Users } from "lucide-react";
+import { BarChart3, Briefcase, CalendarRange, FolderOpen, ExternalLink, FilePlus2, LayoutDashboard, LogOut, Mail, MailCheck, MessagesSquare, Newspaper, Radar, ReceiptText, Sparkles, UserRoundSearch, Users } from "lucide-react";
 import { supabase } from "../../lib/supabaseClient";
 
 const navClass = ({ isActive }) =>
@@ -59,6 +59,9 @@ export default function AdminLayout({ children }) {
             <div className="mt-2 border-t border-white/10 px-4 pb-1 pt-5 text-[11px] font-bold uppercase tracking-[0.18em] text-slate-600 sm:col-span-2 lg:col-span-1">FACS Hub</div>
             <NavLink to="/admin/hub/content" end className={navClass}>
               <Sparkles size={18} /> Tạo nội dung AI
+            </NavLink>
+            <NavLink to="/admin/hub/library" end className={navClass}>
+              <FolderOpen size={18} /> Thư viện Hub
             </NavLink>
 
             <div className="mt-2 border-t border-white/10 px-4 pb-1 pt-5 text-[11px] font-bold uppercase tracking-[0.18em] text-slate-600 sm:col-span-2 lg:col-span-1">Careers</div>

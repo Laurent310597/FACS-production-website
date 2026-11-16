@@ -1,9 +1,10 @@
 import { useCallback, useEffect, useMemo, useRef, useState } from "react";
-import { Link } from "react-router-dom";
-import { AlertTriangle, Archive, Check, Copy, Download, FileText, Loader2, RefreshCw, Save, Sparkles } from "lucide-react";
+import { Link, useSearchParams } from "react-router-dom";
+import { AlertTriangle, Archive, BadgeCheck, Check, Copy, Download, FileText, ImagePlus, Library, Loader2, RefreshCw, Save, Sparkles, X } from "lucide-react";
 import AdminLayout from "../../components/admin/AdminLayout";
 import { insightCategories, slugify } from "../../lib/insights";
 import {
+  approveHubItem,
   archiveHubItem,
   createPostDraftFromHub,
   hubOutputOptions,
@@ -11,8 +12,11 @@ import {
   listHubItems,
   loadHubItem,
   parseSourceUrls,
+  removeHubInputImage,
   sanitizeArticleHtml,
   saveHubItem,
+  signedInputUrls,
+  uploadHubInputImage,
 } from "../../lib/hub";
 import { downloadCanvasPng, drawInfographic } from "../../lib/hubInfographic";
 
@@ -94,6 +98,13 @@ export default function AdminHubContentPage() {
   const [warnings, setWarnings] = useState([]);
   const [items, setItems] = useState([]);
   const [setupMissing, setSetupMissing] = useState(false);
+  const [inputFiles, setInputFiles] = useState([]);
+  const [previews, setPreviews] = useState({});
+  const [uploading, setUploading] = useState(false);
+  const [itemStatus, setItemStatus] = useState("draft");
+  const [dirtyAfterApprove, setDirtyAfterApprove] = useState(false);
+  const [approving, setApproving] = useState(false);
+  const [searchParams, setSearchParams] = useSearchParams();
 
   const refreshItems = useCallback(async () => {
     try {
@@ -123,14 +134,28 @@ export default function AdminHubContentPage() {
   const currentTab = visibleTabs.includes(activeTab) ? activeTab : visibleTabs[0];
 
   const toggleOutput = (value) => setRequested((current) => (current.includes(value) ? current.filter((item) => item !== value) : [...current, value]));
-  const updateOutput = (key, value) => setOutputs((current) => ({ ...current, [key]: value }));
-  const updateWebsite = (field, value) => setOutputs((current) => ({ ...current, website: { ...current.website, [field]: value } }));
-  const updateInfographic = (field, value) => setOutputs((current) => ({ ...current, infographic: { ...current.infographic, [field]: value } }));
-  const updateListItem = (listName, index, field, value) =>
+  const markEdited = () => {
+    if (itemStatus === "approved") setDirtyAfterApprove(true);
+  };
+  const updateOutput = (key, value) => {
+    markEdited();
+    setOutputs((current) => ({ ...current, [key]: value }));
+  };
+  const updateWebsite = (field, value) => {
+    markEdited();
+    setOutputs((current) => ({ ...current, website: { ...current.website, [field]: value } }));
+  };
+  const updateInfographic = (field, value) => {
+    markEdited();
+    setOutputs((current) => ({ ...current, infographic: { ...current.infographic, [field]: value } }));
+  };
+  const updateListItem = (listName, index, field, value) => {
+    markEdited();
     setOutputs((current) => ({
       ...current,
       infographic: { ...current.infographic, [listName]: current.infographic[listName].map((entry, i) => (i === index ? { ...entry, [field]: value } : entry)) },
     }));
+  };
 
   const resetForm = () => {
     setUrlsText("");
@@ -143,6 +168,40 @@ export default function AdminHubContentPage() {
     setWarnings([]);
     setError("");
     setNotice("");
+    setInputFiles([]);
+    setPreviews({});
+    setItemStatus("draft");
+    setDirtyAfterApprove(false);
+    if (searchParams.get("item")) setSearchParams({}, { replace: true });
+  };
+
+  const addImages = async (event) => {
+    const files = Array.from(event.target.files || []);
+    event.target.value = "";
+    if (!files.length) return;
+    if (inputFiles.length + files.length > 3) {
+      setError("Tối đa 3 ảnh cho mỗi bộ nội dung.");
+      return;
+    }
+    setUploading(true);
+    setError("");
+    try {
+      for (const file of files) {
+        const uploaded = await uploadHubInputImage(file);
+        setInputFiles((current) => [...current, uploaded]);
+        setPreviews((current) => ({ ...current, [uploaded.path]: URL.createObjectURL(file) }));
+      }
+    } catch (uploadError) {
+      setError(uploadError.message);
+    } finally {
+      setUploading(false);
+    }
+  };
+
+  const removeImage = async (path) => {
+    setInputFiles((current) => current.filter((f) => f.path !== path));
+    // Ảnh đã dùng cho một bộ nội dung đã lưu được giữ lại trong thư mục Đầu vào; chỉ xóa ảnh chưa từng dùng.
+    if (!itemId) await removeHubInputImage(path).catch(() => {});
   };
 
   const generate = async () => {
@@ -156,20 +215,33 @@ export default function AdminHubContentPage() {
     setNotice("");
     setWarnings([]);
     try {
-      const data = await invokeHubContent({ source_urls: parseSourceUrls(urlsText), source_text: sourceText, brief, outputs: requested });
+      const data = await invokeHubContent({
+        source_urls: parseSourceUrls(urlsText),
+        source_text: sourceText,
+        brief,
+        outputs: requested,
+        input_files: inputFiles.map((f) => f.path),
+      });
       const result = data.result || {};
-      setOutputs({
+      const nextOutputs = {
         ...emptyOutputs,
         ...result,
         website: { ...emptyOutputs.website, ...(result.website || {}), content_vi: sanitizeArticleHtml(result.website?.content_vi), content_en: sanitizeArticleHtml(result.website?.content_en) },
         infographic: { ...emptyOutputs.infographic, ...(result.infographic || {}) },
         review_notes: result.review_notes || [],
-      });
-      setTitle(result.working_title || result.website?.title_vi || "");
+      };
+      const nextTitle = result.working_title || result.website?.title_vi || "";
+      setOutputs(nextOutputs);
+      setTitle(nextTitle);
       setWarnings(data.warnings || []);
       setPostId(null);
+      setItemStatus("draft");
+      setDirtyAfterApprove(false);
       setActiveTab(requested.includes("website") ? "website" : requested[0]);
-      setNotice(`Đã tạo nội dung. Còn ${data.remaining_today ?? "?"} lượt trong 24 giờ.`);
+      // Tự lưu để đầu vào luôn có trong thư mục "Đầu vào đã gửi".
+      await save({ outputs: nextOutputs, title: nextTitle, post_id: null, status: "draft" }, { quiet: true });
+      const used = data.library ? ` Đã áp dụng ${data.library.guidelines} hướng dẫn và ${data.library.examples} bài mẫu đã duyệt.` : "";
+      setNotice(`Đã tạo và lưu nội dung.${used} Còn ${data.remaining_today ?? "?"} lượt trong 24 giờ.`);
     } catch (generateError) {
       setError(generateError.message);
     } finally {
@@ -177,9 +249,9 @@ export default function AdminHubContentPage() {
     }
   };
 
-  const save = async (overrides = {}) => {
+  const save = async (overrides = {}, { quiet = false } = {}) => {
     setSaving(true);
-    setError("");
+    if (!quiet) setError("");
     try {
       const saved = await saveHubItem({
         id: itemId,
@@ -189,11 +261,13 @@ export default function AdminHubContentPage() {
         brief,
         requested_outputs: requested,
         outputs,
+        input_files: inputFiles,
         post_id: postId,
+        status: itemStatus,
         ...overrides,
       });
       setItemId(saved.id);
-      setNotice("Đã lưu bộ nội dung.");
+      if (!quiet) setNotice("Đã lưu bộ nội dung.");
       await refreshItems();
       return saved;
     } catch (saveError) {
@@ -201,6 +275,28 @@ export default function AdminHubContentPage() {
       return null;
     } finally {
       setSaving(false);
+    }
+  };
+
+  const approve = async () => {
+    const message = itemStatus === "approved"
+      ? "Cập nhật bản đã duyệt bằng nội dung hiện tại?"
+      : "Duyệt bộ nội dung này?\n\nBản hiện tại của từng kênh sẽ được lưu vào thư mục \"Kết quả đã duyệt\" và AI sẽ tham khảo cho các lần sau. Việc duyệt không đăng bài và không gửi email.";
+    if (!window.confirm(message)) return;
+    setApproving(true);
+    setError("");
+    try {
+      const saved = await save({}, { quiet: true });
+      if (!saved) return;
+      const count = await approveHubItem(saved.id, title, requested, outputs);
+      setItemStatus("approved");
+      setDirtyAfterApprove(false);
+      setNotice(`Đã duyệt ${count} nội dung và lưu vào thư mục "Kết quả đã duyệt".`);
+      await refreshItems();
+    } catch (approveError) {
+      setError(approveError.message);
+    } finally {
+      setApproving(false);
     }
   };
 
@@ -236,11 +332,26 @@ export default function AdminHubContentPage() {
       setOutputs({ ...emptyOutputs, ...(item.outputs || {}), website: { ...emptyOutputs.website, ...(item.outputs?.website || {}) }, infographic: { ...emptyOutputs.infographic, ...(item.outputs?.infographic || {}) } });
       setActiveTab(nextRequested[0]);
       setWarnings([]);
+      setItemStatus(item.status === "approved" ? "approved" : "draft");
+      setDirtyAfterApprove(false);
+      const files = Array.isArray(item.input_files) ? item.input_files : [];
+      setInputFiles(files);
+      setPreviews(await signedInputUrls(files));
       window.scrollTo({ top: 0, behavior: "smooth" });
     } catch (openError) {
       setError(openError.message);
     }
   };
+
+  // Mở một bộ nội dung từ Thư viện (đường dẫn /admin/hub/content?item=…)
+  const requestedItem = searchParams.get("item");
+  const openedFromLink = useRef(null);
+  useEffect(() => {
+    if (!requestedItem || openedFromLink.current === requestedItem) return;
+    openedFromLink.current = requestedItem;
+    const timer = window.setTimeout(() => openItem(requestedItem), 0);
+    return () => window.clearTimeout(timer);
+  });
 
   const archive = async (id) => {
     if (!window.confirm("Lưu trữ bộ nội dung này? (Bài nháp trong CMS, nếu có, vẫn được giữ nguyên.)")) return;
@@ -267,11 +378,14 @@ export default function AdminHubContentPage() {
               Gửi link bài báo, văn bản hoặc ghi chú. Trợ lý soạn bài website song ngữ, bài mạng xã hội và infographic để anh/chị rà soát. Không có gì được đăng hay gửi email tự động từ trang này.
             </p>
           </div>
-          {outputs && (
-            <button type="button" className={ghostButton} onClick={resetForm}>
-              <RefreshCw size={15} /> Bắt đầu bộ mới
-            </button>
-          )}
+          <div className="flex flex-wrap gap-2">
+            <Link to="/admin/hub/library" className={ghostButton}><Library size={15} /> Thư viện Hub</Link>
+            {outputs && (
+              <button type="button" className={ghostButton} onClick={resetForm}>
+                <RefreshCw size={15} /> Bắt đầu bộ mới
+              </button>
+            )}
+          </div>
         </div>
 
         {setupMissing && (
@@ -302,6 +416,25 @@ export default function AdminHubContentPage() {
               <span className={labelClass}>Dán nội dung (dùng khi link không đọc được, hoặc nội dung từ file/ảnh infographic)</span>
               <textarea value={sourceText} onChange={(e) => setSourceText(e.target.value)} rows={4} maxLength={20000} className={inputClass} placeholder="Dán văn bản nguồn vào đây…" />
             </label>
+            <div className="lg:col-span-2">
+              <span className={labelClass}>Ảnh nguồn: infographic, bảng biểu, ảnh chụp văn bản (tối đa 3 ảnh, mỗi ảnh ≤ 4 MB)</span>
+              <div className="flex flex-wrap items-center gap-3">
+                {inputFiles.map((file) => (
+                  <div key={file.path} className="relative h-24 w-24 overflow-hidden rounded-xl border border-white/10 bg-white/5">
+                    {previews[file.path] ? <img src={previews[file.path]} alt={file.name} className="h-full w-full object-cover" /> : <div className="p-2 text-xs text-slate-400">{file.name}</div>}
+                    <button type="button" onClick={() => removeImage(file.path)} className="absolute right-1 top-1 rounded-full bg-black/70 p-1 text-white" aria-label={`Bỏ ảnh ${file.name}`}>
+                      <X size={12} />
+                    </button>
+                  </div>
+                ))}
+                {inputFiles.length < 3 && (
+                  <label className={`${ghostButton} cursor-pointer`}>
+                    {uploading ? <Loader2 size={15} className="animate-spin" /> : <ImagePlus size={15} />} Thêm ảnh
+                    <input type="file" accept="image/png,image/jpeg,image/webp" multiple onChange={addImages} className="hidden" disabled={uploading} />
+                  </label>
+                )}
+              </div>
+            </div>
           </div>
           <div className="mt-5">
             <span className={labelClass}>Nội dung cần tạo</span>
@@ -323,7 +456,7 @@ export default function AdminHubContentPage() {
             </div>
           </div>
           <div className="mt-6 flex flex-wrap items-center gap-3">
-            <button type="button" className={primaryButton} onClick={generate} disabled={generating || setupMissing}>
+            <button type="button" className={primaryButton} onClick={generate} disabled={generating || uploading || setupMissing}>
               {generating ? <Loader2 size={16} className="animate-spin" /> : <Sparkles size={16} />} {generating ? "Đang soạn (30–90 giây)…" : outputs ? "Tạo lại" : "Tạo nội dung"}
             </button>
             <span className="text-xs text-slate-500">Bài được viết mới theo góc nhìn FACS và có ghi nguồn; không chép lại bài gốc.</span>
@@ -440,9 +573,15 @@ export default function AdminHubContentPage() {
             )}
 
             <div className="mt-6 flex flex-wrap items-center gap-3 border-t border-white/10 pt-5">
-              <button type="button" className={ghostButton} onClick={() => save()} disabled={saving}>
-                {saving ? <Loader2 size={15} className="animate-spin" /> : <Save size={15} />} Lưu bộ nội dung
+              <button type="button" className={ghostButton} onClick={() => save()} disabled={saving || approving}>
+                {saving ? <Loader2 size={15} className="animate-spin" /> : <Save size={15} />} Lưu nháp
               </button>
+              <button type="button" className={primaryButton} onClick={approve} disabled={saving || approving}>
+                {approving ? <Loader2 size={16} className="animate-spin" /> : <BadgeCheck size={16} />}
+                {itemStatus === "approved" ? "Cập nhật bản đã duyệt" : "Duyệt & lưu vào thư viện"}
+              </button>
+              {itemStatus === "approved" && !dirtyAfterApprove && <span className="text-xs text-emerald-300">Đã duyệt · AI đang dùng làm mẫu tham khảo</span>}
+              {dirtyAfterApprove && <span className="text-xs text-amber-200">Đã sửa sau khi duyệt · bấm "Cập nhật bản đã duyệt" để thư viện có bản mới</span>}
             </div>
           </div>
         )}
@@ -460,6 +599,7 @@ export default function AdminHubContentPage() {
                     <div className="mt-1 text-xs text-slate-500">
                       {new Date(item.updated_at).toLocaleString("vi-VN")} · {(item.requested_outputs || []).map((name) => tabLabels[name] || name).join(", ")}
                       {item.post_id ? " · đã có bài nháp CMS" : ""}
+                      {item.status === "approved" ? " · đã duyệt" : ""}
                     </div>
                   </button>
                   <button type="button" className={ghostButton} onClick={() => archive(item.id)} aria-label={`Lưu trữ ${item.title}`}>
