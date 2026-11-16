@@ -1,6 +1,6 @@
 import { useCallback, useEffect, useMemo, useState } from "react";
 import { Link } from "react-router-dom";
-import { BadgeCheck, BookOpen, FileUp, FolderOpen, Inbox, Loader2, Pencil, Plus, Save, Sparkles, Trash2 } from "lucide-react";
+import { BadgeCheck, BookOpen, FileUp, FolderOpen, ImagePlus, Inbox, Loader2, Pencil, Plus, Save, Sparkles, Trash2, X } from "lucide-react";
 import AdminLayout from "../../components/admin/AdminLayout";
 import {
   deleteApprovedExample,
@@ -14,6 +14,7 @@ import {
   saveGuideline,
   setExampleReference,
   signedInputUrls,
+  uploadHubGuidelineImage,
 } from "../../lib/hub";
 
 const inputClass = "w-full rounded-2xl border border-white/10 bg-[#0d1726]/70 px-4 py-3 text-sm text-white outline-none transition placeholder:text-slate-600 focus:border-cyan-300/50";
@@ -24,7 +25,7 @@ const primaryButton = "inline-flex items-center gap-2 rounded-xl bg-cyan-300 px-
 
 const channelLabel = Object.fromEntries(hubOutputOptions.map((o) => [o.value, o.label]));
 const kindLabel = Object.fromEntries(guidelineKinds.map((k) => [k.value, k.label]));
-const emptyGuideline = { id: null, title: "", kind: "rule", applies_to: [], content: "", is_active: true, sort_order: 0 };
+const emptyGuideline = { id: null, title: "", kind: "rule", applies_to: [], content: "", is_active: true, sort_order: 0, images: [] };
 const fmt = (value) => (value ? new Date(value).toLocaleString("vi-VN", { timeZone: "Asia/Ho_Chi_Minh", hour12: false }) : "");
 
 const folders = [
@@ -37,7 +38,39 @@ const folders = [
 function GuidelinesFolder({ rows, reload, setError, setNotice }) {
   const [form, setForm] = useState(null);
   const [saving, setSaving] = useState(false);
+  const [uploading, setUploading] = useState(false);
+  const [previews, setPreviews] = useState({});
   const update = (field, value) => setForm((current) => ({ ...current, [field]: value }));
+
+  const openForm = async (row) => {
+    const images = Array.isArray(row.images) ? row.images : [];
+    setForm({ ...row, applies_to: row.applies_to || [], images });
+    setPreviews(await signedInputUrls(images));
+  };
+
+  const addImages = async (event) => {
+    const files = Array.from(event.target.files || []);
+    event.target.value = "";
+    if (!files.length) return;
+    if ((form.images?.length || 0) + files.length > 3) {
+      setError("Mỗi hướng dẫn tối đa 3 ảnh mẫu. Cần nhiều hơn thì tạo thêm hướng dẫn khác.");
+      return;
+    }
+    setUploading(true);
+    setError("");
+    try {
+      for (const file of files) {
+        const uploaded = await uploadHubGuidelineImage(file);
+        setForm((current) => ({ ...current, images: [...(current.images || []), uploaded] }));
+        setPreviews((current) => ({ ...current, [uploaded.path]: URL.createObjectURL(file) }));
+      }
+    } catch (uploadError) {
+      setError(uploadError.message);
+    } finally {
+      setUploading(false);
+    }
+  };
+  const removeImage = (path) => setForm((current) => ({ ...current, images: current.images.filter((image) => image.path !== path) }));
   const toggleChannel = (value) =>
     setForm((current) => ({ ...current, applies_to: current.applies_to.includes(value) ? current.applies_to.filter((c) => c !== value) : [...current.applies_to, value] }));
 
@@ -94,7 +127,7 @@ function GuidelinesFolder({ rows, reload, setError, setNotice }) {
           Mỗi mục là một hướng dẫn AI phải đọc trước khi viết: quy tắc bắt buộc, văn phong thương hiệu, kỹ năng (cách viết một loại bài), hoặc tài liệu tham chiếu. Chọn kênh áp dụng, để trống là áp dụng cho mọi kênh. Tắt một mục khi muốn tạm ngưng mà không xóa.
         </p>
         {!form && (
-          <button type="button" className={primaryButton} onClick={() => setForm({ ...emptyGuideline })}>
+          <button type="button" className={primaryButton} onClick={() => { setForm({ ...emptyGuideline }); setPreviews({}); }}>
             <Plus size={16} /> Thêm hướng dẫn
           </button>
         )}
@@ -133,10 +166,28 @@ function GuidelinesFolder({ rows, reload, setError, setNotice }) {
           </div>
           <label className="mt-4 block">
             <span className={labelClass}>Nội dung ({form.content.length}/20.000 ký tự)</span>
-            <textarea value={form.content} onChange={(e) => update("content", e.target.value)} rows={12} maxLength={20000} className={inputClass} placeholder={"Ví dụ:\n- Luôn xưng \"FACS\", gọi người đọc là \"Quý doanh nghiệp\".\n- Không dùng từ ngữ cường điệu như \"tốt nhất\", \"cam kết 100%\".\n- Bài LinkedIn kết thúc bằng một câu hỏi mở cho người đọc."} />
+            <textarea value={form.content} onChange={(e) => update("content", e.target.value)} rows={10} maxLength={20000} className={inputClass} placeholder={"Ví dụ:\n- Luôn xưng \"FACS\", gọi người đọc là \"Quý doanh nghiệp\".\n- Không dùng từ ngữ cường điệu như \"tốt nhất\", \"cam kết 100%\".\n- Bài LinkedIn kết thúc bằng một câu hỏi mở cho người đọc."} />
           </label>
+          <div className="mt-4">
+            <span className={labelClass}>Ảnh mẫu: infographic FACS đã làm (tối đa 3 ảnh, mỗi ảnh ≤ 4 MB, PNG/JPG/WEBP)</span>
+            <div className="flex flex-wrap items-center gap-3">
+              {(form.images || []).map((image) => (
+                <div key={image.path} className="relative h-28 w-24 overflow-hidden rounded-xl border border-white/10 bg-white/5">
+                  {previews[image.path] ? <img src={previews[image.path]} alt={image.name} className="h-full w-full object-cover" /> : <div className="p-2 text-xs text-slate-400">{image.name}</div>}
+                  <button type="button" onClick={() => removeImage(image.path)} className="absolute right-1 top-1 rounded-full bg-black/70 p-1 text-white" aria-label={`Bỏ ảnh ${image.name}`}><X size={12} /></button>
+                </div>
+              ))}
+              {(form.images?.length || 0) < 3 && (
+                <label className={`${ghostButton} cursor-pointer`}>
+                  {uploading ? <Loader2 size={15} className="animate-spin" /> : <ImagePlus size={15} />} Thêm ảnh mẫu
+                  <input type="file" accept="image/png,image/jpeg,image/webp" multiple onChange={addImages} className="hidden" disabled={uploading} />
+                </label>
+              )}
+            </div>
+            <p className="mt-2 text-xs text-slate-500">AI xem ảnh mẫu khi tạo infographic để học cách chọn ý, độ dài chữ và giọng điệu. Ảnh chỉ được gửi cho AI khi hướng dẫn này đang áp dụng và anh/chị chọn tạo Infographic.</p>
+          </div>
           <div className="mt-4 flex flex-wrap items-center gap-3">
-            <button type="button" className={primaryButton} onClick={submit} disabled={saving}>
+            <button type="button" className={primaryButton} onClick={submit} disabled={saving || uploading}>
               {saving ? <Loader2 size={16} className="animate-spin" /> : <Save size={16} />} Lưu
             </button>
             <label className={`${ghostButton} cursor-pointer`}>
@@ -164,13 +215,13 @@ function GuidelinesFolder({ rows, reload, setError, setNotice }) {
                   <span className={`rounded-full px-2 py-0.5 text-xs ${row.is_active ? "bg-emerald-300/15 text-emerald-200" : "bg-white/5 text-slate-500"}`}>{row.is_active ? "Đang áp dụng" : "Tạm tắt"}</span>
                 </div>
                 <div className="mt-1 text-xs text-slate-500">
-                  {row.applies_to?.length ? row.applies_to.map((c) => channelLabel[c] || c).join(", ") : "Mọi kênh"} · cập nhật {fmt(row.updated_at)}
+                  {row.applies_to?.length ? row.applies_to.map((c) => channelLabel[c] || c).join(", ") : "Mọi kênh"} · cập nhật {fmt(row.updated_at)}{row.images?.length ? ` · ${row.images.length} ảnh mẫu` : ""}
                 </div>
                 <p className="mt-2 line-clamp-2 whitespace-pre-line text-sm text-slate-400">{row.content}</p>
               </div>
               <div className="flex gap-2">
                 <button type="button" className={ghostButton} onClick={() => toggleActive(row)}>{row.is_active ? "Tạm tắt" : "Bật lại"}</button>
-                <button type="button" className={ghostButton} onClick={() => setForm({ ...row, applies_to: row.applies_to || [] })} aria-label={`Sửa ${row.title}`}><Pencil size={15} /></button>
+                <button type="button" className={ghostButton} onClick={() => openForm(row)} aria-label={`Sửa ${row.title}`}><Pencil size={15} /></button>
                 <button type="button" className={ghostButton} onClick={() => remove(row)} aria-label={`Xóa ${row.title}`}><Trash2 size={15} /></button>
               </div>
             </li>

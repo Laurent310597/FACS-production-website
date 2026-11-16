@@ -240,8 +240,10 @@ export default function AdminHubContentPage() {
       setActiveTab(requested.includes("website") ? "website" : requested[0]);
       // Tự lưu để đầu vào luôn có trong thư mục "Đầu vào đã gửi".
       await save({ outputs: nextOutputs, title: nextTitle, post_id: null, status: "draft" }, { quiet: true });
-      const used = data.library ? ` Đã áp dụng ${data.library.guidelines} hướng dẫn và ${data.library.examples} bài mẫu đã duyệt.` : "";
-      setNotice(`Đã tạo và lưu nội dung.${used} Còn ${data.remaining_today ?? "?"} lượt trong 24 giờ.`);
+      const refImages = data.library?.reference_images ? `, ${data.library.reference_images} ảnh infographic mẫu` : "";
+      const used = data.library ? ` Đã áp dụng ${data.library.guidelines} hướng dẫn${refImages} và ${data.library.examples} bài mẫu đã duyệt.` : "";
+      const viaWeb = data.web_reads?.length ? ` Link ${data.web_reads.join(", ")} được đọc qua OpenAI (tính thêm phí đọc web).` : "";
+      setNotice(`Đã tạo và lưu nội dung.${used}${viaWeb} Còn ${data.remaining_today ?? "?"} lượt trong 24 giờ.`);
     } catch (generateError) {
       setError(generateError.message);
     } finally {

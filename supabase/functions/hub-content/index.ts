@@ -3,6 +3,7 @@ import { corsHeaders } from "../_shared/cors.ts";
 import {
   buildLibraryPrompt,
   buildUserMessage,
+  buildWebReadPrompt,
   extractUrls,
   formatExamples,
   formatGuidelines,
@@ -15,9 +16,12 @@ import {
   meaningfulLength,
   normalizeOutputs,
   pickExamples,
+  referenceImagePaths,
+  sameSite,
   selectGuidelines,
   validateInputPath,
   validateSourceUrl,
+  WEB_READ_FAILED,
 } from "../_shared/hub-content.ts";
 import type { HubExample, HubGuideline, HubSource } from "../_shared/hub-content.ts";
 
@@ -59,7 +63,7 @@ async function loadInputImages(admin: AdminClient, raw: unknown): Promise<{ urls
 /** Đọc thư mục 1 (hướng dẫn đang bật) và thư mục 3 (bài đã duyệt dùng làm mẫu). Lỗi đọc thư viện không chặn việc tạo bài. */
 async function loadLibrary(admin: AdminClient, outputs: ReturnType<typeof normalizeOutputs>, queryText: string) {
   const [guides, examples] = await Promise.all([
-    admin.from("hub_guidelines").select("title,kind,applies_to,content").eq("is_active", true).order("sort_order").order("created_at"),
+    admin.from("hub_guidelines").select("title,kind,applies_to,content,images").eq("is_active", true).order("sort_order").order("created_at"),
     admin
       .from("hub_approved_examples")
       .select("id,channel,title,category,content,approved_at")
@@ -76,7 +80,54 @@ async function loadLibrary(admin: AdminClient, outputs: ReturnType<typeof normal
     prompt: buildLibraryPrompt(formatGuidelines(guidelineList), formatExamples(exampleList)),
     guidelineCount: guidelineList.length,
     exampleCount: exampleList.length,
+    // Ảnh mẫu chỉ gửi khi cần tạo infographic (mỗi ảnh tốn thêm token đầu vào).
+    referenceImages: outputs.includes("infographic") ? referenceImagePaths(guidelineList) : [],
   };
+}
+
+/**
+ * Link bị trang nguồn chặn: nhờ OpenAI (công cụ web_search) mở giúp ĐÚNG MỘT LẦN, tối đa một lượt gọi công cụ.
+ * Chỉ chấp nhận kết quả khi OpenAI có trích dẫn đúng tên miền được yêu cầu; nếu không thì coi như không đọc được.
+ */
+async function readViaOpenAI(admin: AdminClient, apiKey: string, model: string, userId: string, url: string): Promise<HubSource | null> {
+  try {
+    const res = await fetch("https://api.openai.com/v1/responses", {
+      method: "POST",
+      signal: AbortSignal.timeout(60_000),
+      headers: { Authorization: `Bearer ${apiKey}`, "Content-Type": "application/json" },
+      body: JSON.stringify({
+        model,
+        store: false,
+        tools: [{ type: "web_search" }],
+        max_tool_calls: 1,
+        max_output_tokens: 3500,
+        input: buildWebReadPrompt(url),
+      }),
+    });
+    const payload = await res.json().catch(() => null);
+    if (!res.ok) {
+      console.error("hub-content web read error", res.status, payload?.error?.type, payload?.error?.code);
+      return null;
+    }
+    await admin.from("hub_generation_log").insert({ user_id: userId, model: `${model}+web_search`, total_tokens: payload?.usage?.total_tokens ?? 0 });
+    let text = "";
+    const cited: string[] = [];
+    for (const item of payload?.output ?? []) {
+      if (item?.type !== "message") continue;
+      for (const part of item.content ?? []) {
+        if (part?.type !== "output_text") continue;
+        text += part.text ?? "";
+        for (const a of part.annotations ?? []) if (a?.type === "url_citation" && a.url) cited.push(String(a.url));
+      }
+    }
+    text = text.trim();
+    if (text.includes(WEB_READ_FAILED) || text.length < 300) return null;
+    if (!cited.some((c) => sameSite(c, url))) return null; // không có bằng chứng đã đọc đúng trang → không dùng
+    return { url, title: text.split("\n")[0].replace(/^[#*\s]+/, "").slice(0, 200), text };
+  } catch (error) {
+    console.error("hub-content web read failed", error instanceof Error ? error.message : error);
+    return null;
+  }
 }
 const FETCH_TIMEOUT_MS = 12_000;
 
@@ -182,11 +233,26 @@ Deno.serve(async (req) => {
 
     const sources: HubSource[] = [];
     const warnings: string[] = [];
+    const webRead: string[] = [];
     for (const raw of urls) {
+      let target: URL;
       try {
-        sources.push(await fetchSource(raw));
+        target = validateSourceUrl(raw);
       } catch (error) {
         warnings.push(error instanceof Error ? error.message : String(error));
+        continue;
+      }
+      try {
+        sources.push(await fetchSource(raw));
+      } catch {
+        // Hub không đọc trực tiếp được → nhờ OpenAI đọc, đúng một lần cho mỗi link, không thử lại.
+        const viaOpenAI = await readViaOpenAI(admin, apiKey, model, user.id, target.toString());
+        if (viaOpenAI) {
+          sources.push(viaOpenAI);
+          webRead.push(target.hostname);
+        } else {
+          warnings.push(`Không đọc được link ${target.hostname}, kể cả khi nhờ OpenAI đọc (đã thử 1 lần, không thử thêm). Hãy mở bài, chép phần chữ và dán vào ô "Dán nội dung".`);
+        }
       }
     }
     const images = await loadInputImages(admin, body.input_files);
@@ -199,9 +265,11 @@ Deno.serve(async (req) => {
 
     const library = await loadLibrary(admin, outputs, `${brief} ${sources.map((s) => s.title).join(" ")} ${pastedText.slice(0, 500)}`);
     const systemPrompt = library.prompt ? `${HUB_SYSTEM_PROMPT}\n\n${library.prompt}` : HUB_SYSTEM_PROMPT;
-    const userText = buildUserMessage({ outputs, brief, pastedText, sources, imageCount: images.urls.length });
-    const userContent = images.urls.length
-      ? [{ type: "text", text: userText }, ...images.urls.map((url) => ({ type: "image_url", image_url: { url, detail: "high" } }))]
+    const refs = await loadInputImages(admin, library.referenceImages);
+    const userText = buildUserMessage({ outputs, brief, pastedText, sources, imageCount: images.urls.length, referenceImageCount: refs.urls.length });
+    const allImages = [...images.urls, ...refs.urls];
+    const userContent = allImages.length
+      ? [{ type: "text", text: userText }, ...allImages.map((url) => ({ type: "image_url", image_url: { url, detail: "high" } }))]
       : userText;
 
     const ai = await fetch("https://api.openai.com/v1/chat/completions", {
@@ -236,13 +304,22 @@ Deno.serve(async (req) => {
 
     await admin.from("hub_generation_log").insert({ user_id: user.id, model, total_tokens: payload?.usage?.total_tokens ?? 0 });
 
+    if (webRead.length && result && typeof result === "object") {
+      const r = result as { review_notes?: string[] };
+      r.review_notes = [
+        `Nguồn ${webRead.join(", ")} được đọc gián tiếp qua OpenAI vì trang chặn Hub: hãy đối chiếu mọi số liệu, ngày tháng với bài gốc trước khi đăng.`,
+        ...(Array.isArray(r.review_notes) ? r.review_notes : []),
+      ];
+    }
+
     return json({
       result,
       outputs,
       sources: sources.map((s) => ({ url: s.url, title: s.title })),
       warnings,
       model,
-      library: { guidelines: library.guidelineCount, examples: library.exampleCount },
+      library: { guidelines: library.guidelineCount, examples: library.exampleCount, reference_images: refs.urls.length },
+      web_reads: webRead,
       remaining_today: Math.max(0, dailyLimit - (count ?? 0) - 1),
     });
   } catch (error) {

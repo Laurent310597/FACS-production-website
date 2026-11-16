@@ -189,6 +189,45 @@ export interface HubGuideline {
   kind: string;
   applies_to: string[] | null;
   content: string;
+  images?: { path?: string }[] | null;
+}
+
+/** Ảnh mẫu infographic đính kèm các hướng dẫn đang áp dụng (tối đa `max` ảnh). */
+export function referenceImagePaths(guidelines: HubGuideline[], max = 3): string[] {
+  const paths: string[] = [];
+  for (const g of guidelines) {
+    for (const image of g.images ?? []) {
+      const valid = validateInputPath(image?.path);
+      if (valid && !paths.includes(valid)) paths.push(valid);
+      if (paths.length >= max) return paths;
+    }
+  }
+  return paths;
+}
+
+/** Hai địa chỉ có cùng tên miền không (bỏ qua "www."). Dùng để kiểm tra OpenAI đã đọc đúng trang được yêu cầu. */
+export function sameSite(a: string, b: string): boolean {
+  try {
+    const host = (u: string) => new URL(u).hostname.toLowerCase().replace(/^www\./, "");
+    return host(a) === host(b);
+  } catch {
+    return false;
+  }
+}
+
+export const WEB_READ_FAILED = "KHONG_DOC_DUOC";
+
+export function buildWebReadPrompt(url: string): string {
+  return `Hãy mở đúng trang sau và đọc bài viết ở đó: ${url}
+
+Sau đó ghi lại nội dung bài một cách đầy đủ và trung thành, bằng tiếng Việt:
+- Dòng đầu tiên: tiêu đề bài.
+- Tiếp theo: toàn bộ các ý chính theo thứ tự của bài, kèm MỌI số liệu, ngày tháng, thời hạn, tên mẫu biểu, số hiệu văn bản, đối tượng áp dụng có trong bài.
+
+Quy tắc bắt buộc:
+- Chỉ dùng nội dung của đúng trang này. Không thêm thông tin từ trang khác hoặc từ hiểu biết riêng.
+- Không suy đoán nội dung từ tiêu đề hay đường dẫn.
+- Nếu không mở được đúng trang này hoặc không đọc được nội dung bài, chỉ trả lời đúng một dòng: ${WEB_READ_FAILED}`;
 }
 
 export interface HubExample {
@@ -295,10 +334,10 @@ export function buildLibraryPrompt(guidelines: string, examples: string): string
   return parts.join("\n\n");
 }
 
-/** Chỉ chấp nhận ảnh đã tải lên đúng thư mục đầu vào của Hub. */
+/** Chỉ chấp nhận ảnh đã tải lên đúng thư mục của Hub (inputs/ hoặc guidelines/). */
 export function validateInputPath(path: unknown): string | null {
   const p = String(path ?? "");
-  return /^inputs\/[0-9a-f-]{36}\/[a-z0-9][a-z0-9._-]{0,120}\.(png|jpe?g|webp)$/i.test(p) && !p.includes("..") ? p : null;
+  return /^(inputs|guidelines)\/[0-9a-f-]{36}\/[a-z0-9][a-z0-9._-]{0,120}\.(png|jpe?g|webp)$/i.test(p) && !p.includes("..") ? p : null;
 }
 
 export interface HubSource {
@@ -307,7 +346,7 @@ export interface HubSource {
   text: string;
 }
 
-export function buildUserMessage(input: { outputs: HubOutput[]; brief: string; pastedText: string; sources: HubSource[]; imageCount?: number }): string {
+export function buildUserMessage(input: { outputs: HubOutput[]; brief: string; pastedText: string; sources: HubSource[]; imageCount?: number; referenceImageCount?: number }): string {
   const parts = [
     `CÁC ĐẦU RA CẦN TẠO: ${input.outputs.join(", ")}`,
     `YÊU CẦU CỦA NGƯỜI DÙNG:\n${input.brief.trim() || "(không có yêu cầu thêm)"}`,
@@ -320,6 +359,11 @@ export function buildUserMessage(input: { outputs: HubOutput[]; brief: string; p
   }
   if (input.imageCount) {
     parts.push(`ẢNH ĐÍNH KÈM: ${input.imageCount} ảnh do người dùng gửi (infographic, bảng biểu, ảnh chụp văn bản…). Đọc nội dung trong ảnh và dùng như tài liệu nguồn.`);
+  }
+  if (input.referenceImageCount) {
+    parts.push(
+      `ẢNH MẪU INFOGRAPHIC CỦA FACS: ${input.referenceImageCount} ảnh cuối cùng là infographic FACS đã làm trước đây. Chỉ học cách chọn ý, số lượng ý, độ dài chữ, cách đặt tiêu đề và giọng điệu. KHÔNG lấy số liệu, ngày tháng hay nội dung từ ảnh mẫu.`,
+    );
   }
   return parts.join("\n\n");
 }

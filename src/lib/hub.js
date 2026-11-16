@@ -155,11 +155,16 @@ function cleanFileName(name = "anh") {
   return `${base}.${extension}`;
 }
 
-/** Tải ảnh đầu vào (infographic, bảng biểu…) lên thư mục riêng tư inputs/ của Hub. */
-export async function uploadHubInputImage(file) {
+/** Tải ảnh mẫu (infographic FACS đã làm) đính kèm một hướng dẫn. */
+export function uploadHubGuidelineImage(file) {
+  return uploadHubInputImage(file, "guidelines");
+}
+
+/** Tải ảnh lên thư mục riêng tư của Hub: inputs/ (đầu vào) hoặc guidelines/ (ảnh mẫu). */
+export async function uploadHubInputImage(file, folder = "inputs") {
   if (!/^image\/(png|jpeg|webp)$/.test(file.type)) throw new Error("Chỉ nhận ảnh PNG, JPG hoặc WEBP.");
   if (file.size > 4 * 1024 * 1024) throw new Error("Mỗi ảnh tối đa 4 MB.");
-  const path = `inputs/${crypto.randomUUID()}/${cleanFileName(file.name)}`;
+  const path = `${folder}/${crypto.randomUUID()}/${cleanFileName(file.name)}`;
   const { error } = await supabase.storage.from(LIBRARY_BUCKET).upload(path, file, { contentType: file.type, upsert: false });
   if (error) throw new Error(error.message);
   return { path, name: file.name, type: file.type, size: file.size };
@@ -192,6 +197,7 @@ export async function saveGuideline(guideline) {
     content: (guideline.content || "").trim(),
     is_active: guideline.is_active !== false,
     sort_order: Number(guideline.sort_order) || 0,
+    images: (guideline.images || []).slice(0, 3),
   };
   if (!row.title) throw new Error("Hãy đặt tên cho hướng dẫn.");
   if (!row.content) throw new Error("Nội dung hướng dẫn đang trống.");

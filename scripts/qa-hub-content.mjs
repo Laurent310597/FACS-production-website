@@ -68,7 +68,7 @@ test("thư mục 3: chọn bài mẫu liên quan, mới hơn, tối đa 2 mỗi 
 
 test("chỉ nhận ảnh đầu vào đúng thư mục", () => {
   assert.ok(validateInputPath("inputs/123e4567-e89b-12d3-a456-426614174000/bang-thue.png"));
-  for (const bad of ["inputs/../secret.png", "guidelines/x.png", "inputs/123e4567-e89b-12d3-a456-426614174000/a.pdf", "inputs/abc/a.png", null])
+  for (const bad of ["inputs/../secret.png", "guidelines/x.png", "other/123e4567-e89b-12d3-a456-426614174000/a.png", "inputs/123e4567-e89b-12d3-a456-426614174000/a.pdf", "inputs/abc/a.png", null])
     assert.equal(validateInputPath(bad), null, String(bad));
 });
 
@@ -81,4 +81,19 @@ test("bỏ tham số theo dõi và nhận ra ô dán chỉ có link", () => {
   assert.ok(meaningfulLength(onlyLink) < 80);
   assert.deepEqual(extractUrls(onlyLink + "\n" + onlyLink).length, 1);
   assert.ok(meaningfulLength("Doanh nghiệp phải nộp báo cáo tình hình sử dụng lao động cuối năm trước ngày 05/12 theo quy định hiện hành. Xem thêm https://a.vn/x") >= 80);
+});
+
+import { buildWebReadPrompt, referenceImagePaths, sameSite } from "../supabase/functions/_shared/hub-content.ts";
+
+test("ảnh mẫu của hướng dẫn và kiểm tra OpenAI đọc đúng trang", () => {
+  const id = "123e4567-e89b-12d3-a456-426614174000";
+  const guides = [
+    { title: "A", kind: "skill", applies_to: [], content: "x", images: [{ path: `guidelines/${id}/mau-1.png` }, { path: "guidelines/../x.png" }] },
+    { title: "B", kind: "skill", applies_to: [], content: "x", images: [{ path: `guidelines/${id}/mau-2.jpg` }, { path: `guidelines/${id}/mau-3.webp` }, { path: `guidelines/${id}/mau-4.png` }] },
+    { title: "C", kind: "rule", applies_to: [], content: "x", images: null },
+  ];
+  assert.deepEqual(referenceImagePaths(guides), [`guidelines/${id}/mau-1.png`, `guidelines/${id}/mau-2.jpg`, `guidelines/${id}/mau-3.webp`]);
+  assert.ok(sameSite("https://www.thuvienphapluat.vn/a?utm_source=openai", "https://thuvienphapluat.vn/b"));
+  assert.ok(!sameSite("https://luatvietnam.vn/a", "https://thuvienphapluat.vn/b") && !sameSite("khong-phai-link", "https://a.vn"));
+  assert.ok(buildWebReadPrompt("https://a.vn/x").includes("KHONG_DOC_DUOC"));
 });
