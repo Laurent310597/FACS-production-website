@@ -165,38 +165,50 @@ function paragraphs(text: string) {
   return text.split(/\n\s*\n/).map((p) => `<p align="justify" ${P}>${escapeHtml(p)}</p>`).join("");
 }
 
-function table(title: string, rows: [string, string, boolean?][]) {
+type Label = [vi: string, en: string];
+
+/** Bảng song ngữ: nhãn tiếng Việt, bên dưới là tiếng Anh in nghiêng (giống các mục khác của email). */
+function table(title: Label, rows: [Label, string, boolean?][]) {
   const cells = rows
     .filter(([, value]) => value)
-    .map(([label, value, strong]) =>
-      `<tr><td style="font-family:Arial,Helvetica,sans-serif;width:165px;padding:8px 10px;border-bottom:1px solid #edf0f4;color:#687386;vertical-align:top;">${escapeHtml(label)}</td><td style="font-family:Arial,Helvetica,sans-serif;padding:8px 10px;border-bottom:1px solid #edf0f4;font-weight:${strong ? 700 : 600};${strong ? "color:#0f315a;font-size:15px;" : ""}white-space:pre-line;">${escapeHtml(value)}</td></tr>`)
+    .map(([[vi, en], value, strong]) =>
+      `<tr><td style="font-family:Arial,Helvetica,sans-serif;width:175px;padding:8px 10px;border-bottom:1px solid #edf0f4;color:#687386;vertical-align:top;line-height:1.35;">${escapeHtml(vi)}<br><span style="font-size:12px;font-style:italic;color:#8a95a5;">${escapeHtml(en)}</span></td><td style="font-family:Arial,Helvetica,sans-serif;padding:8px 10px;border-bottom:1px solid #edf0f4;vertical-align:middle;font-weight:${strong ? 700 : 600};${strong ? "color:#0f315a;font-size:15px;" : ""}white-space:pre-line;">${escapeHtml(value)}</td></tr>`)
     .join("");
-  return `<p style="font-family:Arial,Helvetica,sans-serif;text-align:left;margin:22px 0 8px;font-weight:700;color:#0f315a;">${escapeHtml(title)}</p>
+  return `<p style="font-family:Arial,Helvetica,sans-serif;text-align:left;margin:22px 0 8px;font-weight:700;color:#0f315a;">${escapeHtml(title[0])} <span style="font-weight:400;font-style:italic;color:#687386;">/ ${escapeHtml(title[1])}</span></p>
 <table role="presentation" width="100%" cellspacing="0" cellpadding="0" border="0" style="font-family:Arial,Helvetica,sans-serif;border-collapse:collapse;text-align:left;background:#f7f9fb;border:1px solid #e3e8ef;">${cells}</table>`;
 }
 
-function section(r: ArReminder, s: ArSettings, lang: "vi" | "en") {
-  const vars = variables(r, lang);
-  const vi = lang === "vi";
-  const transfer = fill(s.transfer_note, vars).trim();
-  const details = table(vi ? "Chi tiết công nợ" : "Outstanding balance", [
-    [vi ? "Công ty" : "Company", r.company_name],
-    [vi ? "Mã số thuế" : "Tax code", r.tax_code || ""],
-    [vi ? "Giai đoạn" : "Period", r.period],
-    [vi ? "Số tiền cần thanh toán" : "Amount due", formatAmount(r.amount, lang), true],
-    [vi ? "Ghi chú" : "Note", r.note || ""],
+function tables(r: ArReminder, s: ArSettings) {
+  const transfer = fill(s.transfer_note, variables(r, "vi")).trim();
+  const details = table(["Chi tiết công nợ", "Outstanding balance"], [
+    [["Công ty", "Company"], r.company_name],
+    [["Mã số thuế", "Tax code"], r.tax_code || ""],
+    [["Giai đoạn", "Period"], r.period],
+    [["Số tiền cần thanh toán", "Amount due"], formatAmount(r.amount, "vi"), true],
+    [["Ghi chú", "Note"], r.note || ""],
   ]);
-  const bank = table(vi ? "Thông tin chuyển khoản" : "Bank transfer details", [
-    [vi ? "Ngân hàng" : "Bank", s.bank_name],
-    [vi ? "Chi nhánh" : "Branch", s.bank_branch],
-    [vi ? "Số tài khoản" : "Account number", s.account_number, true],
-    [vi ? "Chủ tài khoản" : "Account holder", s.account_holder],
-    ["SWIFT", s.swift_code],
-    [vi ? "Nội dung chuyển khoản" : "Transfer reference", transfer],
+  const bank = table(["Thông tin chuyển khoản", "Bank transfer details"], [
+    [["Ngân hàng", "Bank"], s.bank_name],
+    [["Chi nhánh", "Branch"], s.bank_branch],
+    [["Số tài khoản", "Account number"], s.account_number, true],
+    [["Chủ tài khoản", "Account holder"], s.account_holder],
+    [["Mã SWIFT", "SWIFT code"], s.swift_code],
+    [["Nội dung chuyển khoản", "Transfer reference"], transfer],
   ]);
-  const body = paragraphs(fill(vi ? s.body_vi : s.body_en, vars));
-  const sign = buildEmailSignature(AR_SENDER, vi ? "Trân trọng," : "Sincerely,", vi ? "PHÒNG KẾ TOÁN" : "ACCOUNTING DEPARTMENT");
-  return `${body}${details}${bank}<div style="height:6px"></div>${sign}`;
+  return `${details}${bank}`;
+}
+
+const SEPARATOR = '<div style="font-family:Arial,Helvetica,sans-serif;margin:26px 0;text-align:center;color:#a3acb9;letter-spacing:1px;">-------------------</div>';
+
+/**
+ * Bố cục: lời nhắn tiếng Việt → lời nhắn tiếng Anh → bảng công nợ và bảng chuyển khoản (song ngữ, hiện một lần)
+ * → chữ ký Phòng Kế toán song ngữ. Cả hai lời nhắn đều nói "chi tiết bên dưới" nên đặt bảng ở cuối là đúng.
+ */
+function content(r: ArReminder, s: ArSettings) {
+  const bodyVi = paragraphs(fill(s.body_vi, variables(r, "vi")));
+  const bodyEn = paragraphs(fill(s.body_en, variables(r, "en")));
+  const sign = buildEmailSignature(AR_SENDER, "Trân trọng, <span style=\"font-style:italic;color:#687386;\">/ Sincerely,</span>", "PHÒNG KẾ TOÁN <span style=\"font-weight:400;font-style:italic;color:#687386;\">/ ACCOUNTING DEPARTMENT</span>");
+  return `${bodyVi}${SEPARATOR}${bodyEn}${tables(r, s)}<div style="height:6px"></div>${sign}`;
 }
 
 function shell(content: string, siteUrl: string) {
@@ -218,10 +230,7 @@ function shell(content: string, siteUrl: string) {
 
 export function buildArReminderEmail(r: ArReminder, s: ArSettings, siteUrl = "https://facs.vn") {
   const subject = fill(s.subject, variables(r, "vi")).replace(/\s+/g, " ").trim().slice(0, 300);
-  const html = shell(
-    `${section(r, s, "vi")}<div style="font-family:Arial,Helvetica,sans-serif;margin:30px 0;text-align:center;color:#a3acb9;letter-spacing:1px;">-------------------</div>${section(r, s, "en")}`,
-    siteUrl,
-  );
+  const html = shell(content(r, s), siteUrl);
   return { subject, html };
 }
 

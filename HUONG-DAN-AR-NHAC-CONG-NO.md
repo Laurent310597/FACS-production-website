@@ -11,7 +11,7 @@ Trang `/admin/ar` gửi email nhắc công nợ song ngữ từ **accounting@fac
 - **Ít khách:** tab *Nhập trực tiếp* → điền Người nhận, Email (nhiều email ngăn bằng `;`), Email CC, Tên công ty, MST, Số tiền nợ, Giai đoạn nợ, Ghi chú → **Lưu vào danh sách**.
 - **Nhiều khách:** tab *Tải file Excel* → tải **file mẫu** → điền → chọn file → kiểm tra bảng xem trước (dòng lỗi tô đỏ) → **Lưu N dòng**. Tối đa 500 dòng/lần.
 - Ở **Danh sách nhắc nợ**: tick các dòng → **Gửi email** → xác nhận. Mỗi email cách nhau ~2 giây (giới hạn của Microsoft 365); giữ trang mở đến khi xong.
-- Mỗi email có: lời chào theo tên người nhận, bảng *Chi tiết công nợ* (công ty, MST, giai đoạn, số tiền, ghi chú của khách đó), bảng *Thông tin chuyển khoản*, chữ ký Phòng Kế toán; phần tiếng Anh bên dưới. Bản sao lưu trong *Sent Items* của accounting@facs.vn.
+- Mỗi email có: lời nhắn tiếng Việt, lời nhắn tiếng Anh, rồi bảng song ngữ *Chi tiết công nợ / Outstanding balance* (công ty, MST, giai đoạn, số tiền, ghi chú của khách đó) và *Thông tin chuyển khoản / Bank transfer details*, cuối cùng là chữ ký Phòng Kế toán song ngữ. Bản sao lưu trong *Sent Items* của accounting@facs.vn.
 
 ## An toàn
 - Không có email nào tự gửi; chỉ gửi khi bấm và xác nhận. Dòng đã gửi không gửi lại được nếu không bấm **Gửi lại** và xác nhận lần nữa.

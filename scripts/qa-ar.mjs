@@ -53,7 +53,11 @@ test("email: song ngữ, đúng số tiền, có thông tin ngân hàng, chữ k
   assert.match(subject, /ABC <script>/); // tiêu đề là văn bản thuần
   assert.ok(!html.includes("<script>alert"));
   assert.ok(html.includes("&lt;script&gt;"));
-  assert.ok(html.includes("15.000.000 VND") && html.includes("VND 15,000,000"));
+  assert.ok(html.includes("15.000.000 VND"));
+  // Bảng song ngữ, hiện một lần
+  for (const label of ["Chi tiết công nợ", "Outstanding balance", "Thông tin chuyển khoản", "Bank transfer details", "Số tài khoản", "Account number", "Amount due"]) assert.ok(html.includes(label), label);
+  assert.equal(html.split("Chi tiết công nợ").length - 1, 1);
+  assert.ok(html.includes("Dear Nguyễn Văn A") && html.includes("Kính gửi Anh/Chị Nguyễn Văn A"));
   assert.ok(html.includes("Vietcombank") && html.includes("0071000123456"));
   assert.ok(html.includes("MST 0312345678 thanh toan cong no Quý 3/2026"));
   assert.ok(html.includes("PHÒNG KẾ TOÁN") && html.includes("ACCOUNTING DEPARTMENT") && html.includes("accounting@facs.vn"));
