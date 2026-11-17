@@ -1,4 +1,4 @@
-import { drawInfographic } from "./hubInfographic";
+import { drawInfographic, preloadInfographicAssets } from "./hubInfographic";
 import { supabase } from "./supabaseClient";
 
 // FACS Hub phần 3: kết nối mạng xã hội và lịch đăng. Mọi thao tác ghi đi qua Edge Function hub-social (có kiểm tra phía máy chủ).
@@ -92,7 +92,7 @@ export async function listSocialPosts(limit = 100) {
 /** Vẽ infographic ra ảnh JPEG (Instagram chỉ nhận JPEG; Facebook và LinkedIn nhận được). */
 export async function infographicToJpegBlob(data) {
   const canvas = document.createElement("canvas");
-  drawInfographic(canvas, data);
+  await preloadInfographicAssets();
   await document.fonts?.ready;
   drawInfographic(canvas, data); // vẽ lại sau khi font đã sẵn sàng để đo chữ chính xác
   return new Promise((resolve, reject) => {

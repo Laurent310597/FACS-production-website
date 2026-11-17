@@ -18,7 +18,7 @@ import {
   signedInputUrls,
   uploadHubInputImage,
 } from "../../lib/hub";
-import { downloadCanvasPng, drawInfographic } from "../../lib/hubInfographic";
+import { DEFAULT_TEMPLATE, INFOGRAPHIC_TEMPLATES, downloadCanvasPng, drawInfographic, preloadInfographicAssets } from "../../lib/hubInfographic";
 import HubSchedulePanel from "../../components/admin/HubSchedulePanel";
 
 const inputClass = "w-full rounded-2xl border border-white/10 bg-[#0d1726]/70 px-4 py-3 text-sm text-white outline-none transition placeholder:text-slate-600 focus:border-cyan-300/50";
@@ -32,7 +32,7 @@ const emptyOutputs = {
   facebook: "",
   linkedin: "",
   instagram: "",
-  infographic: { title: "", subtitle: "", points: [], stats: [], source_note: "" },
+  infographic: { title: "", subtitle: "", points: [], stats: [], source_note: "", template: DEFAULT_TEMPLATE },
   review_notes: [],
 };
 
@@ -45,8 +45,9 @@ function InfographicPreview({ data, fileName }) {
     let active = true;
     const render = () => active && canvasRef.current && drawInfographic(canvasRef.current, data);
     render();
-    // Vẽ lại khi font đã tải xong để đo chữ chính xác.
+    // Vẽ lại khi font và logo đã tải xong để đo chữ chính xác.
     document.fonts?.ready?.then(render);
+    preloadInfographicAssets().then(render);
     return () => {
       active = false;
     };
@@ -544,6 +545,11 @@ export default function AdminHubContentPage() {
             {currentTab === "infographic" && (
               <div className="mt-5 grid gap-6 xl:grid-cols-[minmax(0,1fr)_440px]">
                 <div className="space-y-4">
+                  <label className="block"><span className={labelClass}>Mẫu bố cục</span>
+                    <select value={infographic.template || DEFAULT_TEMPLATE} onChange={(e) => updateInfographic("template", e.target.value)} className={inputClass}>
+                      {INFOGRAPHIC_TEMPLATES.map((t) => <option key={t.value} value={t.value}>{t.label}</option>)}
+                    </select>
+                  </label>
                   <label className="block"><span className={labelClass}>Tiêu đề</span><input value={infographic.title} onChange={(e) => updateInfographic("title", e.target.value)} className={inputClass} /></label>
                   <label className="block"><span className={labelClass}>Phụ đề</span><input value={infographic.subtitle} onChange={(e) => updateInfographic("subtitle", e.target.value)} className={inputClass} /></label>
                   {infographic.stats.length > 0 && (
