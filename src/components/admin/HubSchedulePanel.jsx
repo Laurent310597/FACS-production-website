@@ -1,9 +1,11 @@
 import { useEffect, useRef, useState } from "react";
 import { Link } from "react-router-dom";
-import { CalendarClock, CheckCircle2, Loader2, Save, Send } from "lucide-react";
+import { CalendarClock, CheckCircle2, ImagePlus, Loader2, Save, Send, X } from "lucide-react";
 import {
   captionLimits,
   defaultScheduleValue,
+  imageFileToJpeg,
+  instagramImageRatioOk,
   infographicToJpegBlob,
   listSocialAccounts,
   listSocialPosts,
@@ -19,6 +21,9 @@ const labelClass = "mb-2 block text-sm font-semibold text-slate-200";
 const ghostButton = "inline-flex items-center gap-2 rounded-xl border border-white/10 px-4 py-2 text-sm text-slate-200 transition hover:border-cyan-200/30 hover:text-white disabled:opacity-50";
 const primaryButton = "inline-flex items-center gap-2 rounded-xl bg-cyan-300 px-5 py-2.5 text-sm font-bold text-[#071421] transition hover:bg-cyan-200 disabled:cursor-not-allowed disabled:opacity-50";
 
+// Ảnh tự tải lên được nhớ theo bộ nội dung để dùng chung giữa các tab Facebook / LinkedIn / Instagram.
+const uploadedByItem = new Map();
+
 const fmt = (value) => (value ? new Date(value).toLocaleString("vi-VN", { timeZone: "Asia/Ho_Chi_Minh", hour12: false }) : "");
 
 /**
@@ -30,7 +35,11 @@ export default function HubSchedulePanel({ channel, caption, infographic, itemId
   const [recent, setRecent] = useState([]);
   const [accountId, setAccountId] = useState("");
   const [text, setText] = useState(caption || "");
-  const [withImage, setWithImage] = useState(channel === "instagram");
+  const cached = itemId ? uploadedByItem.get(itemId) : null;
+  // none = không ảnh, uploaded = ảnh tự tải lên (infographic làm bên ngoài), generated = infographic tạo trong Hub
+  const [imageMode, setImageMode] = useState(cached ? "uploaded" : channel === "instagram" ? (infographic?.title && (infographic.points?.length || infographic.stats?.length) ? "generated" : "uploaded") : "none");
+  const [uploaded, setUploaded] = useState(cached || null);
+  const uploadedPathRef = useRef({ blob: null, path: "" });
   const [linkUrl, setLinkUrl] = useState("");
   const [when, setWhen] = useState(defaultScheduleValue());
   const [busy, setBusy] = useState("");
@@ -40,6 +49,7 @@ export default function HubSchedulePanel({ channel, caption, infographic, itemId
   const [loaded, setLoaded] = useState(false);
   const imageCache = useRef({ key: "", path: "" });
 
+  const withImage = imageMode !== "none";
   const hasInfographic = !!(infographic?.title && (infographic.points?.length || infographic.stats?.length));
   const limit = captionLimits[channel];
 
@@ -63,6 +73,34 @@ export default function HubSchedulePanel({ channel, caption, infographic, itemId
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [channel, itemId]);
 
+  const pickFile = async (event) => {
+    const file = event.target.files?.[0];
+    event.target.value = "";
+    if (!file) return;
+    setError("");
+    try {
+      const result = await imageFileToJpeg(file);
+      if (channel === "instagram" && !instagramImageRatioOk(result.width, result.height)) {
+        URL.revokeObjectURL(result.previewUrl);
+        throw new Error("Instagram chỉ nhận ảnh có tỉ lệ từ 4:5 (đứng) đến 1,91:1 (ngang). Ảnh này nằm ngoài khoảng đó, hãy cắt lại (ví dụ 1080 × 1350).");
+      }
+      if (uploaded?.previewUrl) URL.revokeObjectURL(uploaded.previewUrl);
+      const entry = { ...result, name: file.name };
+      setUploaded(entry);
+      if (itemId) uploadedByItem.set(itemId, entry);
+      setImageMode("uploaded");
+    } catch (pickError) {
+      setError(pickError.message);
+    }
+  };
+
+  const clearUploaded = () => {
+    if (uploaded?.previewUrl) URL.revokeObjectURL(uploaded.previewUrl);
+    setUploaded(null);
+    if (itemId) uploadedByItem.delete(itemId);
+    setImageMode(channel === "instagram" ? (hasInfographic ? "generated" : "uploaded") : "none");
+  };
+
   const submit = async (mode) => {
     setError("");
     setNotice("");
@@ -73,8 +111,15 @@ export default function HubSchedulePanel({ channel, caption, infographic, itemId
     setBusy(mode);
     try {
       let imagePath = null;
-      if (withImage) {
-        if (!hasInfographic) throw new Error("Chưa có infographic để đính kèm. Hãy tạo infographic trước.");
+      if (imageMode === "uploaded") {
+        if (!uploaded) throw new Error("Chưa chọn ảnh để đính kèm.");
+        // Mỗi ảnh chỉ tải lên một lần dù hẹn giờ/đăng nhiều lần.
+        if (uploadedPathRef.current.blob !== uploaded.blob) {
+          uploadedPathRef.current = { blob: uploaded.blob, path: await uploadSocialJpeg(uploaded.blob, uploaded.name?.replace(/\.[^.]+$/, "") || "infographic") };
+        }
+        imagePath = uploadedPathRef.current.path;
+      } else if (imageMode === "generated") {
+        if (!hasInfographic) throw new Error("Chưa có infographic tạo trong Hub. Hãy tải ảnh lên hoặc tạo infographic trước.");
         const key = JSON.stringify(infographic);
         if (imageCache.current.key !== key) {
           imageCache.current = { key, path: await uploadSocialJpeg(await infographicToJpegBlob(infographic), infographic.title) };
@@ -134,17 +179,38 @@ export default function HubSchedulePanel({ channel, caption, infographic, itemId
             </div>
           </label>
 
-          <label className="flex items-center gap-3 text-sm text-slate-200">
-            <input
-              type="checkbox"
-              checked={withImage}
-              disabled={channel === "instagram" || !hasInfographic}
-              onChange={(e) => setWithImage(e.target.checked)}
-              className="h-4 w-4 accent-cyan-300"
-            />
-            Đính kèm infographic (ảnh JPG 1080 × 1350){channel === "instagram" && " — Instagram bắt buộc có ảnh"}
-            {!hasInfographic && <span className="text-xs text-amber-300">Chưa có infographic: hãy chọn tạo Infographic.</span>}
-          </label>
+          <div>
+            <span className={labelClass}>Ảnh đính kèm{channel === "instagram" && " (Instagram bắt buộc có ảnh)"}</span>
+            <div className="space-y-2 text-sm text-slate-200">
+              {channel !== "instagram" && (
+                <label className="flex items-center gap-2"><input type="radio" name={`img-${channel}`} checked={imageMode === "none"} onChange={() => setImageMode("none")} className="accent-cyan-300" /> Không kèm ảnh</label>
+              )}
+              <label className="flex items-center gap-2">
+                <input type="radio" name={`img-${channel}`} checked={imageMode === "uploaded"} onChange={() => setImageMode("uploaded")} disabled={!uploaded} className="accent-cyan-300" />
+                Ảnh infographic của tôi (tải lên)
+                {!uploaded && <span className="text-xs text-slate-500">— chọn ảnh ở bên dưới</span>}
+              </label>
+              <label className="flex items-center gap-2">
+                <input type="radio" name={`img-${channel}`} checked={imageMode === "generated"} onChange={() => setImageMode("generated")} disabled={!hasInfographic} className="accent-cyan-300" />
+                Infographic tạo trong Hub (JPG 1080 × 1350)
+                {!hasInfographic && <span className="text-xs text-slate-500">— chưa có</span>}
+              </label>
+            </div>
+            <div className="mt-3 flex flex-wrap items-center gap-3">
+              <label className={`${ghostButton} cursor-pointer`}>
+                <ImagePlus size={15} /> {uploaded ? "Đổi ảnh" : "Tải ảnh infographic lên"}
+                <input type="file" accept="image/jpeg,image/png,image/webp" onChange={pickFile} className="hidden" />
+              </label>
+              {uploaded && (
+                <span className="flex items-center gap-3">
+                  <img src={uploaded.previewUrl} alt="Ảnh sẽ đăng" className="h-24 w-auto rounded-lg border border-white/10" />
+                  <span className="text-xs text-slate-400">{uploaded.name}<br />{uploaded.width} × {uploaded.height}px</span>
+                  <button type="button" onClick={clearUploaded} className="text-slate-400 hover:text-white" aria-label="Bỏ ảnh"><X size={16} /></button>
+                </span>
+              )}
+            </div>
+            <p className="mt-2 text-xs text-slate-500">Nhận JPG, PNG, WebP (tối đa 15 MB); hệ thống tự đổi sang JPG. Nên dùng khổ đứng 1080 × 1350 (4:5).</p>
+          </div>
 
           {!withImage && channel !== "instagram" && (
             <label className="block">

@@ -100,6 +100,40 @@ export async function infographicToJpegBlob(data) {
   });
 }
 
+/**
+ * Chuyển ảnh infographic do người dùng tự làm (JPG/PNG/WebP) sang JPEG để đăng mạng xã hội.
+ * Nền trong suốt được đặt lên nền trắng; ảnh quá lớn được thu nhỏ (cạnh dài tối đa 2048 px).
+ */
+export async function imageFileToJpeg(file) {
+  if (!file || !/^image\/(jpeg|png|webp)$/.test(file.type)) throw new Error("Chỉ nhận ảnh JPG, PNG hoặc WebP.");
+  if (file.size > 15 * 1024 * 1024) throw new Error("Ảnh quá lớn (tối đa 15 MB).");
+  let bitmap;
+  try {
+    bitmap = await createImageBitmap(file);
+  } catch {
+    throw new Error("Không đọc được ảnh này. Hãy thử xuất lại ảnh dưới dạng JPG hoặc PNG.");
+  }
+  const scale = Math.min(1, 2048 / Math.max(bitmap.width, bitmap.height));
+  const width = Math.max(1, Math.round(bitmap.width * scale));
+  const height = Math.max(1, Math.round(bitmap.height * scale));
+  const canvas = document.createElement("canvas");
+  canvas.width = width;
+  canvas.height = height;
+  const ctx = canvas.getContext("2d");
+  ctx.fillStyle = "#FFFFFF";
+  ctx.fillRect(0, 0, width, height);
+  ctx.drawImage(bitmap, 0, 0, width, height);
+  bitmap.close?.();
+  for (const quality of [0.92, 0.85, 0.75]) {
+    const blob = await new Promise((resolve) => canvas.toBlob(resolve, "image/jpeg", quality));
+    if (blob && blob.size <= 8 * 1024 * 1024) return { blob, width, height, previewUrl: URL.createObjectURL(blob) };
+  }
+  throw new Error("Ảnh vẫn quá nặng sau khi nén. Hãy dùng ảnh nhỏ hơn.");
+}
+
+/** Instagram nhận ảnh có tỉ lệ rộng/cao từ 0,8 (4:5) đến 1,91. */
+export const instagramImageRatioOk = (width, height) => !!width && !!height && width / height >= 0.8 - 1e-9 && width / height <= 1.91 + 1e-9;
+
 export async function uploadSocialJpeg(blob, baseName = "infographic") {
   if (blob.size > 8 * 1024 * 1024) throw new Error("Ảnh quá lớn (tối đa 8 MB).");
   const safe = String(baseName).toLowerCase().replace(/[^a-z0-9._-]+/g, "-").replace(/^-+|-+$/g, "").slice(0, 60) || "infographic";

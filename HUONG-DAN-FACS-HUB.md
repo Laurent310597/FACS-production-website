@@ -114,3 +114,6 @@ Trang **FACS Hub → AI Zalo** cho xem hoạt động và chỉnh luật của A
 3. Khởi động lại AI Zalo. Sau ~1 phút trang Hub hiện “Đang trực tuyến”.
 
 An toàn: laptop chủ động gửi/nhận qua HTTPS, không mở cổng nào ra Internet. Khóa thiết bị chỉ dùng được cho địa chỉ đồng bộ này và thu hồi được ngay trên trang. Khóa OpenAI, model và phiên đăng nhập Zalo không bao giờ được gửi lên hay đổi từ xa. Lệnh từ Hub được laptop kiểm tra lại (prompt phải đúng quy tắc, không đặt được nhóm quản lý từ xa).
+
+### Dùng infographic tự làm bên ngoài
+Trong khung "Đăng lên …" ở các tab Facebook, LinkedIn, Instagram có mục **Ảnh đính kèm**: bấm **Tải ảnh infographic lên** (JPG/PNG/WebP, tối đa 15 MB), xem ảnh xem trước rồi chọn "Ảnh infographic của tôi". Hệ thống tự đổi sang JPG; Instagram yêu cầu tỉ lệ từ 4:5 đến 1,91:1 (khuyên dùng 1080 × 1350). Muốn AI viết bài từ chính ảnh đó, đính ảnh ở mục "Ảnh nguồn" khi tạo nội dung.
