@@ -30,3 +30,6 @@ verify_jwt = false
 
 [functions.hub-zalo-sync]
 verify_jwt = false
+
+[functions.ar-email]
+verify_jwt = false

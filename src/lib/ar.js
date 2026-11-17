@@ -1,102 +1,210 @@
 import { supabase } from "./supabaseClient";
 
-export const agingFilters = [
-  { value: "all", label: "Tất cả trạng thái" },
-  { value: "unpaid", label: "Tất cả chưa thu" },
-  { value: "current", label: "Chưa đến hạn" },
-  { value: "due", label: "Đến hạn hôm nay" },
-  { value: "overdue_1_30", label: "Quá hạn 1–30 ngày" },
-  { value: "overdue_31_60", label: "Quá hạn 31–60 ngày" },
-  { value: "overdue_61_plus", label: "Quá hạn trên 60 ngày" },
-  { value: "paid", label: "Đã thu" },
-  { value: "cancelled", label: "Đã hủy" },
-];
+// CMS > AR: email nhắc công nợ gửi từ accounting@facs.vn. Lưu và gửi đều qua Edge Function ar-email (kiểm tra phía máy chủ).
+
+export const AR_TEMPLATE_URL = "/templates/facs-ar-nhac-cong-no-mau.xlsx";
+const MAX_FILE_SIZE = 10 * 1024 * 1024;
+const MAX_ROWS = 500;
+
+export const statusLabel = { draft: "Chưa gửi", sending: "Đang gửi", sent: "Đã gửi", failed: "Lỗi" };
+
+export async function invokeArEmail(action, payload = {}) {
+  const { data, error } = await supabase.functions.invoke("ar-email", { body: { action, ...payload } });
+  if (error) {
+    let message = error.message || "Không thể gọi dịch vụ email công nợ.";
+    let details = null;
+    try {
+      details = await error.context?.json?.();
+      if (details?.error) message = details.error;
+    } catch {
+      // Giữ thông báo gốc.
+    }
+    if (!details && /not found|404|Failed to send/i.test(message)) message = "Edge Function ar-email chưa được triển khai trên Supabase.";
+    const err = new Error(message);
+    err.rowErrors = details?.row_errors || null;
+    throw err;
+  }
+  if (data?.error) throw new Error(data.error);
+  return data;
+}
+
+export async function listReminders() {
+  const { data, error } = await supabase.from("ar_reminders").select("*").order("created_at", { ascending: false }).limit(1000);
+  if (error) throw new Error(error.message);
+  return data || [];
+}
+
+export async function deleteReminders(ids) {
+  const { error } = await supabase.from("ar_reminders").delete().in("id", ids).in("status", ["draft", "failed"]);
+  if (error) throw new Error(error.message);
+}
 
 export function formatVnd(value) {
-  return new Intl.NumberFormat("vi-VN", { style: "currency", currency: "VND", maximumFractionDigits: 0 }).format(Number(value || 0));
+  return `${new Intl.NumberFormat("vi-VN", { maximumFractionDigits: 2 }).format(Number(value || 0))} ₫`;
 }
 
-export function formatArDate(value) {
+export function formatDateTime(value) {
   if (!value) return "—";
-  const [year, month, day] = String(value).slice(0, 10).split("-");
-  return year && month && day ? `${day}/${month}/${year}` : value;
+  return new Intl.DateTimeFormat("vi-VN", { timeZone: "Asia/Ho_Chi_Minh", dateStyle: "short", timeStyle: "short" }).format(new Date(value));
 }
 
-export function formatArDateTime(value) {
-  if (!value) return "—";
-  return new Intl.DateTimeFormat("vi-VN", {
-    timeZone: "Asia/Ho_Chi_Minh",
-    dateStyle: "short",
-    timeStyle: "short",
-  }).format(new Date(value));
+const EMAIL_RE = /^[^\s@<>()[\]\\,;:"]+@[^\s@<>()[\]\\,;:"]+\.[A-Za-z]{2,}$/;
+
+export function splitEmails(value) {
+  const list = Array.isArray(value) ? value : String(value ?? "").split(/[;,\s]+/);
+  return [...new Set(list.map((v) => String(v).trim().toLowerCase()).filter(Boolean))];
 }
 
-export function todayInVietnam() {
-  return new Date().toLocaleDateString("en-CA", { timeZone: "Asia/Ho_Chi_Minh" });
+export function toAmount(value) {
+  if (typeof value === "number") return Math.round(value * 100) / 100;
+  const digits = String(value ?? "").replace(/[^\d]/g, "");
+  return digits ? Number(digits) : NaN;
 }
 
-export function differenceInDays(later, earlier) {
-  const laterDate = new Date(`${later}T00:00:00Z`);
-  const earlierDate = new Date(`${earlier}T00:00:00Z`);
-  return Math.round((laterDate.getTime() - earlierDate.getTime()) / 86_400_000);
+/** Kiểm tra nhanh ở trình duyệt để báo lỗi ngay; máy chủ kiểm tra lại khi lưu. */
+export function validateReminder(row) {
+  const errors = [];
+  const to = splitEmails(row.recipient_emails);
+  const cc = splitEmails(row.cc_emails);
+  if (!String(row.recipient_name || "").trim()) errors.push("thiếu người nhận");
+  if (!to.length) errors.push("thiếu email");
+  const bad = [...to, ...cc].filter((e) => !EMAIL_RE.test(e));
+  if (bad.length) errors.push(`email sai: ${bad.join(", ")}`);
+  if (to.length > 10 || cc.length > 10) errors.push("tối đa 10 email");
+  if (!String(row.company_name || "").trim()) errors.push("thiếu tên công ty");
+  const amount = toAmount(row.amount);
+  if (!Number.isFinite(amount) || amount <= 0) errors.push("số tiền phải > 0");
+  if (!String(row.period || "").trim()) errors.push("thiếu giai đoạn nợ");
+  return errors;
 }
 
-export function getInvoiceAging(invoice, currentDate = todayInVietnam()) {
-  if (invoice.source_status === "cancelled") return { key: "cancelled", label: "Đã hủy", days: 0, tone: "slate" };
-  if (invoice.is_paid) return { key: "paid", label: "Đã thu", days: 0, tone: "emerald" };
-  const days = differenceInDays(currentDate, invoice.due_date);
-  if (days < 0) return { key: "current", label: "Chưa đến hạn", days, tone: "cyan" };
-  if (days === 0) return { key: "due", label: "Đến hạn hôm nay", days, tone: "amber" };
-  if (days <= 30) return { key: "overdue_1_30", label: `Quá hạn ${days} ngày`, days, tone: "amber" };
-  if (days <= 60) return { key: "overdue_31_60", label: `Quá hạn ${days} ngày`, days, tone: "orange" };
-  return { key: "overdue_61_plus", label: `Quá hạn ${days} ngày`, days, tone: "red" };
+// ───────────── Đọc file Excel / CSV ─────────────
+
+const COLUMN_ALIASES = {
+  recipient_name: ["nguoi nhan", "nguoi nhan thong tin", "ten nguoi nhan", "nguoi lien he", "recipient", "recipient name", "contact"],
+  recipient_emails: ["email nguoi nhan", "email", "email nhan", "email khach hang", "email ke toan", "to", "recipient email"],
+  cc_emails: ["email cc", "cc", "cc email"],
+  company_name: ["ten cong ty khach hang", "ten cong ty", "cong ty", "khach hang", "ten khach hang", "company", "company name", "customer"],
+  tax_code: ["mst", "ma so thue", "tax code", "tax id"],
+  amount: ["so tien no vnd", "so tien no", "so tien", "cong no", "so du no", "amount", "amount due"],
+  period: ["giai doan no", "giai doan", "ky no", "ky", "thoi gian", "period"],
+  note: ["ghi chu", "note", "notes", "dien giai"],
+};
+
+function normalizeHeader(value) {
+  return String(value ?? "")
+    .normalize("NFD")
+    .replace(/[̀-ͯ]/g, "")
+    .replace(/đ/g, "d")
+    .replace(/Đ/g, "D")
+    .toLowerCase()
+    .replace(/[^a-z0-9]+/g, " ")
+    .trim();
 }
 
-export function summarizeAr(invoices, currentDate = todayInVietnam()) {
-  const active = invoices.filter((item) => item.source_status !== "cancelled");
-  const unpaid = active.filter((item) => !item.is_paid);
-  const paidThisMonth = active.filter((item) => item.is_paid && item.paid_at?.startsWith(currentDate.slice(0, 7)));
-  const byKey = (key) => unpaid.filter((item) => getInvoiceAging(item, currentDate).key === key)
-    .reduce((sum, item) => sum + Number(item.outstanding_amount || 0), 0);
-  return {
-    totalOutstanding: unpaid.reduce((sum, item) => sum + Number(item.outstanding_amount || 0), 0),
-    current: byKey("current") + byKey("due"),
-    overdue1To30: byKey("overdue_1_30"),
-    overdue31To60: byKey("overdue_31_60"),
-    overdue61Plus: byKey("overdue_61_plus"),
-    paidThisMonth: paidThisMonth.reduce((sum, item) => sum + Number(item.total_amount || 0), 0),
-    customersOutstanding: new Set(unpaid.map((item) => item.customer_id)).size,
-    missingEmail: new Set(unpaid.filter((item) => !item.ar_customers?.primary_email).map((item) => item.customer_id)).size,
-  };
+const aliasLookup = new Map(Object.entries(COLUMN_ALIASES).flatMap(([key, list]) => list.map((alias) => [alias, key])));
+
+function cellText(value) {
+  if (value === null || value === undefined) return "";
+  if (value instanceof Date) return value.toLocaleDateString("vi-VN");
+  return String(value).trim();
 }
 
-export async function importArCustomers(rows, fileName, fileSha256) {
-  const { data, error } = await supabase.rpc("import_ar_customer_master", {
-    p_rows: rows,
-    p_file_name: fileName,
-    p_file_sha256: fileSha256 || null,
-  });
-  if (error) throw error;
-  return data;
+function parseCsv(text) {
+  const firstLine = text.split(/\r?\n/, 1)[0] || "";
+  const delimiter = [",", ";", "\t"].sort((a, b) => firstLine.split(b).length - firstLine.split(a).length)[0];
+  const rows = [];
+  let row = [];
+  let value = "";
+  let quoted = false;
+  for (let i = 0; i < text.length; i += 1) {
+    const ch = text[i];
+    const next = text[i + 1];
+    if (quoted) {
+      if (ch === '"' && next === '"') {
+        value += '"';
+        i += 1;
+      } else if (ch === '"') quoted = false;
+      else value += ch;
+      continue;
+    }
+    if (ch === '"') quoted = true;
+    else if (ch === delimiter) {
+      row.push(value);
+      value = "";
+    } else if (ch === "\n" || ch === "\r") {
+      if (ch === "\r" && next === "\n") i += 1;
+      row.push(value);
+      rows.push(row);
+      row = [];
+      value = "";
+    } else value += ch;
+  }
+  row.push(value);
+  rows.push(row);
+  return rows;
 }
 
-export async function importArInvoices(rows, fileName, fileSha256) {
-  const { data, error } = await supabase.rpc("import_ar_viettel_invoices", {
-    p_rows: rows,
-    p_file_name: fileName,
-    p_file_sha256: fileSha256 || null,
-  });
-  if (error) throw error;
-  return data;
+/** Trả về { rows, errors } — rows có thêm _line (số dòng trong file) và _errors. */
+export function normalizeReminderMatrix(matrix) {
+  let headerIndex = -1;
+  let keys = [];
+  for (let i = 0; i < Math.min(matrix.length, 15); i += 1) {
+    const mapped = (matrix[i] || []).map((cell) => aliasLookup.get(normalizeHeader(cell)) || null);
+    if (mapped.includes("company_name") && mapped.includes("recipient_emails")) {
+      headerIndex = i;
+      keys = mapped;
+      break;
+    }
+  }
+  if (headerIndex < 0) {
+    return { rows: [], errors: ["Không tìm thấy dòng tiêu đề có cột “Tên công ty khách hàng” và “Email người nhận”. Hãy dùng file mẫu."] };
+  }
+  const missing = ["recipient_name", "amount", "period"].filter((k) => !keys.includes(k));
+  if (missing.length) {
+    const names = { recipient_name: "Người nhận", amount: "Số tiền nợ", period: "Giai đoạn nợ" };
+    return { rows: [], errors: [`Thiếu cột: ${missing.map((k) => names[k]).join(", ")}.`] };
+  }
+  const rows = [];
+  for (let i = headerIndex + 1; i < matrix.length; i += 1) {
+    const source = matrix[i] || [];
+    if (!source.some((cell) => cellText(cell))) continue;
+    const row = { _line: i + 1 };
+    keys.forEach((key, index) => {
+      if (!key || row[key] !== undefined) return;
+      row[key] = key === "amount" && typeof source[index] === "number" ? source[index] : cellText(source[index]);
+    });
+    row.recipient_emails = splitEmails(row.recipient_emails).join("; ");
+    row.cc_emails = splitEmails(row.cc_emails).join("; ");
+    row._errors = validateReminder(row);
+    rows.push(row);
+  }
+  if (!rows.length) return { rows: [], errors: ["File không có dòng dữ liệu nào."] };
+  if (rows.length > MAX_ROWS) return { rows: [], errors: [`Tối đa ${MAX_ROWS} dòng mỗi lần tải lên (file có ${rows.length} dòng).`] };
+  return { rows, errors: [] };
 }
 
-export async function setArInvoicePaid(invoiceId, isPaid, paidAt, note) {
-  const { data, error } = await supabase.rpc("set_ar_invoice_paid", {
-    p_invoice_id: invoiceId,
-    p_is_paid: isPaid,
-    p_paid_at: paidAt || null,
-    p_note: note?.trim() || null,
-  });
-  if (error) throw error;
-  return data;
+export async function readReminderFile(file) {
+  if (!file) throw new Error("Vui lòng chọn file.");
+  if (file.size > MAX_FILE_SIZE) throw new Error("File vượt quá 10 MB.");
+  const ext = file.name.split(".").pop()?.toLowerCase();
+  let matrix;
+  if (ext === "csv") matrix = parseCsv((await file.text()).replace(/^\uFEFF/, ""));
+  else if (ext === "xlsx") {
+    const { default: readXlsxFile } = await import("read-excel-file");
+    matrix = await readXlsxFile(file);
+  } else throw new Error("Chỉ nhận file .xlsx hoặc .csv. Với file .xls cũ, hãy lưu lại dưới dạng .xlsx.");
+  return normalizeReminderMatrix(matrix);
 }
+
+/** Bỏ các trường phụ (_line, _errors) trước khi gửi lên máy chủ. */
+export const toPayload = (row) => ({
+  recipient_name: row.recipient_name,
+  recipient_emails: row.recipient_emails,
+  cc_emails: row.cc_emails || "",
+  company_name: row.company_name,
+  tax_code: row.tax_code || "",
+  amount: row.amount,
+  period: row.period,
+  note: row.note || "",
+});
