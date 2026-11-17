@@ -12,7 +12,8 @@
     "preview": "vite preview",
     "qa:email-schedule": "node scripts/qa-scheduled-email-db.mjs",
     "qa:hub": "node --experimental-strip-types --test scripts/qa-hub-content.mjs",
-    "qa:hub-social": "node --experimental-strip-types --test scripts/qa-hub-social.mjs"
+    "qa:hub-social": "node --experimental-strip-types --test scripts/qa-hub-social.mjs",
+    "qa:hub-zalo": "node --experimental-strip-types --test scripts/qa-hub-zalo.mjs"
   },
   "dependencies": {
     "@supabase/supabase-js": "^2.108.2",

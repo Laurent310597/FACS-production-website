@@ -66,6 +66,9 @@ export default function AdminLayout({ children }) {
             <NavLink to="/admin/hub/social" end className={navClass}>
               <CalendarClock size={18} /> Đăng & lịch đăng
             </NavLink>
+            <NavLink to="/admin/hub/zalo" end className={navClass}>
+              <MessagesSquare size={18} /> AI Zalo
+            </NavLink>
             <NavLink to="/admin/hub/library" end className={navClass}>
               <FolderOpen size={18} /> Thư viện Hub
             </NavLink>

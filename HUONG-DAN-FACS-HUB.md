@@ -101,3 +101,16 @@ Sau đó vào trang Đăng & lịch đăng bấm **Kết nối Facebook & Instag
 - Instagram chỉ nhận ảnh JPEG tỉ lệ 4:5 đến 1.91:1; infographic của Hub (1080 × 1350) đã đúng chuẩn và được xuất sang JPG khi đăng.
 - Hẹn giờ chạy mỗi phút bằng pg_cron (migration `20261117030000_facs_hub_social_cron.sql`), khóa riêng nằm trong Supabase Vault.
 - Kiểm thử logic: `npm run qa:hub-social`.
+
+## Phần 4 — Quản trị AI Zalo trong Hub
+
+Trang **FACS Hub → AI Zalo** cho xem hoạt động và chỉnh luật của AI Zalo đang chạy trên laptop.
+
+1. Vào trang AI Zalo, bấm **Tạo khóa thiết bị**, sao chép khóa `facsz_…` (chỉ hiện một lần).
+2. Trong file `.env` của AI Zalo trên laptop thêm:
+   - `HUB_SYNC_URL=https://bnfzbhgkkxzjrvdtrhyt.supabase.co/functions/v1/hub-zalo-sync`
+   - `HUB_DEVICE_KEY=<khóa vừa tạo>`
+   - (tùy chọn) `HUB_SYNC_INTERVAL_S=30`, `HUB_SYNC_MESSAGES=true` (đặt `false` nếu không muốn đưa nội dung tin nhắn lên web)
+3. Khởi động lại AI Zalo. Sau ~1 phút trang Hub hiện “Đang trực tuyến”.
+
+An toàn: laptop chủ động gửi/nhận qua HTTPS, không mở cổng nào ra Internet. Khóa thiết bị chỉ dùng được cho địa chỉ đồng bộ này và thu hồi được ngay trên trang. Khóa OpenAI, model và phiên đăng nhập Zalo không bao giờ được gửi lên hay đổi từ xa. Lệnh từ Hub được laptop kiểm tra lại (prompt phải đúng quy tắc, không đặt được nhóm quản lý từ xa).
