@@ -2,355 +2,695 @@ import { useCallback, useEffect, useMemo, useState } from "react";
 import {
   AlertTriangle,
   CheckCircle2,
-  CircleDollarSign,
-  Clock3,
-  FileCheck2,
+  Download,
+  Eye,
   FileSpreadsheet,
-  History,
+  Landmark,
   Loader2,
+  Pencil,
+  Plus,
   RefreshCw,
+  RotateCcw,
+  Save,
   Search,
+  Send,
+  Trash2,
   UploadCloud,
-  UserRoundX,
-  Users,
   X,
+  XCircle,
 } from "lucide-react";
-import { Link } from "react-router-dom";
 import AdminLayout from "../../components/admin/AdminLayout";
 import {
-  agingFilters,
-  formatArDate,
-  formatArDateTime,
+  AR_TEMPLATE_URL,
+  deleteReminders,
+  formatDateTime,
   formatVnd,
-  getInvoiceAging,
-  importArInvoices,
-  setArInvoicePaid,
-  summarizeAr,
-  todayInVietnam,
+  invokeArEmail,
+  listReminders,
+  readReminderFile,
+  statusLabel,
+  toAmount,
+  toPayload,
+  validateReminder,
 } from "../../lib/ar";
-import { readArInvoiceFile, sha256File } from "../../lib/arImport";
-import { supabase } from "../../lib/supabaseClient";
 
-const PAGE_SIZE = 25;
-
-const toneClasses = {
-  cyan: "border-cyan-300/20 bg-cyan-300/[0.07] text-cyan-200",
-  emerald: "border-emerald-300/20 bg-emerald-300/[0.07] text-emerald-200",
-  amber: "border-amber-300/20 bg-amber-300/[0.07] text-amber-200",
-  orange: "border-orange-300/20 bg-orange-300/[0.07] text-orange-200",
-  red: "border-red-300/20 bg-red-300/[0.07] text-red-200",
-  slate: "border-white/10 bg-white/[0.05] text-slate-300",
+const card = "rounded-[28px] border border-white/10 bg-white/[0.035] p-6 md:p-7";
+const input = "w-full rounded-xl border border-white/10 bg-[#081321] px-3 py-2.5 text-sm text-white outline-none transition placeholder:text-slate-600 focus:border-cyan-300/40";
+const label = "mb-1.5 block text-xs font-semibold text-slate-300";
+const ghost = "inline-flex items-center gap-2 rounded-xl border border-white/10 px-4 py-2.5 text-sm font-semibold text-slate-200 transition hover:border-cyan-200/30 hover:text-white disabled:opacity-40";
+const primary = "inline-flex items-center gap-2 rounded-xl bg-cyan-300 px-5 py-2.5 text-sm font-bold text-[#071421] transition hover:bg-cyan-200 disabled:cursor-not-allowed disabled:opacity-40";
+const statusStyle = {
+  draft: "bg-slate-400/15 text-slate-200",
+  sending: "bg-amber-300/15 text-amber-200",
+  sent: "bg-emerald-300/15 text-emerald-200",
+  failed: "bg-rose-400/15 text-rose-200",
 };
 
-function StatCard({ icon: Icon, label, value, note, tone = "cyan" }) {
-  return (
-    <div className={`rounded-[24px] border p-5 ${toneClasses[tone]}`}>
-      <div className="flex items-start justify-between gap-4">
-        <Icon size={21} />
-        <span className="text-right text-2xl font-black text-white">{value}</span>
-      </div>
-      <div className="mt-5 text-sm font-semibold text-slate-200">{label}</div>
-      <div className="mt-1 text-xs leading-relaxed text-slate-500">{note}</div>
-    </div>
-  );
-}
+const emptyRow = () => ({ recipient_name: "", recipient_emails: "", cc_emails: "", company_name: "", tax_code: "", amount: "", period: "", note: "" });
+const fields = [
+  ["recipient_name", "Người nhận *", "Nguyễn Văn A"],
+  ["recipient_emails", "Email người nhận *", "ketoan@khachhang.vn (nhiều email: dùng ;)"],
+  ["cc_emails", "Email CC", "không bắt buộc"],
+  ["company_name", "Tên công ty khách hàng *", "Công ty TNHH ABC"],
+  ["tax_code", "MST", "0312345678"],
+  ["amount", "Số tiền nợ (VND) *", "15.000.000"],
+  ["period", "Giai đoạn nợ *", "Quý 3/2026"],
+];
 
-function AgingBadge({ invoice }) {
-  const aging = getInvoiceAging(invoice);
-  return <span className={`inline-flex rounded-full border px-2.5 py-1 text-[11px] font-bold ${toneClasses[aging.tone]}`}>{aging.label}</span>;
-}
-
-function PaymentModal({ invoice, onClose, onSaved }) {
-  const reopening = invoice.is_paid;
-  const [paidAt, setPaidAt] = useState(invoice.paid_at || todayInVietnam());
-  const [note, setNote] = useState("");
-  const [working, setWorking] = useState(false);
-  const [error, setError] = useState("");
-
-  const submit = async (event) => {
-    event.preventDefault();
-    if (reopening && note.trim().length < 3) {
-      setError("Vui lòng nhập lý do hoàn tác trạng thái đã thu.");
-      return;
-    }
-    setWorking(true);
-    setError("");
-    try {
-      await setArInvoicePaid(invoice.id, !reopening, reopening ? null : paidAt, note);
-      onSaved(reopening ? "Đã mở lại khoản phải thu và lưu lý do." : "Đã ghi nhận hóa đơn đã thu tiền.");
-    } catch (saveError) {
-      setError(`Không thể cập nhật: ${saveError.message}`);
-    } finally {
-      setWorking(false);
-    }
-  };
-
-  return (
-    <div className="fixed inset-0 z-[100] flex items-center justify-center bg-[#030a12]/80 p-4 backdrop-blur-sm" role="dialog" aria-modal="true" aria-labelledby="payment-modal-title">
-      <form onSubmit={submit} className="w-full max-w-lg rounded-[28px] border border-white/12 bg-[#101d30] p-6 shadow-2xl md:p-7">
-        <div className="flex items-start justify-between gap-4">
-          <div>
-            <div className="text-xs font-bold uppercase tracking-[0.18em] text-cyan-300/80">AR Collection</div>
-            <h2 id="payment-modal-title" className="mt-2 text-2xl font-bold">{reopening ? "Hoàn tác trạng thái đã thu" : "Xác nhận đã thu tiền"}</h2>
-          </div>
-          <button type="button" onClick={onClose} className="rounded-xl border border-white/10 p-2 text-slate-400 hover:text-white" aria-label="Đóng"><X size={18} /></button>
-        </div>
-
-        <div className="mt-5 rounded-2xl border border-white/10 bg-[#081321]/60 p-4 text-sm">
-          <div className="font-semibold text-white">{invoice.ar_customers?.legal_name}</div>
-          <div className="mt-1 text-slate-400">Hóa đơn {invoice.invoice_series ? `${invoice.invoice_series} · ` : ""}{invoice.invoice_number}</div>
-          <div className="mt-3 text-xl font-black text-cyan-200">{formatVnd(invoice.total_amount)}</div>
-        </div>
-
-        {!reopening && <label className="mt-5 block">
-          <span className="mb-2 block text-sm font-semibold text-slate-200">Ngày thu tiền</span>
-          <input type="date" required value={paidAt} max={todayInVietnam()} onChange={(event) => setPaidAt(event.target.value)} className="w-full rounded-2xl border border-white/10 bg-[#081321]/70 px-4 py-3 text-white outline-none focus:border-cyan-300/35" />
-        </label>}
-
-        <label className="mt-4 block">
-          <span className="mb-2 block text-sm font-semibold text-slate-200">{reopening ? "Lý do hoàn tác" : "Ghi chú đối soát (không bắt buộc)"}</span>
-          <textarea rows={3} required={reopening} value={note} onChange={(event) => setNote(event.target.value)} placeholder={reopening ? "Ví dụ: tick nhầm khách hàng hoặc giao dịch chưa vào tài khoản..." : "Ví dụ: đã kiểm tra sao kê ngày..."} className="w-full resize-y rounded-2xl border border-white/10 bg-[#081321]/70 px-4 py-3 text-white outline-none placeholder:text-slate-600 focus:border-cyan-300/35" />
-        </label>
-
-        {error && <div className="mt-4 rounded-2xl border border-red-300/20 bg-red-400/8 px-4 py-3 text-sm text-red-200">{error}</div>}
-        <div className="mt-6 flex flex-col-reverse gap-3 sm:flex-row sm:justify-end">
-          <button type="button" onClick={onClose} className="rounded-2xl border border-white/10 px-5 py-3 font-semibold text-slate-300 hover:text-white">Hủy</button>
-          <button type="submit" disabled={working} className={`inline-flex items-center justify-center gap-2 rounded-2xl px-5 py-3 font-bold disabled:opacity-50 ${reopening ? "bg-amber-300 text-[#171006]" : "bg-emerald-300 text-[#06150f]"}`}>
-            {working ? <Loader2 size={17} className="animate-spin" /> : <CheckCircle2 size={17} />}
-            {reopening ? "Xác nhận hoàn tác" : "Xác nhận đã thu"}
-          </button>
-        </div>
-      </form>
-    </div>
-  );
-}
-
-function invoiceAuditLabel(event) {
-  if (event.entity_type === "customer") return event.action === "insert" ? "Tạo khách hàng" : "Cập nhật khách hàng";
-  if (event.action === "insert") return "Nhập hóa đơn Viettel";
-  const wasPaid = Boolean(event.before_data?.is_paid);
-  const isPaid = Boolean(event.after_data?.is_paid);
-  if (!wasPaid && isPaid) return "Đánh dấu đã thu";
-  if (wasPaid && !isPaid) return "Mở lại công nợ";
-  return "Cập nhật hóa đơn";
-}
+const chunk = (list, size) => Array.from({ length: Math.ceil(list.length / size) }, (_, i) => list.slice(i * size, i * size + size));
 
 export default function AdminARPage() {
-  const [invoices, setInvoices] = useState([]);
-  const [imports, setImports] = useState([]);
-  const [auditEvents, setAuditEvents] = useState([]);
+  const [status, setStatus] = useState(null);
+  const [rows, setRows] = useState([]);
   const [loading, setLoading] = useState(true);
+  const [setupMissing, setSetupMissing] = useState(false);
   const [error, setError] = useState("");
-  const [notice, setNotice] = useState("");
-  const [query, setQuery] = useState("");
-  const [agingFilter, setAgingFilter] = useState("all");
-  const [month, setMonth] = useState("all");
-  const [page, setPage] = useState(1);
-  const [showImport, setShowImport] = useState(false);
-  const [importFile, setImportFile] = useState(null);
-  const [importPreview, setImportPreview] = useState(null);
-  const [importHash, setImportHash] = useState("");
-  const [parsing, setParsing] = useState(false);
-  const [importing, setImporting] = useState(false);
-  const [paymentInvoice, setPaymentInvoice] = useState(null);
+  const [message, setMessage] = useState("");
+  const [settingsOpen, setSettingsOpen] = useState(false);
+  const [preview, setPreview] = useState(null);
+  const [editing, setEditing] = useState(null);
 
   const load = useCallback(async () => {
     setLoading(true);
-    setError("");
-    const [invoiceResult, importResult, auditResult] = await Promise.all([
-      supabase
-        .from("ar_invoices")
-        .select("*, ar_customers(id,legal_name,tax_code,primary_email)")
-        .order("invoice_date", { ascending: false })
-        .order("created_at", { ascending: false }),
-      supabase.from("ar_import_runs").select("*").order("imported_at", { ascending: false }).limit(10),
-      supabase.from("ar_audit_events").select("*").order("occurred_at", { ascending: false }).limit(20),
-    ]);
-    const failures = [invoiceResult.error, importResult.error, auditResult.error].filter(Boolean);
-    if (failures.length) setError(`Không thể tải AR Tracker: ${failures[0].message}`);
-    else {
-      setInvoices(invoiceResult.data || []);
-      setImports(importResult.data || []);
-      setAuditEvents(auditResult.data || []);
+    try {
+      setRows(await listReminders());
+      setSetupMissing(false);
+    } catch (loadError) {
+      if (/ar_reminders|schema cache|does not exist/i.test(loadError.message)) setSetupMissing(true);
+      else setError(loadError.message);
     }
+    invokeArEmail("status").then(setStatus).catch((statusError) => setError(statusError.message));
     setLoading(false);
   }, []);
 
   useEffect(() => {
-    const timer = window.setTimeout(load, 0);
-    return () => window.clearTimeout(timer);
+    // eslint-disable-next-line react-hooks/set-state-in-effect
+    load();
   }, [load]);
 
-  const metrics = useMemo(() => summarizeAr(invoices), [invoices]);
-  const months = useMemo(() => [...new Set(invoices.map((item) => item.invoice_date?.slice(0, 7)).filter(Boolean))].sort().reverse(), [invoices]);
-  const filteredInvoices = useMemo(() => {
-    const normalized = query.trim().toLowerCase();
-    return invoices.filter((invoice) => {
-      const aging = getInvoiceAging(invoice);
-      const matchesSearch = !normalized || `${invoice.invoice_series} ${invoice.invoice_number} ${invoice.description || ""} ${invoice.ar_customers?.legal_name || ""} ${invoice.ar_customers?.tax_code || ""}`.toLowerCase().includes(normalized);
-      const matchesMonth = month === "all" || invoice.invoice_date?.startsWith(month);
-      const matchesStatus = agingFilter === "all"
-        || (agingFilter === "unpaid" && !invoice.is_paid && invoice.source_status !== "cancelled")
-        || aging.key === agingFilter;
-      return matchesSearch && matchesMonth && matchesStatus;
-    });
-  }, [invoices, query, month, agingFilter]);
-
-  const pageCount = Math.max(1, Math.ceil(filteredInvoices.length / PAGE_SIZE));
-  const effectivePage = Math.min(page, pageCount);
-  const visibleInvoices = filteredInvoices.slice((effectivePage - 1) * PAGE_SIZE, effectivePage * PAGE_SIZE);
-
-  const previewImport = async () => {
-    setParsing(true);
+  const notify = (text) => {
     setError("");
-    setNotice("");
+    setMessage(text);
+  };
+  const fail = (text) => {
+    setMessage("");
+    setError(text);
+  };
+
+  const showPreview = async (payload, title) => {
+    setPreview({ loading: true, title });
     try {
-      const [parsed, hash] = await Promise.all([readArInvoiceFile(importFile), sha256File(importFile)]);
-      setImportPreview(parsed);
-      setImportHash(hash);
+      const data = await invokeArEmail("preview", payload);
+      setPreview({ title, ...data });
     } catch (previewError) {
-      setImportPreview(null);
-      setError(`Không thể đọc file: ${previewError.message}`);
-    } finally {
-      setParsing(false);
+      setPreview(null);
+      fail(previewError.message);
     }
-  };
-
-  const confirmImport = async () => {
-    if (!importPreview?.rows.length || importPreview.errors.length) return;
-    setImporting(true);
-    setError("");
-    setNotice("");
-    try {
-      const result = await importArInvoices(importPreview.rows, importFile.name, importHash);
-      setNotice(`Đã nhập ${result.records_created || 0} hóa đơn mới, cập nhật ${result.records_updated || 0} trạng thái Viettel, bỏ qua ${result.duplicates_skipped || 0} hóa đơn không thay đổi và tạo ${result.customers_created || 0} khách hàng mới. Tổng giá trị mới: ${formatVnd(result.total_amount)}.`);
-      setImportFile(null);
-      setImportPreview(null);
-      setImportHash("");
-      setShowImport(false);
-      await load();
-    } catch (importError) {
-      setError(`Không thể ghi dữ liệu: ${importError.message}`);
-    } finally {
-      setImporting(false);
-    }
-  };
-
-  const paymentSaved = async (message) => {
-    setPaymentInvoice(null);
-    setNotice(message);
-    await load();
   };
 
   return (
     <AdminLayout>
-      <div className="flex flex-col gap-5 xl:flex-row xl:items-end xl:justify-between">
-        <div>
-          <div className="text-xs font-bold uppercase tracking-[0.18em] text-cyan-300/80">Accounts Receivable</div>
-          <h1 className="mt-3 text-3xl font-bold md:text-4xl">Quản lý công nợ phải thu</h1>
-          <p className="mt-2 max-w-3xl text-sm leading-relaxed text-slate-400">Viettel là nguồn hóa đơn chính thức. CMS tổng hợp số dư và ghi nhận trạng thái thu tiền do người dùng xác nhận.</p>
-        </div>
-        <div className="flex flex-wrap gap-3">
-          <button type="button" onClick={load} disabled={loading} className="inline-flex items-center gap-2 rounded-2xl border border-white/10 px-5 py-3 font-semibold text-slate-200 transition hover:border-cyan-200/30 disabled:opacity-50"><RefreshCw size={17} className={loading ? "animate-spin" : ""} /> Làm mới</button>
-          <Link to="/admin/ar/customers" className="inline-flex items-center gap-2 rounded-2xl border border-cyan-200/20 bg-cyan-300/[0.06] px-5 py-3 font-semibold text-cyan-100 transition hover:bg-cyan-300/10"><Users size={17} /> Customer Master</Link>
-          <button type="button" onClick={() => setShowImport((current) => !current)} className="inline-flex items-center gap-2 rounded-2xl bg-cyan-300 px-5 py-3 font-bold text-[#071421] transition hover:bg-cyan-200"><UploadCloud size={17} /> Import Viettel</button>
-        </div>
+      <div>
+        <div className="text-xs font-bold uppercase tracking-[.18em] text-cyan-300">Finance · AR</div>
+        <h1 className="mt-2 text-3xl font-bold md:text-4xl">Email nhắc công nợ</h1>
+        <p className="mt-2 max-w-3xl text-sm leading-relaxed text-slate-400">
+          Nhập công nợ từng khách (trực tiếp hoặc bằng file Excel), xem trước rồi gửi email song ngữ từ <span className="text-cyan-200">accounting@facs.vn</span>, kèm thông tin tài khoản ngân hàng của FACS. Không có email nào được gửi khi anh/chị chưa bấm gửi và xác nhận.
+        </p>
       </div>
 
-      {error && <div className="mt-6 whitespace-pre-line rounded-2xl border border-red-300/20 bg-red-400/8 px-5 py-4 text-sm text-red-200">{error}</div>}
-      {notice && <div className="mt-6 rounded-2xl border border-emerald-300/20 bg-emerald-400/8 px-5 py-4 text-sm text-emerald-200">{notice}</div>}
-
-      {showImport && <section className="mt-7 rounded-[28px] border border-cyan-300/15 bg-cyan-300/[0.045] p-5 md:p-7">
-        <div className="flex flex-col gap-4 lg:flex-row lg:items-start lg:justify-between">
-          <div>
-            <h2 className="text-xl font-bold">Kiểm tra file hóa đơn Viettel</h2>
-            <p className="mt-2 max-w-3xl text-sm leading-relaxed text-slate-400">Sử dụng báo cáo có một dòng cho mỗi hóa đơn. Dữ liệu chỉ được ghi sau khi file được kiểm tra và anh bấm xác nhận.</p>
-          </div>
-          <a href="/templates/facs-ar-import-template.xlsx" download className="inline-flex items-center gap-2 text-sm font-semibold text-cyan-300 hover:text-cyan-200"><FileSpreadsheet size={17} /> Tải file Excel mẫu</a>
+      {(message || error) && (
+        <div className={`mt-6 flex items-start justify-between gap-3 rounded-2xl border px-5 py-4 text-sm ${error ? "border-red-300/20 bg-red-400/10 text-red-100" : "border-emerald-300/20 bg-emerald-300/10 text-emerald-100"}`}>
+          <span className="whitespace-pre-line">{error || message}</span>
+          <button type="button" onClick={() => { setError(""); setMessage(""); }} className="text-slate-400 hover:text-white"><X size={16} /></button>
         </div>
-        <div className="mt-5 flex flex-col gap-3 md:flex-row md:items-center">
-          <label className="flex min-h-12 flex-1 cursor-pointer items-center gap-3 rounded-2xl border border-dashed border-white/15 bg-[#081321]/45 px-4 py-3 text-sm text-slate-300 hover:border-cyan-200/30">
-            <FileSpreadsheet size={19} className="text-cyan-300" />
-            <span className="min-w-0 truncate">{importFile?.name || "Chọn file .xlsx hoặc .csv"}</span>
-            <input type="file" accept=".xlsx,.csv" className="hidden" onChange={(event) => { setImportFile(event.target.files?.[0] || null); setImportPreview(null); }} />
-          </label>
-          <button type="button" disabled={!importFile || parsing} onClick={previewImport} className="inline-flex items-center justify-center gap-2 rounded-2xl border border-cyan-200/20 px-5 py-3 font-bold text-cyan-100 disabled:opacity-40">
-            {parsing ? <Loader2 size={17} className="animate-spin" /> : <FileCheck2 size={17} />} Kiểm tra file
-          </button>
-        </div>
+      )}
+      {setupMissing && <div className="mt-6 rounded-2xl border border-amber-300/25 bg-amber-300/10 p-4 text-sm text-amber-100">Chưa có bảng ar_reminders trên Supabase. Cần chạy migration 20261118010000_facs_ar_reminders.sql.</div>}
 
-        {importPreview && <div className="mt-6">
-          <div className="grid gap-3 sm:grid-cols-3">
-            <div className="rounded-2xl border border-white/10 bg-white/[0.035] p-4"><div className="text-xs text-slate-500">Dòng tiêu đề nhận diện</div><div className="mt-1 text-xl font-black">{importPreview.headerRow || "—"}</div></div>
-            <div className="rounded-2xl border border-white/10 bg-white/[0.035] p-4"><div className="text-xs text-slate-500">Hóa đơn đọc được</div><div className="mt-1 text-xl font-black">{importPreview.rows.length}</div></div>
-            <div className={`rounded-2xl border p-4 ${importPreview.errors.length ? toneClasses.red : toneClasses.emerald}`}><div className="text-xs opacity-70">Kết quả</div><div className="mt-1 font-bold">{importPreview.errors.length ? `${importPreview.errors.length} lỗi cần sửa` : "Đủ điều kiện nhập"}</div></div>
-          </div>
-          {importPreview.errors.length > 0 && <div className="mt-4 rounded-2xl border border-red-300/20 bg-red-400/8 px-4 py-3 text-sm text-red-200"><strong>Lỗi:</strong><ul className="mt-2 list-disc space-y-1 pl-5">{importPreview.errors.slice(0, 10).map((item) => <li key={item}>{item}</li>)}</ul>{importPreview.errors.length > 10 && <div className="mt-2">... và {importPreview.errors.length - 10} lỗi khác.</div>}</div>}
-          {importPreview.warnings.length > 0 && <details className="mt-4 rounded-2xl border border-amber-300/20 bg-amber-400/[0.06] px-4 py-3 text-sm text-amber-100"><summary className="cursor-pointer font-semibold">{importPreview.warnings.length} lưu ý cần rà soát</summary><ul className="mt-2 max-h-40 list-disc space-y-1 overflow-auto pl-5 text-amber-100/80">{importPreview.warnings.slice(0, 30).map((item) => <li key={item}>{item}</li>)}</ul></details>}
-          {importPreview.rows.length > 0 && <div className="mt-4 overflow-x-auto rounded-2xl border border-white/10">
-            <table className="min-w-[900px] w-full text-left text-sm">
-              <thead className="bg-[#081321]/85 text-xs uppercase tracking-wide text-slate-500"><tr><th className="px-4 py-3">Dòng</th><th className="px-4 py-3">Hóa đơn</th><th className="px-4 py-3">Ngày</th><th className="px-4 py-3">Khách hàng</th><th className="px-4 py-3">MST</th><th className="px-4 py-3 text-right">Tổng thanh toán</th></tr></thead>
-              <tbody className="divide-y divide-white/8">{importPreview.rows.slice(0, 20).map((row) => <tr key={`${row.row_number}-${row.invoice_number}`}><td className="px-4 py-3 text-slate-500">{row.row_number}</td><td className="px-4 py-3 font-semibold text-white">{row.invoice_series ? `${row.invoice_series} · ` : ""}{row.invoice_number}</td><td className="px-4 py-3 text-slate-300">{formatArDate(row.invoice_date)}</td><td className="px-4 py-3 text-slate-300">{row.customer_name || "—"}</td><td className="px-4 py-3 text-slate-400">{row.tax_code || "—"}</td><td className="px-4 py-3 text-right font-semibold text-cyan-100">{formatVnd(row.total_amount)}</td></tr>)}</tbody>
-            </table>
-            {importPreview.rows.length > 20 && <div className="border-t border-white/10 px-4 py-3 text-center text-xs text-slate-500">Đang xem 20/{importPreview.rows.length} dòng.</div>}
-          </div>}
-          <div className="mt-5 flex justify-end"><button type="button" onClick={confirmImport} disabled={importing || importPreview.errors.length > 0 || !importPreview.rows.length} className="inline-flex items-center gap-2 rounded-2xl bg-emerald-300 px-5 py-3 font-bold text-[#06150f] disabled:cursor-not-allowed disabled:opacity-40">{importing ? <Loader2 size={17} className="animate-spin" /> : <CheckCircle2 size={17} />} Xác nhận nhập {importPreview.rows.length} hóa đơn</button></div>
-        </div>}
-      </section>}
+      <StatusBar status={status} onEdit={() => setSettingsOpen(true)} onRefresh={load} loading={loading} />
 
-      <div className="mt-7 grid gap-4 sm:grid-cols-2 xl:grid-cols-4">
-        <StatCard icon={CircleDollarSign} label="Tổng AR hiện tại" value={formatVnd(metrics.totalOutstanding)} note={`${metrics.customersOutstanding} khách hàng đang còn số dư`} />
-        <StatCard icon={Clock3} label="Chưa đến hạn" value={formatVnd(metrics.current)} note="Bao gồm các khoản đến hạn hôm nay" tone="emerald" />
-        <StatCard icon={AlertTriangle} label="Quá hạn 1–30 ngày" value={formatVnd(metrics.overdue1To30)} note="Cần ưu tiên rà soát và nhắc nợ" tone="amber" />
-        <StatCard icon={AlertTriangle} label="Quá hạn trên 30 ngày" value={formatVnd(metrics.overdue31To60 + metrics.overdue61Plus)} note={`${formatVnd(metrics.overdue61Plus)} quá hạn trên 60 ngày`} tone="red" />
-      </div>
-      <div className="mt-4 grid gap-4 sm:grid-cols-2 xl:grid-cols-4">
-        <StatCard icon={CheckCircle2} label="Đã thu trong tháng" value={formatVnd(metrics.paidThisMonth)} note="Theo ngày thu tiền được xác nhận" tone="emerald" />
-        <StatCard icon={Users} label="Khách hàng còn công nợ" value={metrics.customersOutstanding} note="Được tính theo các hóa đơn chưa thu" />
-        <StatCard icon={UserRoundX} label="Khách hàng thiếu email" value={metrics.missingEmail} note="Cần bổ sung trong Customer Master" tone="amber" />
-        <StatCard icon={FileSpreadsheet} label="Tổng hóa đơn quản lý" value={invoices.length} note={`${imports.filter((item) => item.source_type === "viettel_invoices").length} lần import gần đây`} />
-      </div>
+      <AddReminders onSaved={(count) => { notify(`Đã thêm ${count} dòng vào danh sách nhắc nợ (chưa gửi).`); load(); }} onError={fail} onPreview={(row) => showPreview({ reminder: toPayload(row) }, `Xem trước: ${row.company_name || "khách hàng"}`)} />
 
-      <section className="mt-7 rounded-[28px] border border-white/10 bg-white/[0.035] p-5 md:p-6">
-        <div className="flex flex-col gap-4 xl:flex-row xl:items-end xl:justify-between">
-          <div><h2 className="text-xl font-bold">Danh sách công nợ</h2><p className="mt-1 text-sm text-slate-500">Tick trạng thái chỉ sau khi đã kiểm tra giao dịch thu tiền.</p></div>
-          <div className="grid gap-3 sm:grid-cols-3 xl:min-w-[760px]">
-            <label className="relative"><Search size={16} className="absolute left-4 top-1/2 -translate-y-1/2 text-slate-600" /><input value={query} onChange={(event) => { setQuery(event.target.value); setPage(1); }} placeholder="Khách hàng, MST, số HĐ..." className="w-full rounded-2xl border border-white/10 bg-[#081321]/70 py-3 pl-11 pr-4 text-sm text-white outline-none placeholder:text-slate-600 focus:border-cyan-300/35" /></label>
-            <select value={agingFilter} onChange={(event) => { setAgingFilter(event.target.value); setPage(1); }} className="rounded-2xl border border-white/10 bg-[#081321]/70 px-4 py-3 text-sm text-white outline-none focus:border-cyan-300/35">{agingFilters.map((item) => <option key={item.value} value={item.value}>{item.label}</option>)}</select>
-            <select value={month} onChange={(event) => { setMonth(event.target.value); setPage(1); }} className="rounded-2xl border border-white/10 bg-[#081321]/70 px-4 py-3 text-sm text-white outline-none focus:border-cyan-300/35"><option value="all">Tất cả kỳ hóa đơn</option>{months.map((item) => <option key={item} value={item}>Tháng {item.slice(5, 7)}/{item.slice(0, 4)}</option>)}</select>
-          </div>
-        </div>
+      <ReminderList
+        rows={rows}
+        loading={loading}
+        status={status}
+        onReload={load}
+        onNotify={notify}
+        onError={fail}
+        onPreview={(row) => showPreview({ id: row.id }, `Xem trước: ${row.company_name}`)}
+        onEdit={setEditing}
+      />
 
-        {loading ? <div className="mt-6 flex items-center justify-center gap-3 py-20 text-slate-500"><Loader2 size={20} className="animate-spin" /> Đang tải công nợ...</div> : visibleInvoices.length === 0 ? <div className="mt-6 rounded-2xl border border-white/8 bg-[#081321]/35 px-5 py-14 text-center text-sm text-slate-500">Chưa có hóa đơn phù hợp với bộ lọc.</div> : <div className="mt-6 overflow-x-auto rounded-2xl border border-white/10">
-          <table className="min-w-[1120px] w-full text-left text-sm">
-            <thead className="bg-[#081321]/85 text-xs uppercase tracking-wide text-slate-500"><tr><th className="px-4 py-3 text-center">Đã thu</th><th className="px-4 py-3">Khách hàng</th><th className="px-4 py-3">Hóa đơn</th><th className="px-4 py-3">Ngày HĐ</th><th className="px-4 py-3">Hạn TT</th><th className="px-4 py-3">Trạng thái</th><th className="px-4 py-3 text-right">Tổng tiền</th><th className="px-4 py-3 text-right">Số dư</th></tr></thead>
-            <tbody className="divide-y divide-white/8">{visibleInvoices.map((invoice) => <tr key={invoice.id} className="transition hover:bg-white/[0.025]">
-              <td className="px-4 py-4 text-center"><input type="checkbox" checked={invoice.is_paid} disabled={invoice.source_status === "cancelled"} onChange={() => setPaymentInvoice(invoice)} className="h-5 w-5 cursor-pointer accent-emerald-400 disabled:cursor-not-allowed disabled:opacity-30" aria-label={`Cập nhật thanh toán hóa đơn ${invoice.invoice_number}`} /></td>
-              <td className="max-w-[280px] px-4 py-4"><div className="truncate font-semibold text-white" title={invoice.ar_customers?.legal_name}>{invoice.ar_customers?.legal_name || "—"}</div><div className="mt-1 text-xs text-slate-500">{invoice.ar_customers?.tax_code || "Chưa có MST"}{invoice.ar_customers?.primary_email ? ` · ${invoice.ar_customers.primary_email}` : " · Thiếu email"}</div></td>
-              <td className="px-4 py-4"><div className="font-semibold text-cyan-100">{invoice.invoice_series ? `${invoice.invoice_series} · ` : ""}{invoice.invoice_number}</div><div className="mt-1 max-w-[220px] truncate text-xs text-slate-500" title={invoice.description}>{invoice.description || "Không có diễn giải"}</div></td>
-              <td className="px-4 py-4 text-slate-300">{formatArDate(invoice.invoice_date)}</td>
-              <td className="px-4 py-4 text-slate-300">{formatArDate(invoice.due_date)}</td>
-              <td className="px-4 py-4"><AgingBadge invoice={invoice} />{invoice.is_paid && <div className="mt-1 text-[11px] text-slate-500">{formatArDate(invoice.paid_at)}</div>}</td>
-              <td className="px-4 py-4 text-right font-semibold text-slate-200">{formatVnd(invoice.total_amount)}</td>
-              <td className={`px-4 py-4 text-right font-black ${Number(invoice.outstanding_amount) ? "text-cyan-200" : "text-slate-600"}`}>{formatVnd(invoice.outstanding_amount)}</td>
-            </tr>)}</tbody>
-          </table>
-        </div>}
-        <div className="mt-4 flex flex-col gap-3 text-sm text-slate-500 sm:flex-row sm:items-center sm:justify-between"><span>Hiển thị {visibleInvoices.length} / {filteredInvoices.length} hóa đơn</span><div className="flex items-center gap-3"><button type="button" disabled={effectivePage <= 1} onClick={() => setPage((current) => Math.max(1, current - 1))} className="rounded-xl border border-white/10 px-3 py-2 disabled:opacity-30">Trước</button><span>Trang {effectivePage}/{pageCount}</span><button type="button" disabled={effectivePage >= pageCount} onClick={() => setPage((current) => Math.min(pageCount, current + 1))} className="rounded-xl border border-white/10 px-3 py-2 disabled:opacity-30">Sau</button></div></div>
-      </section>
-
-      <div className="mt-6 grid gap-6 xl:grid-cols-2">
-        <section className="rounded-[28px] border border-white/10 bg-white/[0.035] p-5 md:p-6">
-          <div className="flex items-center gap-3"><FileSpreadsheet size={20} className="text-cyan-300" /><div><h2 className="text-lg font-bold">Lịch sử import</h2><p className="text-xs text-slate-500">10 lần gần nhất</p></div></div>
-          <div className="mt-5 divide-y divide-white/8">{imports.length === 0 ? <div className="py-8 text-center text-sm text-slate-500">Chưa có lịch sử import.</div> : imports.map((item) => <div key={item.id} className="flex items-start gap-4 py-4"><div className="rounded-xl bg-cyan-300/8 p-2 text-cyan-300"><FileCheck2 size={17} /></div><div className="min-w-0 flex-1"><div className="truncate font-semibold text-slate-200">{item.file_name}</div><div className="mt-1 text-xs text-slate-500">{item.source_type === "customer_master" ? "Customer Master" : "Hóa đơn Viettel"} · {formatArDateTime(item.imported_at)}</div><div className="mt-2 text-xs text-slate-400">Tạo {item.records_created} · Cập nhật {item.records_updated} · Bỏ qua {item.duplicates_skipped}</div></div></div>)}</div>
-        </section>
-        <section className="rounded-[28px] border border-white/10 bg-white/[0.035] p-5 md:p-6">
-          <div className="flex items-center gap-3"><History size={20} className="text-cyan-300" /><div><h2 className="text-lg font-bold">Nhật ký thay đổi</h2><p className="text-xs text-slate-500">20 sự kiện gần nhất</p></div></div>
-          <div className="mt-5 divide-y divide-white/8">{auditEvents.length === 0 ? <div className="py-8 text-center text-sm text-slate-500">Chưa có thay đổi được ghi nhận.</div> : auditEvents.map((item) => <div key={item.id} className="flex items-start gap-4 py-4"><div className="rounded-xl bg-white/[0.05] p-2 text-slate-400"><History size={16} /></div><div className="min-w-0"><div className="font-semibold text-slate-200">{invoiceAuditLabel(item)}</div><div className="mt-1 text-xs text-slate-500">{item.actor_email || "Người dùng CMS"} · {formatArDateTime(item.occurred_at)}</div></div></div>)}</div>
-        </section>
-      </div>
-
-      {paymentInvoice && <PaymentModal invoice={paymentInvoice} onClose={() => setPaymentInvoice(null)} onSaved={paymentSaved} />}
+      {settingsOpen && <SettingsModal onClose={() => setSettingsOpen(false)} onSaved={() => { notify("Đã lưu mẫu email và thông tin tài khoản ngân hàng."); load(); }} />}
+      {editing && <EditModal row={editing} onClose={() => setEditing(null)} onSaved={() => { setEditing(null); notify("Đã cập nhật dòng nhắc nợ."); load(); }} />}
+      {preview && <PreviewModal preview={preview} onClose={() => setPreview(null)} />}
     </AdminLayout>
+  );
+}
+
+function StatusBar({ status, onEdit, onRefresh, loading }) {
+  return (
+    <section className={`${card} mt-7`}>
+      <div className="flex flex-col gap-4 md:flex-row md:items-center md:justify-between">
+        <div className="space-y-2 text-sm">
+          <div className="flex items-center gap-2">
+            {!status ? <Loader2 size={16} className="animate-spin text-slate-400" /> : status.connected ? <CheckCircle2 size={17} className="text-emerald-300" /> : <XCircle size={17} className="text-amber-300" />}
+            <span>Gửi từ <strong className="text-cyan-200">accounting@facs.vn</strong> qua Microsoft 365{status && !status.connected && " — chưa cấu hình Microsoft Graph"}</span>
+          </div>
+          <div className="flex items-center gap-2">
+            {!status ? <Loader2 size={16} className="animate-spin text-slate-400" /> : status.bank_ready ? <Landmark size={17} className="text-emerald-300" /> : <AlertTriangle size={17} className="text-amber-300" />}
+            <span>{!status ? "Đang kiểm tra…" : status.bank_ready ? "Đã có thông tin tài khoản ngân hàng trong email" : "Chưa điền tài khoản ngân hàng — cần điền trước khi gửi"}</span>
+          </div>
+        </div>
+        <div className="flex flex-wrap gap-2">
+          <button type="button" className={primary} onClick={onEdit}><Pencil size={16} /> Mẫu email & tài khoản ngân hàng</button>
+          <button type="button" className={ghost} onClick={onRefresh} disabled={loading}>{loading ? <Loader2 size={16} className="animate-spin" /> : <RefreshCw size={16} />} Làm mới</button>
+        </div>
+      </div>
+    </section>
+  );
+}
+
+function AddReminders({ onSaved, onError, onPreview }) {
+  const [mode, setMode] = useState("manual");
+  const [manual, setManual] = useState([emptyRow()]);
+  const [fileRows, setFileRows] = useState([]);
+  const [fileName, setFileName] = useState("");
+  const [fileErrors, setFileErrors] = useState([]);
+  const [batchLabel, setBatchLabel] = useState("");
+  const [busy, setBusy] = useState(false);
+
+  const setCell = (index, key, value) => setManual((list) => list.map((row, i) => (i === index ? { ...row, [key]: value } : row)));
+
+  const save = async (list, reset) => {
+    const invalid = list.map((row, i) => ({ i, errors: validateReminder(row) })).filter((x) => x.errors.length);
+    if (invalid.length) {
+      onError(invalid.slice(0, 8).map((x) => `Dòng ${list[x.i]._line || x.i + 1}: ${x.errors.join(", ")}`).join("\n"));
+      return;
+    }
+    setBusy(true);
+    try {
+      const data = await invokeArEmail("add_reminders", { rows: list.map(toPayload), batch_label: batchLabel });
+      reset();
+      onSaved(data.inserted);
+    } catch (saveError) {
+      const detail = saveError.rowErrors?.slice(0, 8).map((x) => `Dòng ${list[x.index]?._line || x.index + 1}: ${x.error}`).join("\n");
+      onError(detail ? `${saveError.message}\n${detail}` : saveError.message);
+    }
+    setBusy(false);
+  };
+
+  const pickFile = async (event) => {
+    const file = event.target.files?.[0];
+    event.target.value = "";
+    if (!file) return;
+    setFileName(file.name);
+    try {
+      const result = await readReminderFile(file);
+      setFileRows(result.rows);
+      setFileErrors(result.errors);
+    } catch (readError) {
+      setFileRows([]);
+      setFileErrors([readError.message]);
+    }
+  };
+
+  const fileInvalid = fileRows.filter((r) => r._errors.length).length;
+  const fileTotal = fileRows.reduce((sum, r) => sum + (Number.isFinite(toAmount(r.amount)) ? toAmount(r.amount) : 0), 0);
+
+  return (
+    <section className={`${card} mt-6`}>
+      <div className="flex flex-col gap-4 md:flex-row md:items-end md:justify-between">
+        <div>
+          <h2 className="text-xl font-semibold">Thêm khách hàng cần nhắc nợ</h2>
+          <p className="mt-1 text-sm text-slate-500">Ít khách: nhập trực tiếp. Nhiều khách: tải file Excel theo mẫu. Các dòng được lưu ở trạng thái “Chưa gửi”.</p>
+        </div>
+        <div className="flex gap-2">
+          <button type="button" onClick={() => setMode("manual")} className={`rounded-xl px-4 py-2 text-sm font-semibold ${mode === "manual" ? "bg-cyan-300 text-[#071421]" : "border border-white/10 text-slate-300"}`}>Nhập trực tiếp</button>
+          <button type="button" onClick={() => setMode("file")} className={`rounded-xl px-4 py-2 text-sm font-semibold ${mode === "file" ? "bg-cyan-300 text-[#071421]" : "border border-white/10 text-slate-300"}`}>Tải file Excel</button>
+        </div>
+      </div>
+
+      <label className="mt-5 block max-w-md">
+        <span className={label}>Tên đợt nhắc (không bắt buộc, để lọc sau này)</span>
+        <input className={input} value={batchLabel} maxLength={200} onChange={(e) => setBatchLabel(e.target.value)} placeholder="Ví dụ: Nhắc nợ Quý 3/2026" />
+      </label>
+
+      {mode === "manual" ? (
+        <div className="mt-5 space-y-4">
+          {manual.map((row, index) => (
+            <div key={index} className="rounded-2xl border border-white/10 bg-[#081321]/50 p-4">
+              <div className="mb-3 flex items-center justify-between text-sm font-semibold text-slate-300">
+                <span>Khách hàng {index + 1}</span>
+                <div className="flex gap-3">
+                  <button type="button" className="inline-flex items-center gap-1 text-xs text-cyan-300 hover:text-cyan-100" onClick={() => onPreview(row)}><Eye size={14} /> Xem trước email</button>
+                  {manual.length > 1 && <button type="button" className="text-slate-500 hover:text-rose-200" onClick={() => setManual((list) => list.filter((_, i) => i !== index))} aria-label="Xóa dòng"><Trash2 size={15} /></button>}
+                </div>
+              </div>
+              <div className="grid gap-3 md:grid-cols-2 xl:grid-cols-4">
+                {fields.map(([key, text, placeholder]) => (
+                  <label key={key} className="block">
+                    <span className={label}>{text}</span>
+                    <input className={input} value={row[key]} placeholder={placeholder} inputMode={key === "amount" ? "numeric" : undefined} onChange={(e) => setCell(index, key, e.target.value)} />
+                  </label>
+                ))}
+                <label className="block md:col-span-2 xl:col-span-4">
+                  <span className={label}>Ghi chú (hiện trong email gửi khách này)</span>
+                  <textarea className={`${input} min-h-[64px]`} value={row.note} onChange={(e) => setCell(index, "note", e.target.value)} placeholder="Ví dụ: Phí dịch vụ kế toán tháng 7–9/2026, hóa đơn số 123" />
+                </label>
+              </div>
+            </div>
+          ))}
+          <div className="flex flex-wrap gap-2">
+            <button type="button" className={ghost} onClick={() => setManual((list) => [...list, emptyRow()])} disabled={manual.length >= 20}><Plus size={16} /> Thêm khách</button>
+            <button type="button" className={primary} disabled={busy} onClick={() => save(manual, () => setManual([emptyRow()]))}>{busy ? <Loader2 size={16} className="animate-spin" /> : <Save size={16} />} Lưu vào danh sách</button>
+          </div>
+        </div>
+      ) : (
+        <div className="mt-5 space-y-4">
+          <div className="flex flex-wrap items-center gap-2">
+            <a href={AR_TEMPLATE_URL} download className={ghost}><Download size={16} /> Tải file mẫu Excel</a>
+            <label className={`${ghost} cursor-pointer`}>
+              <UploadCloud size={16} /> Chọn file (.xlsx, .csv)
+              <input type="file" accept=".xlsx,.csv" className="hidden" onChange={pickFile} />
+            </label>
+            {fileName && <span className="inline-flex items-center gap-2 text-sm text-slate-400"><FileSpreadsheet size={15} /> {fileName}</span>}
+          </div>
+          <p className="text-xs text-slate-500">Cột cần có: Người nhận, Email người nhận, Email CC, Tên công ty khách hàng, MST, Số tiền nợ, Giai đoạn nợ, Ghi chú. Nhiều email trong một ô thì ngăn bằng dấu chấm phẩy. Tối đa 500 dòng.</p>
+          {fileErrors.length > 0 && <div className="rounded-xl border border-rose-300/25 bg-rose-400/10 p-3 text-sm text-rose-100">{fileErrors.join(" ")}</div>}
+          {fileRows.length > 0 && (
+            <>
+              <div className="text-sm text-slate-300">
+                {fileRows.length} dòng · tổng {formatVnd(fileTotal)}
+                {fileInvalid > 0 && <span className="ml-2 text-rose-200">· {fileInvalid} dòng có lỗi (tô đỏ) — sửa trong file rồi tải lại</span>}
+              </div>
+              <div className="max-h-[420px] overflow-auto rounded-2xl border border-white/10">
+                <table className="w-full min-w-[900px] text-left text-sm">
+                  <thead className="sticky top-0 bg-[#0d1726] text-xs text-slate-400">
+                    <tr><th className="p-3">Dòng</th><th>Người nhận</th><th>Email</th><th>Công ty / MST</th><th className="text-right">Số tiền</th><th className="pl-4">Giai đoạn</th><th>Ghi chú</th><th /></tr>
+                  </thead>
+                  <tbody>
+                    {fileRows.map((r) => (
+                      <tr key={r._line} className={`border-t border-white/5 align-top ${r._errors.length ? "bg-rose-500/10" : ""}`}>
+                        <td className="p-3 text-slate-500">{r._line}</td>
+                        <td className="py-3 pr-3">{r.recipient_name}</td>
+                        <td className="py-3 pr-3 text-xs text-slate-300">{r.recipient_emails}{r.cc_emails && <div className="text-slate-500">CC: {r.cc_emails}</div>}</td>
+                        <td className="py-3 pr-3">{r.company_name}<div className="text-xs text-slate-500">{r.tax_code}</div></td>
+                        <td className="py-3 text-right font-semibold">{Number.isFinite(toAmount(r.amount)) ? formatVnd(toAmount(r.amount)) : r.amount}</td>
+                        <td className="py-3 pl-4 pr-3">{r.period}</td>
+                        <td className="max-w-[220px] py-3 pr-3 text-xs text-slate-400">{r.note}{r._errors.length > 0 && <div className="mt-1 font-semibold text-rose-200">{r._errors.join(", ")}</div>}</td>
+                        <td className="py-3 pr-3"><button type="button" className="text-cyan-300 hover:text-cyan-100" onClick={() => onPreview(r)} aria-label="Xem trước"><Eye size={15} /></button></td>
+                      </tr>
+                    ))}
+                  </tbody>
+                </table>
+              </div>
+              <button type="button" className={primary} disabled={busy || fileInvalid > 0} onClick={() => save(fileRows, () => { setFileRows([]); setFileName(""); })}>
+                {busy ? <Loader2 size={16} className="animate-spin" /> : <Save size={16} />} Lưu {fileRows.length} dòng vào danh sách
+              </button>
+            </>
+          )}
+        </div>
+      )}
+    </section>
+  );
+}
+
+function ReminderList({ rows, loading, status, onReload, onNotify, onError, onPreview, onEdit }) {
+  const [filter, setFilter] = useState("unsent");
+  const [query, setQuery] = useState("");
+  const [selected, setSelected] = useState(new Set());
+  const [confirm, setConfirm] = useState(null); // { ids, resend }
+  const [progress, setProgress] = useState(null);
+  const [busy, setBusy] = useState("");
+
+  const visible = useMemo(() => {
+    const q = query.trim().toLowerCase();
+    return rows.filter((r) => {
+      if (filter === "unsent" && !["draft", "failed"].includes(r.status)) return false;
+      if (filter !== "unsent" && filter !== "all" && r.status !== filter) return false;
+      if (!q) return true;
+      return [r.company_name, r.tax_code, r.recipient_name, r.batch_label, r.period, ...(r.recipient_emails || [])].some((v) => String(v || "").toLowerCase().includes(q));
+    });
+  }, [rows, filter, query]);
+
+  const selectable = visible.filter((r) => ["draft", "failed"].includes(r.status));
+  const chosen = rows.filter((r) => selected.has(r.id) && ["draft", "failed"].includes(r.status));
+  const chosenTotal = chosen.reduce((sum, r) => sum + Number(r.amount || 0), 0);
+  const counts = useMemo(() => rows.reduce((acc, r) => ({ ...acc, [r.status]: (acc[r.status] || 0) + 1 }), {}), [rows]);
+
+  const toggle = (id) => setSelected((set) => {
+    const next = new Set(set);
+    if (next.has(id)) next.delete(id);
+    else next.add(id);
+    return next;
+  });
+  const toggleAll = () => setSelected((set) => (selectable.every((r) => set.has(r.id)) ? new Set() : new Set(selectable.map((r) => r.id))));
+
+  const send = async ({ ids, resend }) => {
+    setConfirm(null);
+    let sent = 0;
+    const failed = [];
+    let skipped = 0;
+    setProgress({ done: 0, total: ids.length });
+    try {
+      for (const part of chunk(ids, 10)) {
+        const data = await invokeArEmail("send", { ids: part, resend });
+        for (const r of data.results || []) {
+          if (r.status === "sent") sent += 1;
+          else failed.push(r.error);
+        }
+        skipped += (data.skipped || []).length;
+        setProgress((p) => ({ ...p, done: p.done + part.length }));
+      }
+    } catch (sendError) {
+      failed.push(sendError.message);
+    }
+    setProgress(null);
+    setSelected(new Set());
+    const lines = [`Đã gửi ${sent}/${ids.length} email từ accounting@facs.vn.`];
+    if (skipped) lines.push(`${skipped} dòng bỏ qua vì đã gửi hoặc đang được gửi ở nơi khác.`);
+    if (failed.length) lines.push(`${failed.length} lỗi: ${[...new Set(failed)].slice(0, 3).join(" | ")}`);
+    if (failed.length) onError(lines.join("\n"));
+    else onNotify(lines.join("\n"));
+    onReload();
+  };
+
+  const test = async () => {
+    setBusy("test");
+    try {
+      const data = await invokeArEmail("test", { id: chosen[0]?.id });
+      onNotify(`Đã gửi bản thử từ accounting@facs.vn đến ${data.sent_to}${chosen[0] ? ` (dữ liệu của ${chosen[0].company_name})` : " (dữ liệu minh họa)"}. Hãy kiểm tra hộp thư.`);
+    } catch (testError) {
+      onError(testError.message);
+    }
+    setBusy("");
+  };
+
+  const remove = async () => {
+    if (!chosen.length || !window.confirm(`Xóa ${chosen.length} dòng chưa gửi?`)) return;
+    setBusy("delete");
+    try {
+      await deleteReminders(chosen.map((r) => r.id));
+      setSelected(new Set());
+      onNotify(`Đã xóa ${chosen.length} dòng.`);
+      onReload();
+    } catch (deleteError) {
+      onError(deleteError.message);
+    }
+    setBusy("");
+  };
+
+  const canSend = status?.connected && status?.bank_ready;
+
+  return (
+    <section className={`${card} mt-6`}>
+      <div className="flex flex-col gap-4 lg:flex-row lg:items-end lg:justify-between">
+        <div>
+          <h2 className="text-xl font-semibold">Danh sách nhắc nợ</h2>
+          <p className="mt-1 text-sm text-slate-500">Chưa gửi: {counts.draft || 0} · Lỗi: {counts.failed || 0} · Đã gửi: {counts.sent || 0}</p>
+        </div>
+        <div className="flex flex-wrap gap-2">
+          <select className={`${input} w-auto`} value={filter} onChange={(e) => { setFilter(e.target.value); setSelected(new Set()); }}>
+            <option value="unsent">Chưa gửi & lỗi</option>
+            <option value="sent">Đã gửi</option>
+            <option value="all">Tất cả</option>
+          </select>
+          <div className="relative">
+            <Search size={15} className="absolute left-3 top-1/2 -translate-y-1/2 text-slate-500" />
+            <input className={`${input} w-64 pl-9`} value={query} onChange={(e) => setQuery(e.target.value)} placeholder="Tìm công ty, MST, email, đợt…" />
+          </div>
+        </div>
+      </div>
+
+      {loading && !rows.length ? (
+        <div className="mt-6 flex items-center gap-2 text-sm text-slate-400"><Loader2 size={16} className="animate-spin" /> Đang tải…</div>
+      ) : !visible.length ? (
+        <div className="mt-6 rounded-2xl border border-dashed border-white/10 p-8 text-center text-sm text-slate-500">Chưa có dòng nào{filter === "unsent" ? " cần gửi" : ""}.</div>
+      ) : (
+        <div className="mt-5 overflow-x-auto rounded-2xl border border-white/10">
+          <table className="w-full min-w-[980px] text-left text-sm">
+            <thead className="bg-white/[0.03] text-xs text-slate-400">
+              <tr>
+                <th className="w-10 p-3">{selectable.length > 0 && <input type="checkbox" className="accent-cyan-300" checked={selectable.every((r) => selected.has(r.id))} onChange={toggleAll} aria-label="Chọn tất cả" />}</th>
+                <th>Công ty / MST</th>
+                <th>Người nhận</th>
+                <th className="text-right">Số tiền</th>
+                <th className="pl-4">Giai đoạn</th>
+                <th>Trạng thái</th>
+                <th className="pr-3 text-right">Thao tác</th>
+              </tr>
+            </thead>
+            <tbody>
+              {visible.map((r) => {
+                const editable = ["draft", "failed"].includes(r.status);
+                return (
+                  <tr key={r.id} className="border-t border-white/5 align-top">
+                    <td className="p-3">{editable && <input type="checkbox" className="accent-cyan-300" checked={selected.has(r.id)} onChange={() => toggle(r.id)} aria-label="Chọn" />}</td>
+                    <td className="py-3 pr-3">
+                      <div className="font-semibold">{r.company_name}</div>
+                      <div className="text-xs text-slate-500">{[r.tax_code && `MST ${r.tax_code}`, r.batch_label].filter(Boolean).join(" · ")}</div>
+                      {r.note && <div className="mt-1 max-w-[280px] text-xs text-slate-400">{r.note}</div>}
+                    </td>
+                    <td className="py-3 pr-3">
+                      <div>{r.recipient_name}</div>
+                      <div className="text-xs text-slate-400">{(r.recipient_emails || []).join("; ")}</div>
+                      {r.cc_emails?.length > 0 && <div className="text-xs text-slate-500">CC: {r.cc_emails.join("; ")}</div>}
+                    </td>
+                    <td className="py-3 text-right font-semibold">{formatVnd(r.amount)}</td>
+                    <td className="py-3 pl-4 pr-3">{r.period}</td>
+                    <td className="py-3 pr-3">
+                      <span className={`rounded-full px-2.5 py-1 text-[11px] font-bold ${statusStyle[r.status]}`}>{statusLabel[r.status]}</span>
+                      {r.sent_at && <div className="mt-1 text-xs text-slate-500">{formatDateTime(r.sent_at)}</div>}
+                      {r.last_error && <div className="mt-1 max-w-[220px] text-xs text-rose-200">{r.last_error}</div>}
+                    </td>
+                    <td className="py-3 pr-3">
+                      <div className="flex justify-end gap-3 text-slate-400">
+                        <button type="button" className="hover:text-cyan-200" onClick={() => onPreview(r)} title="Xem trước email"><Eye size={16} /></button>
+                        {editable && <button type="button" className="hover:text-cyan-200" onClick={() => onEdit(r)} title="Sửa"><Pencil size={16} /></button>}
+                        {r.status === "sent" && <button type="button" className="hover:text-amber-200" onClick={() => setConfirm({ ids: [r.id], resend: true, rows: [r] })} disabled={!canSend} title="Gửi lại"><RotateCcw size={16} /></button>}
+                      </div>
+                    </td>
+                  </tr>
+                );
+              })}
+            </tbody>
+          </table>
+        </div>
+      )}
+
+      <div className="mt-5 flex flex-wrap items-center gap-3">
+        <span className="text-sm text-slate-300">Đã chọn {chosen.length} dòng{chosen.length > 0 && ` · tổng ${formatVnd(chosenTotal)}`}</span>
+        <button type="button" className={primary} disabled={!chosen.length || !canSend || !!progress} onClick={() => setConfirm({ ids: chosen.map((r) => r.id), resend: false, rows: chosen })}>
+          <Send size={16} /> Gửi email
+        </button>
+        <button type="button" className={ghost} disabled={!status?.connected || busy === "test"} onClick={test}>{busy === "test" ? <Loader2 size={16} className="animate-spin" /> : <Send size={16} />} Gửi thử cho tôi</button>
+        <button type="button" className={ghost} disabled={!chosen.length || busy === "delete"} onClick={remove}><Trash2 size={16} /> Xóa dòng đã chọn</button>
+        {status && !status.bank_ready && <span className="text-xs text-amber-200">Cần điền tài khoản ngân hàng trước khi gửi.</span>}
+        {progress && <span className="inline-flex items-center gap-2 text-sm text-cyan-200"><Loader2 size={16} className="animate-spin" /> Đang gửi {progress.done}/{progress.total}… (mỗi email cách nhau ~2 giây, đừng đóng trang)</span>}
+      </div>
+
+      {confirm && (
+        <div className="fixed inset-0 z-[100] flex items-center justify-center bg-[#020812]/80 p-4 backdrop-blur-md" role="dialog" aria-modal="true">
+          <div className="w-full max-w-lg rounded-[28px] border border-cyan-200/20 bg-[#0d1726] p-6">
+            <h3 className="text-xl font-bold">{confirm.resend ? "Gửi lại email nhắc nợ?" : `Gửi ${confirm.ids.length} email nhắc nợ?`}</h3>
+            <p className="mt-3 text-sm leading-relaxed text-slate-300">
+              Email sẽ được gửi từ <strong className="text-cyan-200">accounting@facs.vn</strong> đến khách hàng thật, tổng công nợ {formatVnd(confirm.rows.reduce((s, r) => s + Number(r.amount || 0), 0))}. Không thể thu hồi sau khi gửi.
+            </p>
+            <ul className="mt-3 max-h-40 overflow-auto text-xs text-slate-400">
+              {confirm.rows.slice(0, 20).map((r) => <li key={r.id}>• {r.company_name} — {(r.recipient_emails || []).join(", ")} — {formatVnd(r.amount)}</li>)}
+              {confirm.rows.length > 20 && <li>… và {confirm.rows.length - 20} khách khác</li>}
+            </ul>
+            <div className="mt-6 flex justify-end gap-3">
+              <button type="button" className={ghost} onClick={() => setConfirm(null)}>Hủy</button>
+              <button type="button" className={primary} onClick={() => send(confirm)}><Send size={16} /> Xác nhận gửi</button>
+            </div>
+          </div>
+        </div>
+      )}
+    </section>
+  );
+}
+
+function SettingsModal({ onClose, onSaved }) {
+  const [settings, setSettings] = useState(null);
+  const [defaults, setDefaults] = useState(null);
+  const [error, setError] = useState("");
+  const [busy, setBusy] = useState("");
+  const [previewHtml, setPreviewHtml] = useState("");
+
+  useEffect(() => {
+    invokeArEmail("get_settings").then((data) => {
+      setSettings(data.settings);
+      setDefaults(data.defaults);
+    }).catch((loadError) => setError(loadError.message));
+  }, []);
+
+  const set = (key, value) => setSettings((s) => ({ ...s, [key]: value }));
+
+  const doPreview = async () => {
+    setBusy("preview");
+    setError("");
+    try {
+      setPreviewHtml((await invokeArEmail("preview", { settings })).html);
+    } catch (previewError) {
+      setError(previewError.message);
+    }
+    setBusy("");
+  };
+
+  const save = async () => {
+    setBusy("save");
+    setError("");
+    try {
+      await invokeArEmail("save_settings", { settings });
+      onSaved();
+      onClose();
+    } catch (saveError) {
+      setError(saveError.message);
+    }
+    setBusy("");
+  };
+
+  const bankFields = [
+    ["bank_name", "Ngân hàng *", "Ngân hàng TMCP Ngoại thương Việt Nam (Vietcombank)"],
+    ["bank_branch", "Chi nhánh", "Chi nhánh …"],
+    ["account_number", "Số tài khoản *", "0071000…"],
+    ["account_holder", "Chủ tài khoản *", "CÔNG TY TNHH …"],
+    ["swift_code", "Mã SWIFT (cho khách nước ngoài)", "BFTVVNVX"],
+  ];
+
+  return (
+    <div className="fixed inset-0 z-[100] flex items-center justify-center bg-[#020812]/80 p-4 backdrop-blur-md" role="dialog" aria-modal="true">
+      <div className="max-h-[94vh] w-full max-w-6xl overflow-y-auto rounded-[30px] border border-cyan-200/20 bg-[#0d1726] p-5 md:p-7">
+        <div className="flex items-start justify-between gap-4">
+          <div>
+            <div className="text-xs font-bold uppercase tracking-[.18em] text-cyan-300">accounting@facs.vn</div>
+            <h2 className="mt-2 text-2xl font-bold">Mẫu email nhắc nợ & tài khoản ngân hàng</h2>
+          </div>
+          <button type="button" onClick={onClose} className="flex h-10 w-10 items-center justify-center rounded-xl border border-white/10 text-slate-300"><X size={19} /></button>
+        </div>
+        {error && <div className="mt-4 rounded-xl border border-rose-300/25 bg-rose-400/10 p-3 text-sm text-rose-100">{error}</div>}
+        {!settings ? (
+          <div className="mt-6 flex items-center gap-2 text-sm text-slate-400"><Loader2 size={16} className="animate-spin" /> Đang tải…</div>
+        ) : (
+          <div className="mt-5 grid gap-6 xl:grid-cols-2">
+            <div className="space-y-4">
+              <div className="rounded-2xl border border-white/10 bg-[#081321]/50 p-4">
+                <div className="mb-3 flex items-center gap-2 font-semibold"><Landmark size={17} className="text-cyan-300" /> Tài khoản nhận thanh toán</div>
+                <div className="grid gap-3 md:grid-cols-2">
+                  {bankFields.map(([key, text, placeholder]) => (
+                    <label key={key} className="block">
+                      <span className={label}>{text}</span>
+                      <input className={input} value={settings[key]} placeholder={placeholder} onChange={(e) => set(key, e.target.value)} />
+                    </label>
+                  ))}
+                  <label className="block md:col-span-2">
+                    <span className={label}>Nội dung chuyển khoản gợi ý</span>
+                    <input className={input} value={settings.transfer_note} onChange={(e) => set("transfer_note", e.target.value)} />
+                  </label>
+                </div>
+              </div>
+              <label className="block">
+                <span className={label}>Tiêu đề email</span>
+                <input className={input} value={settings.subject} onChange={(e) => set("subject", e.target.value)} />
+              </label>
+              <label className="block">
+                <span className={label}>Nội dung tiếng Việt</span>
+                <textarea className={`${input} min-h-[200px] leading-relaxed`} value={settings.body_vi} onChange={(e) => set("body_vi", e.target.value)} />
+              </label>
+              <label className="block">
+                <span className={label}>English content</span>
+                <textarea className={`${input} min-h-[200px] leading-relaxed`} value={settings.body_en} onChange={(e) => set("body_en", e.target.value)} />
+              </label>
+              <p className="text-xs leading-relaxed text-slate-500">
+                Biến dùng được: <code>{"{{recipient_name}}"}</code> <code>{"{{company_name}}"}</code> <code>{"{{tax_code}}"}</code> <code>{"{{amount}}"}</code> <code>{"{{period}}"}</code> <code>{"{{note}}"}</code>. Bảng “Chi tiết công nợ”, bảng “Thông tin chuyển khoản” (song ngữ, hiện một lần) được hệ thống tự thêm cuối phần tiếng Việt, trước chữ ký; mỗi phần có chữ ký Phòng Kế toán riêng.
+              </p>
+            </div>
+            <div>
+              <div className="mb-2 flex items-center justify-between">
+                <span className="text-sm font-semibold text-slate-300">Xem trước (dữ liệu minh họa)</span>
+                <button type="button" className={ghost} onClick={doPreview} disabled={busy === "preview"}>{busy === "preview" ? <Loader2 size={16} className="animate-spin" /> : <Eye size={16} />} Cập nhật xem trước</button>
+              </div>
+              {previewHtml ? <iframe title="Xem trước email" sandbox="" srcDoc={previewHtml} className="h-[70vh] w-full rounded-2xl border border-white/10 bg-white" /> : <div className="flex h-[300px] items-center justify-center rounded-2xl border border-dashed border-white/10 text-sm text-slate-500">Bấm “Cập nhật xem trước”.</div>}
+            </div>
+          </div>
+        )}
+        <div className="mt-6 flex flex-wrap justify-between gap-3 border-t border-white/10 pt-5">
+          <button type="button" className={ghost} disabled={!defaults} onClick={() => window.confirm("Khôi phục tiêu đề và nội dung mặc định? (Thông tin ngân hàng giữ nguyên)") && setSettings((s) => ({ ...s, subject: defaults.subject, body_vi: defaults.body_vi, body_en: defaults.body_en, transfer_note: defaults.transfer_note }))}>
+            <RotateCcw size={16} /> Nội dung mặc định
+          </button>
+          <div className="flex gap-3">
+            <button type="button" className={ghost} onClick={onClose}>Đóng</button>
+            <button type="button" className={primary} onClick={save} disabled={!settings || busy === "save"}>{busy === "save" ? <Loader2 size={16} className="animate-spin" /> : <Save size={16} />} Lưu</button>
+          </div>
+        </div>
+      </div>
+    </div>
+  );
+}
+
+function EditModal({ row, onClose, onSaved }) {
+  const [form, setForm] = useState({
+    ...toPayload(row),
+    recipient_emails: (row.recipient_emails || []).join("; "),
+    cc_emails: (row.cc_emails || []).join("; "),
+    amount: String(Number(row.amount)),
+  });
+  const [error, setError] = useState("");
+  const [busy, setBusy] = useState(false);
+
+  const save = async () => {
+    const errors = validateReminder(form);
+    if (errors.length) return setError(errors.join(", "));
+    setBusy(true);
+    try {
+      await invokeArEmail("update_reminder", { id: row.id, row: form });
+      onSaved();
+    } catch (saveError) {
+      setError(saveError.message);
+    }
+    setBusy(false);
+  };
+
+  return (
+    <div className="fixed inset-0 z-[100] flex items-center justify-center bg-[#020812]/80 p-4 backdrop-blur-md" role="dialog" aria-modal="true">
+      <div className="w-full max-w-3xl rounded-[28px] border border-cyan-200/20 bg-[#0d1726] p-6">
+        <div className="flex items-center justify-between"><h3 className="text-xl font-bold">Sửa dòng nhắc nợ</h3><button type="button" onClick={onClose} className="text-slate-400"><X size={19} /></button></div>
+        {error && <div className="mt-3 rounded-xl border border-rose-300/25 bg-rose-400/10 p-3 text-sm text-rose-100">{error}</div>}
+        <div className="mt-4 grid gap-3 md:grid-cols-2">
+          {fields.map(([key, text]) => (
+            <label key={key} className="block"><span className={label}>{text}</span><input className={input} value={form[key]} onChange={(e) => setForm((f) => ({ ...f, [key]: e.target.value }))} /></label>
+          ))}
+          <label className="block md:col-span-2"><span className={label}>Ghi chú</span><textarea className={`${input} min-h-[70px]`} value={form.note} onChange={(e) => setForm((f) => ({ ...f, note: e.target.value }))} /></label>
+        </div>
+        <div className="mt-5 flex justify-end gap-3">
+          <button type="button" className={ghost} onClick={onClose}>Hủy</button>
+          <button type="button" className={primary} onClick={save} disabled={busy}>{busy ? <Loader2 size={16} className="animate-spin" /> : <Save size={16} />} Lưu</button>
+        </div>
+      </div>
+    </div>
+  );
+}
+
+function PreviewModal({ preview, onClose }) {
+  return (
+    <div className="fixed inset-0 z-[110] flex items-center justify-center bg-[#020812]/80 p-4 backdrop-blur-md" role="dialog" aria-modal="true">
+      <div className="flex max-h-[94vh] w-full max-w-3xl flex-col rounded-[28px] border border-cyan-200/20 bg-[#0d1726] p-5">
+        <div className="flex items-start justify-between gap-3">
+          <div>
+            <h3 className="text-lg font-bold">{preview.title}</h3>
+            {preview.subject && <div className="mt-1 text-sm text-slate-300"><span className="text-slate-500">Tiêu đề:</span> {preview.subject}</div>}
+            {preview.bank_warning && <div className="mt-1 text-xs text-amber-200">{preview.bank_warning}</div>}
+          </div>
+          <button type="button" onClick={onClose} className="text-slate-400"><X size={19} /></button>
+        </div>
+        {preview.loading ? (
+          <div className="mt-6 flex items-center gap-2 text-sm text-slate-400"><Loader2 size={16} className="animate-spin" /> Đang dựng email…</div>
+        ) : (
+          <iframe title="Xem trước email" sandbox="" srcDoc={preview.html} className="mt-4 h-[75vh] w-full rounded-2xl bg-white" />
+        )}
+      </div>
+    </div>
   );
 }

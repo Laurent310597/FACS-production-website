@@ -26,7 +26,10 @@ import AdminLegalDashboardPage from "./pages/admin/AdminLegalDashboardPage";
 import AdminLegalCalendarEditorPage from "./pages/admin/AdminLegalCalendarEditorPage";
 import AdminLegalSourcesPage from "./pages/admin/AdminLegalSourcesPage";
 import AdminARPage from "./pages/admin/AdminARPage";
-import AdminARCustomersPage from "./pages/admin/AdminARCustomersPage";
+import AdminHubContentPage from "./pages/admin/AdminHubContentPage";
+import AdminHubLibraryPage from "./pages/admin/AdminHubLibraryPage";
+import AdminHubSocialPage from "./pages/admin/AdminHubSocialPage";
+import AdminHubZaloPage from "./pages/admin/AdminHubZaloPage";
 import ProtectedAdminRoute from "./components/admin/ProtectedAdminRoute";
 import CareersPage from "./pages/CareersPage";
 import CareerDetailPage from "./pages/CareerDetailPage";
@@ -135,8 +138,13 @@ function AnimatedRoutes() {
         <Route path="/admin/legal-calendar/new" element={<ProtectedAdminRoute><AdminLegalCalendarEditorPage /></ProtectedAdminRoute>} />
         <Route path="/admin/legal-calendar/:id/edit" element={<ProtectedAdminRoute><AdminLegalCalendarEditorPage /></ProtectedAdminRoute>} />
         <Route path="/admin/legal-sources" element={<ProtectedAdminRoute><AdminLegalSourcesPage /></ProtectedAdminRoute>} />
+        <Route path="/admin/hub" element={<Navigate to="/admin/hub/content" replace />} />
+        <Route path="/admin/hub/content" element={<ProtectedAdminRoute><AdminHubContentPage /></ProtectedAdminRoute>} />
+        <Route path="/admin/hub/social" element={<ProtectedAdminRoute><AdminHubSocialPage /></ProtectedAdminRoute>} />
+        <Route path="/admin/hub/zalo" element={<ProtectedAdminRoute><AdminHubZaloPage /></ProtectedAdminRoute>} />
+        <Route path="/admin/hub/library" element={<ProtectedAdminRoute><AdminHubLibraryPage /></ProtectedAdminRoute>} />
         <Route path="/admin/ar" element={<ProtectedAdminRoute><AdminARPage /></ProtectedAdminRoute>} />
-        <Route path="/admin/ar/customers" element={<ProtectedAdminRoute><AdminARCustomersPage /></ProtectedAdminRoute>} />
+        <Route path="/admin/ar/customers" element={<Navigate to="/admin/ar" replace />} />
         <Route path="/careers" element={<PageTransition><CareersPage /></PageTransition>} />
         <Route path="/careers/apply" element={<PageTransition><ApplicationPage /></PageTransition>} />
         <Route path="/careers/:slug" element={<PageTransition><CareerDetailPage /></PageTransition>} />

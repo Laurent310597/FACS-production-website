@@ -1,6 +1,9 @@
 import { Link, NavLink, useNavigate } from "react-router-dom";
-import { BarChart3, Briefcase, CalendarRange, ExternalLink, FilePlus2, LayoutDashboard, LogOut, Mail, MailCheck, MessagesSquare, Newspaper, Radar, ReceiptText, UserRoundSearch, Users } from "lucide-react";
+import { BarChart3, Briefcase, CalendarClock, Building2, CalendarRange, FolderOpen, ExternalLink, FilePlus2, LayoutDashboard, LogOut, Mail, MailCheck, MessagesSquare, Newspaper, Radar, ReceiptText, Sparkles, UserRoundSearch } from "lucide-react";
 import { supabase } from "../../lib/supabaseClient";
+
+// Địa chỉ Văn phòng AI ảo (FACS AI Office trên Cloudflare Pages). Đổi bằng biến VITE_AI_OFFICE_URL trên Vercel nếu cần.
+const AI_OFFICE_URL = import.meta.env.VITE_AI_OFFICE_URL || "https://facs-ai-office.pages.dev/";
 
 const navClass = ({ isActive }) =>
   `flex items-center gap-3 rounded-2xl px-4 py-3 text-sm font-semibold transition-all ${
@@ -56,6 +59,23 @@ export default function AdminLayout({ children }) {
               <Mail size={18} /> Email Insights
             </NavLink>
 
+            <div className="mt-2 border-t border-white/10 px-4 pb-1 pt-5 text-[11px] font-bold uppercase tracking-[0.18em] text-slate-600 sm:col-span-2 lg:col-span-1">FACS Hub</div>
+            <NavLink to="/admin/hub/content" end className={navClass}>
+              <Sparkles size={18} /> Tạo nội dung AI
+            </NavLink>
+            <NavLink to="/admin/hub/social" end className={navClass}>
+              <CalendarClock size={18} /> Đăng & lịch đăng
+            </NavLink>
+            <NavLink to="/admin/hub/zalo" end className={navClass}>
+              <MessagesSquare size={18} /> AI Zalo
+            </NavLink>
+            <NavLink to="/admin/hub/library" end className={navClass}>
+              <FolderOpen size={18} /> Thư viện Hub
+            </NavLink>
+            <a href={AI_OFFICE_URL} target="_blank" rel="noreferrer noopener" className={navClass({ isActive: false })}>
+              <Building2 size={18} /> Văn phòng AI ảo <ExternalLink size={14} className="ml-auto opacity-60" />
+            </a>
+
             <div className="mt-2 border-t border-white/10 px-4 pb-1 pt-5 text-[11px] font-bold uppercase tracking-[0.18em] text-slate-600 sm:col-span-2 lg:col-span-1">Careers</div>
             <NavLink to="/admin/jobs" end className={navClass}>
               <Briefcase size={18} /> Danh sách tuyển dụng
@@ -90,10 +110,7 @@ export default function AdminLayout({ children }) {
 
             <div className="mt-2 border-t border-white/10 px-4 pb-1 pt-5 text-[11px] font-bold uppercase tracking-[0.18em] text-slate-600 sm:col-span-2 lg:col-span-1">Finance</div>
             <NavLink to="/admin/ar" end className={navClass}>
-              <ReceiptText size={18} /> AR Management
-            </NavLink>
-            <NavLink to="/admin/ar/customers" end className={navClass}>
-              <Users size={18} /> Customer Master
+              <ReceiptText size={18} /> AR – Nhắc công nợ
             </NavLink>
           </nav>
         </aside>
