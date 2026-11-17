@@ -58,6 +58,10 @@ test("email: song ngữ, đúng số tiền, có thông tin ngân hàng, chữ k
   for (const label of ["Chi tiết công nợ", "Outstanding balance", "Thông tin chuyển khoản", "Bank transfer details", "Số tài khoản", "Account number", "Amount due"]) assert.ok(html.includes(label), label);
   assert.equal(html.split("Chi tiết công nợ").length - 1, 1);
   assert.ok(html.includes("Dear Nguyễn Văn A") && html.includes("Kính gửi Anh/Chị Nguyễn Văn A"));
+  // Thứ tự giống email Insights/Contact/HR: VI → bảng song ngữ → chữ ký VI → gạch ngang → EN → chữ ký EN
+  const order = ["Kính gửi", "Chi tiết công nợ", "PHÒNG KẾ TOÁN", "-------------------", "Dear ", "ACCOUNTING DEPARTMENT"].map((x) => html.indexOf(x));
+  assert.deepEqual([...order].sort((a, b) => a - b), order);
+  assert.ok(order.every((i) => i > 0));
   assert.ok(html.includes("Vietcombank") && html.includes("0071000123456"));
   assert.ok(html.includes("MST 0312345678 thanh toan cong no Quý 3/2026"));
   assert.ok(html.includes("PHÒNG KẾ TOÁN") && html.includes("ACCOUNTING DEPARTMENT") && html.includes("accounting@facs.vn"));

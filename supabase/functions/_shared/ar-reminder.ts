@@ -33,7 +33,7 @@ export const DEFAULT_AR_SETTINGS: ArSettings = {
   body_vi:
     "Kính gửi Anh/Chị {{recipient_name}},\n\nFACS trân trọng cảm ơn {{company_name}} đã tin tưởng sử dụng dịch vụ của chúng tôi.\n\nTheo số liệu theo dõi của FACS, Quý Công ty hiện còn khoản phí dịch vụ chưa thanh toán với chi tiết như bên dưới. FACS kính đề nghị Quý Công ty sắp xếp thanh toán vào tài khoản ngân hàng của FACS.\n\nTrường hợp Quý Công ty đã thanh toán, vui lòng bỏ qua email này và gửi giúp FACS chứng từ thanh toán (ủy nhiệm chi) để đối chiếu. Nếu có thắc mắc về số liệu, Anh/Chị vui lòng phản hồi trực tiếp email này.",
   body_en:
-    "Dear {{recipient_name}},\n\nThank you for choosing FACS's services.\n\nAccording to our records, {{company_name}} has an outstanding service fee balance as detailed below. We kindly request that the payment be arranged to FACS's bank account.\n\nIf the payment has already been made, please disregard this email and kindly send us the payment confirmation (bank transfer slip) for reconciliation. Should you have any questions regarding the figures, please reply directly to this email.",
+    "Dear {{recipient_name}},\n\nThank you for choosing FACS's services.\n\nAccording to our records, {{company_name}} has an outstanding service fee balance as detailed in the tables above. We kindly request that the payment be arranged to FACS's bank account.\n\nIf the payment has already been made, please disregard this email and kindly send us the payment confirmation (bank transfer slip) for reconciliation. Should you have any questions regarding the figures, please reply directly to this email.",
   bank_name: "",
   bank_branch: "",
   account_number: "",
@@ -198,17 +198,18 @@ function tables(r: ArReminder, s: ArSettings) {
   return `${details}${bank}`;
 }
 
-const SEPARATOR = '<div style="font-family:Arial,Helvetica,sans-serif;margin:26px 0;text-align:center;color:#a3acb9;letter-spacing:1px;">-------------------</div>';
+const SEPARATOR = '<div style="font-family:Arial,Helvetica,sans-serif;margin:30px 0;text-align:center;color:#a3acb9;letter-spacing:1px;">-------------------</div>';
 
 /**
- * Bố cục: lời nhắn tiếng Việt → lời nhắn tiếng Anh → bảng công nợ và bảng chuyển khoản (song ngữ, hiện một lần)
- * → chữ ký Phòng Kế toán song ngữ. Cả hai lời nhắn đều nói "chi tiết bên dưới" nên đặt bảng ở cuối là đúng.
+ * Bố cục giống email Insights / Contact / HR: phần tiếng Việt kèm chữ ký tiếng Việt, gạch ngang, phần tiếng Anh kèm chữ ký tiếng Anh.
+ * Bảng công nợ và bảng chuyển khoản là song ngữ, chỉ hiện một lần ở cuối phần tiếng Việt (phần tiếng Anh nhắc "the tables above").
  */
 function content(r: ArReminder, s: ArSettings) {
   const bodyVi = paragraphs(fill(s.body_vi, variables(r, "vi")));
   const bodyEn = paragraphs(fill(s.body_en, variables(r, "en")));
-  const sign = buildEmailSignature(AR_SENDER, "Trân trọng, <span style=\"font-style:italic;color:#687386;\">/ Sincerely,</span>", "PHÒNG KẾ TOÁN <span style=\"font-weight:400;font-style:italic;color:#687386;\">/ ACCOUNTING DEPARTMENT</span>");
-  return `${bodyVi}${SEPARATOR}${bodyEn}${tables(r, s)}<div style="height:6px"></div>${sign}`;
+  const signVi = buildEmailSignature(AR_SENDER, "Trân trọng,", "PHÒNG KẾ TOÁN");
+  const signEn = buildEmailSignature(AR_SENDER, "Sincerely,", "ACCOUNTING DEPARTMENT");
+  return `${bodyVi}${tables(r, s)}<div style="height:6px"></div>${signVi}${SEPARATOR}${bodyEn}${signEn}`;
 }
 
 function shell(content: string, siteUrl: string) {

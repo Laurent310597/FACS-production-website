@@ -604,7 +604,7 @@ function SettingsModal({ onClose, onSaved }) {
                 <textarea className={`${input} min-h-[200px] leading-relaxed`} value={settings.body_en} onChange={(e) => set("body_en", e.target.value)} />
               </label>
               <p className="text-xs leading-relaxed text-slate-500">
-                Biến dùng được: <code>{"{{recipient_name}}"}</code> <code>{"{{company_name}}"}</code> <code>{"{{tax_code}}"}</code> <code>{"{{amount}}"}</code> <code>{"{{period}}"}</code> <code>{"{{note}}"}</code>. Bảng “Chi tiết công nợ”, bảng “Thông tin chuyển khoản” (song ngữ) và chữ ký Phòng Kế toán được hệ thống tự thêm sau phần tiếng Anh.
+                Biến dùng được: <code>{"{{recipient_name}}"}</code> <code>{"{{company_name}}"}</code> <code>{"{{tax_code}}"}</code> <code>{"{{amount}}"}</code> <code>{"{{period}}"}</code> <code>{"{{note}}"}</code>. Bảng “Chi tiết công nợ”, bảng “Thông tin chuyển khoản” (song ngữ, hiện một lần) được hệ thống tự thêm cuối phần tiếng Việt, trước chữ ký; mỗi phần có chữ ký Phòng Kế toán riêng.
               </p>
             </div>
             <div>
