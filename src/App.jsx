@@ -29,6 +29,7 @@ import AdminARPage from "./pages/admin/AdminARPage";
 import AdminARCustomersPage from "./pages/admin/AdminARCustomersPage";
 import AdminHubContentPage from "./pages/admin/AdminHubContentPage";
 import AdminHubLibraryPage from "./pages/admin/AdminHubLibraryPage";
+import AdminHubSocialPage from "./pages/admin/AdminHubSocialPage";
 import ProtectedAdminRoute from "./components/admin/ProtectedAdminRoute";
 import CareersPage from "./pages/CareersPage";
 import CareerDetailPage from "./pages/CareerDetailPage";
@@ -139,6 +140,7 @@ function AnimatedRoutes() {
         <Route path="/admin/legal-sources" element={<ProtectedAdminRoute><AdminLegalSourcesPage /></ProtectedAdminRoute>} />
         <Route path="/admin/hub" element={<Navigate to="/admin/hub/content" replace />} />
         <Route path="/admin/hub/content" element={<ProtectedAdminRoute><AdminHubContentPage /></ProtectedAdminRoute>} />
+        <Route path="/admin/hub/social" element={<ProtectedAdminRoute><AdminHubSocialPage /></ProtectedAdminRoute>} />
         <Route path="/admin/hub/library" element={<ProtectedAdminRoute><AdminHubLibraryPage /></ProtectedAdminRoute>} />
         <Route path="/admin/ar" element={<ProtectedAdminRoute><AdminARPage /></ProtectedAdminRoute>} />
         <Route path="/admin/ar/customers" element={<ProtectedAdminRoute><AdminARCustomersPage /></ProtectedAdminRoute>} />

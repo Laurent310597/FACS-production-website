@@ -18,3 +18,12 @@ verify_jwt = false
 
 [functions.hub-content]
 verify_jwt = false
+
+[functions.hub-social]
+verify_jwt = false
+
+[functions.hub-social-callback]
+verify_jwt = false
+
+[functions.hub-social-publisher]
+verify_jwt = false

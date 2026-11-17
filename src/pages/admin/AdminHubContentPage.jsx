@@ -19,6 +19,7 @@ import {
   uploadHubInputImage,
 } from "../../lib/hub";
 import { downloadCanvasPng, drawInfographic } from "../../lib/hubInfographic";
+import HubSchedulePanel from "../../components/admin/HubSchedulePanel";
 
 const inputClass = "w-full rounded-2xl border border-white/10 bg-[#0d1726]/70 px-4 py-3 text-sm text-white outline-none transition placeholder:text-slate-600 focus:border-cyan-300/50";
 const cardClass = "rounded-[26px] border border-white/10 bg-white/[0.035] p-5 lg:p-6";
@@ -534,8 +535,9 @@ export default function AdminHubContentPage() {
                 <textarea value={outputs[currentTab] || ""} onChange={(e) => updateOutput(currentTab, e.target.value)} rows={12} className={inputClass} />
                 <div className="flex flex-wrap items-center gap-3">
                   <CopyButton text={outputs[currentTab]} />
-                  <span className="text-xs text-slate-500">{(outputs[currentTab] || "").length} ký tự · Hẹn giờ đăng trực tiếp sẽ có ở Phần 3 của Hub; hiện tại chép nội dung để đăng tay.</span>
+                  <span className="text-xs text-slate-500">{(outputs[currentTab] || "").length} ký tự · Có thể chép để đăng tay, hoặc đăng/hẹn giờ trực tiếp ở khung bên dưới.</span>
                 </div>
+                <HubSchedulePanel key={`${currentTab}-${itemId || "new"}`} channel={currentTab} caption={outputs[currentTab] || ""} infographic={outputs.infographic} itemId={itemId} />
               </div>
             )}
 
