@@ -7,7 +7,7 @@ Trang `/admin/ar` gửi email nhắc công nợ song ngữ từ **accounting@fac
 2. **Cấp quyền gửi (làm một lần, trên web):** Exchange admin center (https://admin.exchange.microsoft.com) → **Recipients → Mailboxes** → bấm **Internal Accounting - FACS** (accounting@facs.vn) → tab **Delegation** → mục **Send as** → **Edit** → **Add members** → chọn **Infor - FACS** (infor@facs.vn) → **Save**. Đợi khoảng 1 giờ.
    - Lý do: ứng dụng gửi mail của website hiện chỉ được Microsoft cho gửi trực tiếp từ infor@/contact@/hr@. Khi gửi trực tiếp từ accounting@ bị từ chối (403), website tự gửi qua infor@ nhưng người gửi hiển thị là **accounting@facs.vn**, khách trả lời sẽ về accounting@. Một bản ẩn (BCC) được gửi về accounting@ để lưu lịch sử.
    - Nếu sau này quản trị viên cho phép ứng dụng gửi trực tiếp từ accounting@, website tự chuyển sang gửi trực tiếp, không cần sửa gì. Hộp thư trung gian đổi được bằng secret `AR_RELAY_MAILBOX` trên Supabase.
-3. Bấm **Gửi thử cho tôi**: bản thử đi tới email đăng nhập CMS của anh/chị; thông báo cho biết đã gửi trực tiếp hay qua infor@.
+3. Bấm **Gửi thử tới tunguyen@facs.vn**: bản thử luôn đi từ accounting@facs.vn tới tunguyen@facs.vn (đổi được bằng secret `AR_TEST_RECIPIENT` trên Supabase), không gửi ra email cá nhân; thông báo cho biết đã gửi trực tiếp hay qua infor@.
 
 ## Gửi nhắc nợ
 - **Ít khách:** tab *Nhập trực tiếp* → điền Người nhận, Email (nhiều email ngăn bằng `;`), Email CC, Tên công ty, MST, Số tiền nợ, Giai đoạn nợ, Ghi chú → **Lưu vào danh sách**.

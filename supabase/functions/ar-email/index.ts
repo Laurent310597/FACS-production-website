@@ -18,6 +18,8 @@ import {
 
 type AdminClient = ReturnType<typeof createClient<any>>;
 const SEND_GAP_MS = 2100; // Exchange Online: tối đa ~30 email/phút mỗi hộp thư
+// Bản gửi thử luôn đi tới hộp thư nội bộ cố định (không gửi ra email cá nhân bên ngoài).
+const TEST_RECIPIENT = (Deno.env.get("AR_TEST_RECIPIENT") || "tunguyen@facs.vn").trim().toLowerCase();
 
 function json(body: unknown, status = 200) {
   return new Response(JSON.stringify(body), { status, headers: { ...corsHeaders, "Content-Type": "application/json; charset=utf-8" } });
@@ -125,7 +127,7 @@ Deno.serve(async (req) => {
 
     if (action === "status") {
       const { settings } = await loadSettings(admin);
-      return json({ ...getMicrosoftMailStatus(), sender: AR_SENDER, relay_mailbox: RELAY_MAILBOX, bank_ready: !bankMissing(settings), user_email: user.email || null });
+      return json({ ...getMicrosoftMailStatus(), sender: AR_SENDER, relay_mailbox: RELAY_MAILBOX, test_recipient: TEST_RECIPIENT, bank_ready: !bankMissing(settings), user_email: user.email || null });
     }
 
     if (action === "get_settings") {
@@ -193,9 +195,8 @@ Deno.serve(async (req) => {
     }
 
     if (action === "test") {
-      // Bản thử chỉ gửi tới email của chính người đang đăng nhập.
+      // Bản thử luôn gửi tới hộp thư nội bộ cố định (mặc định tunguyen@facs.vn), không theo email đăng nhập CMS.
       if (!getMicrosoftMailStatus().connected) return json({ error: "Chưa cấu hình Microsoft 365 trên Supabase." }, 400);
-      if (!user.email) return json({ error: "Tài khoản quản trị không có email." }, 400);
       const { settings } = await loadSettings(admin);
       let reminder: ArReminder = SAMPLE_REMINDER;
       if (body.id) {
@@ -208,11 +209,11 @@ Deno.serve(async (req) => {
         accessToken: token,
         subject: `[THỬ] ${mail.subject}`,
         bodyHtml: mail.html,
-        to: [{ mail_address: user.email }],
+        to: [{ mail_address: TEST_RECIPIENT }],
         cc: [],
         dedupeKey: `facs-ar-test-${crypto.randomUUID()}`,
       });
-      return json({ sent_to: user.email, route: sent.route, route_text: routeText(sent.route) });
+      return json({ sent_to: TEST_RECIPIENT, route: sent.route, route_text: routeText(sent.route) });
     }
 
     if (action === "send") {

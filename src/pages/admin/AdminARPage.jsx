@@ -484,7 +484,7 @@ function ReminderList({ rows, loading, status, onReload, onNotify, onError, onPr
         <button type="button" className={primary} disabled={!chosen.length || !canSend || !!progress} onClick={() => setConfirm({ ids: chosen.map((r) => r.id), resend: false, rows: chosen })}>
           <Send size={16} /> Gửi email
         </button>
-        <button type="button" className={ghost} disabled={!status?.connected || busy === "test"} onClick={test}>{busy === "test" ? <Loader2 size={16} className="animate-spin" /> : <Send size={16} />} Gửi thử cho tôi</button>
+        <button type="button" className={ghost} disabled={!status?.connected || busy === "test"} onClick={test}>{busy === "test" ? <Loader2 size={16} className="animate-spin" /> : <Send size={16} />} Gửi thử tới {status?.test_recipient || "tunguyen@facs.vn"}</button>
         <button type="button" className={ghost} disabled={!chosen.length || busy === "delete"} onClick={remove}><Trash2 size={16} /> Xóa dòng đã chọn</button>
         {status && !status.bank_ready && <span className="text-xs text-amber-200">Cần điền tài khoản ngân hàng trước khi gửi.</span>}
         {progress && <span className="inline-flex items-center gap-2 text-sm text-cyan-200"><Loader2 size={16} className="animate-spin" /> Đang gửi {progress.done}/{progress.total}… (mỗi email cách nhau ~2 giây, đừng đóng trang)</span>}
