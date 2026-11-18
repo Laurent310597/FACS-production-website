@@ -368,7 +368,7 @@ function ReminderList({ rows, loading, status, onReload, onNotify, onError, onPr
     }
     setProgress(null);
     setSelected(new Set());
-    const lines = [`Đã gửi ${sent}/${ids.length} email từ accounting@facs.vn.`];
+    const lines = [`Đã gửi ${sent}/${ids.length} email (người gửi: accounting@facs.vn).`];
     if (skipped) lines.push(`${skipped} dòng bỏ qua vì đã gửi hoặc đang được gửi ở nơi khác.`);
     if (failed.length) lines.push(`${failed.length} lỗi: ${[...new Set(failed)].slice(0, 3).join(" | ")}`);
     if (failed.length) onError(lines.join("\n"));
@@ -380,7 +380,7 @@ function ReminderList({ rows, loading, status, onReload, onNotify, onError, onPr
     setBusy("test");
     try {
       const data = await invokeArEmail("test", { id: chosen[0]?.id });
-      onNotify(`Đã gửi bản thử từ accounting@facs.vn đến ${data.sent_to}${chosen[0] ? ` (dữ liệu của ${chosen[0].company_name})` : " (dữ liệu minh họa)"}. Hãy kiểm tra hộp thư.`);
+      onNotify(`Đã gửi bản thử đến ${data.sent_to}${chosen[0] ? ` (dữ liệu của ${chosen[0].company_name})` : " (dữ liệu minh họa)"} — ${data.route_text || "từ accounting@facs.vn"}. Hãy kiểm tra hộp thư.`);
     } catch (testError) {
       onError(testError.message);
     }
