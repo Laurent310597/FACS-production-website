@@ -4,6 +4,7 @@ import { ArrowLeft, CalendarDays, Check, Clock3, Copy, UserRound } from "lucide-
 import { Link, useNavigate, useParams } from "react-router-dom";
 import Footer from "../components/Footer";
 import Navbar from "../components/Navbar";
+import SiteBackdrop from "../components/site/SiteBackdrop";
 import { useLanguage } from "../components/LanguageContext";
 import {
   fallbackPosts,
@@ -138,8 +139,8 @@ export default function InsightDetailPage() {
       <Navbar />
 
       <article>
-        <header className="border-b border-white/10">
-          <div className="container mx-auto px-6 py-16 lg:px-12 lg:py-24">
+        <header className="overflow-hidden relative border-b border-white/10"><SiteBackdrop />
+          <div className="relative z-10 container mx-auto px-6 py-16 lg:px-12 lg:py-24">
             <Link to="/insights" className="inline-flex items-center gap-2 text-sm text-slate-400 transition hover:text-cyan-200"><ArrowLeft size={16} /> {isVi ? "Tất cả bài viết" : "All Insights"}</Link>
             <div className="mt-10 max-w-4xl">
               <div className="text-sm font-semibold uppercase tracking-[0.18em] text-cyan-300">{getCategoryLabel(post.category, language)}</div>
@@ -158,7 +159,7 @@ export default function InsightDetailPage() {
 
         {post.cover_image_url && (
           <div className="container mx-auto px-6 pt-10 lg:px-12 lg:pt-14">
-            <div className="mx-auto max-w-5xl overflow-hidden rounded-[34px] border border-white/10 bg-white/[0.025] p-2 shadow-[0_35px_110px_rgba(0,0,0,0.32)] sm:p-3">
+            <div className="site-card mx-auto max-w-5xl overflow-hidden rounded-[34px] border border-white/10 bg-white/[0.025] p-2 shadow-[0_35px_110px_rgba(0,0,0,0.32)] sm:p-3">
               <img src={post.cover_image_url} alt={localized.coverAlt} className="h-auto w-full rounded-[26px] object-contain" />
             </div>
           </div>
@@ -177,7 +178,7 @@ export default function InsightDetailPage() {
                 <div className="text-xs font-bold uppercase tracking-[0.18em] text-cyan-300">FACS Insights</div>
                 <div className="mt-2 text-sm text-slate-500">{isVi ? "Góc nhìn chuyên môn cho quyết định kinh doanh vững chắc hơn." : "Professional perspectives for more confident business decisions."}</div>
               </div>
-              <Link to="/contact" className="inline-flex justify-center rounded-2xl border border-cyan-200/25 px-5 py-3 font-semibold text-cyan-100 transition hover:bg-cyan-300 hover:text-[#071421]">{isVi ? "Trao đổi cùng FACS" : "Talk With FACS"}</Link>
+              <Link to="/contact" className="site-cta inline-flex justify-center rounded-2xl border border-cyan-200/25 px-5 py-3 font-semibold text-cyan-100 transition hover:bg-cyan-300 hover:text-[#071421]">{isVi ? "Trao đổi cùng FACS" : "Talk With FACS"}</Link>
             </div>
           </div>
         </div>

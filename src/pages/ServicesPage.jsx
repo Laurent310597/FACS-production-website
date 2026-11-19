@@ -1,4 +1,6 @@
 import Navbar from "../components/Navbar";
+import HeroInsightPanel from "../components/site/HeroInsightPanel";
+import SiteBackdrop from "../components/site/SiteBackdrop";
 import Footer from "../components/Footer";
 import AnimatedCounter from "../components/AnimatedCounter";
 
@@ -31,7 +33,7 @@ export default function ServicesPage() {
       <main className="bg-[radial-gradient(circle_at_top_right,rgba(0,183,255,0.10),transparent_30%),linear-gradient(135deg,#0d1726_0%,#101b2f_48%,#132238_100%)] text-white overflow-hidden">
 
         {/* HERO */}
-        <section className="relative py-32 border-b border-white/10 overflow-hidden">
+        <section className="relative py-32 border-b border-white/10 overflow-hidden"><SiteBackdrop />
 
           <div className="absolute inset-0 bg-gradient-to-br from-cyan-500/5 via-transparent to-blue-500/5"></div>
 
@@ -125,89 +127,14 @@ export default function ServicesPage() {
                 className="relative"
               >
 
-                <div className="rounded-[40px] border border-white/10 bg-white/[0.045] backdrop-blur-xl p-10 h-[700px] flex flex-col justify-between">
-
-                  {/* TOP */}
-                  <div className="grid grid-cols-2 gap-6">
-
-                    <div className="rounded-3xl bg-[#111827]/80 p-8 border border-white/10">
-
-                      <ShieldCheck
-                        size={40}
-                        className="text-cyan-400"
-                      />
-
-                      <AnimatedCounter value="9" className="mt-6 block text-4xl font-bold" />
-
-                      <div className="mt-2 text-slate-400">
-                        Service Pillars
-                      </div>
-
-                    </div>
-
-                    <div className="rounded-3xl bg-[#111827]/80 p-8 border border-white/10">
-
-                      <BarChart3
-                        size={40}
-                        className="text-cyan-400"
-                      />
-
-                      <AnimatedCounter value="360°" className="mt-6 block text-4xl font-bold" />
-
-                      <div className="mt-2 text-slate-400">
-                        Advisory Coverage
-                      </div>
-
-                    </div>
-
-                  </div>
-
-                  {/* CENTER */}
-                  <div className="rounded-[32px] bg-gradient-to-br from-cyan-500/10 to-blue-500/10 border border-cyan-400/10 p-10">
-
-                    <Building2
-                      size={60}
-                      className="text-cyan-400"
-                    />
-
-                    <div className="mt-8 text-3xl font-bold leading-snug">
-
-                      Enterprise Financial
-                      Intelligence
-
-                    </div>
-
-                    <p className="mt-5 text-slate-400 leading-relaxed">
-
-                      Modern consulting systems designed to optimize operations, governance and sustainable business growth.
-
-                    </p>
-
-                  </div>
-
-                  {/* BOTTOM */}
-                  <div className="rounded-3xl bg-[#111827]/80 p-8 border border-white/10 flex items-center justify-between">
-
-                    <div>
-
-                      <div className="text-3xl font-bold">
-                        Strategic Advisory
-                      </div>
-
-                      <div className="mt-3 text-slate-400">
-                        Accounting · Tax · Legal · Governance
-                      </div>
-
-                    </div>
-
-                    <CheckCircle2
-                      size={50}
-                      className="text-cyan-400"
-                    />
-
-                  </div>
-
-                </div>
+                <HeroInsightPanel
+                  feature={{ icon: Building2, title: "Enterprise Financial Intelligence", desc: "Modern consulting systems designed to optimize operations, governance and sustainable business growth." }}
+                  stats={[
+                    { icon: ShieldCheck, value: "9", label: "Service Pillars" },
+                    { icon: BarChart3, value: "360°", label: "Advisory Coverage" },
+                  ]}
+                  scope={{ icon: CheckCircle2, title: "Strategic Advisory", subtitle: "Accounting · Tax · Legal · Governance" }}
+                />
 
               </motion.div>
 
@@ -246,18 +173,11 @@ export default function ServicesPage() {
                 return (
                   <motion.div
                     id={service.slug}
-                    key={service.slug}
-
-                    whileHover={{
-                      y: -12,
-                      scale: 1.015,
-                    }}
-
+                    key={service.slug} 
                     transition={{
                       duration: 0.3,
                     }}
-
-                    className="group rounded-[32px] border border-white/10 bg-white/[0.045] backdrop-blur-xl p-10 hover:border-cyan-400/30 hover:bg-white/[0.055] hover:shadow-[0_24px_80px_rgba(8,145,178,0.12)] transition-all duration-500"
+                    className="site-card site-tile group rounded-[32px] border border-white/10 bg-white/[0.045] backdrop-blur-xl p-10 hover:border-cyan-400/30 hover:bg-white/[0.055] hover:shadow-[0_24px_80px_rgba(8,145,178,0.12)] transition-all duration-500"
                   >
 
                     <div className="w-16 h-16 rounded-2xl bg-cyan-500/10 flex items-center justify-center transition-all duration-500 group-hover:scale-110 group-hover:bg-cyan-500/15">
@@ -321,13 +241,8 @@ export default function ServicesPage() {
               ].map((item, index) => (
 
                 <motion.div
-                  key={index}
-
-                  whileHover={{
-                    y: -10,
-                  }}
-
-                  className="rounded-[32px] border border-white/10 bg-white/[0.045] p-10 transition-all duration-300 hover:border-cyan-300/25 hover:bg-white/[0.055] hover:shadow-[0_24px_70px_rgba(34,211,238,0.10)]"
+                  key={index} 
+                  className="site-card site-tile rounded-[32px] border border-white/10 bg-white/[0.045] p-10 transition-all duration-300 hover:border-cyan-300/25 hover:bg-white/[0.055] hover:shadow-[0_24px_70px_rgba(34,211,238,0.10)]"
                 >
 
                   <div className="text-cyan-400 text-5xl font-bold">
@@ -357,7 +272,7 @@ export default function ServicesPage() {
 
           <div className="container mx-auto px-6 lg:px-12">
 
-            <div className="rounded-[48px] border border-white/10 bg-gradient-to-br from-cyan-500/10 to-blue-600/10 p-12 lg:p-24 backdrop-blur-xl">
+            <div className="site-card rounded-[48px] border border-white/10 bg-gradient-to-br from-cyan-500/10 to-blue-600/10 p-12 lg:p-24 backdrop-blur-xl">
 
               <div className="max-w-3xl">
 
@@ -378,7 +293,7 @@ export default function ServicesPage() {
 
                 </p>
 
-                <Link to="/contact" className="inline-flex mt-10 px-8 py-4 rounded-2xl bg-cyan-500 hover:bg-cyan-400 hover:-translate-y-1 transition-all duration-300 text-[#06111f] font-semibold hover:shadow-[0_18px_42px_rgba(6,182,212,0.26)]">
+                <Link to="/contact" className="site-cta inline-flex mt-10 px-8 py-4 rounded-2xl bg-cyan-500 hover:bg-cyan-400 hover:-translate-y-1 transition-all duration-300 text-[#06111f] font-semibold hover:shadow-[0_18px_42px_rgba(6,182,212,0.26)]">
 
                   Schedule Consultation
 

@@ -15,6 +15,7 @@ import {
 import { motion } from "framer-motion";
 import Footer from "../components/Footer";
 import Navbar from "../components/Navbar";
+import SiteBackdrop from "../components/site/SiteBackdrop";
 import { useLanguage } from "../components/LanguageContext";
 import {
   downloadLegalEventIcs,
@@ -66,7 +67,7 @@ function LegalCalendarSkeleton() {
   return (
     <div className="grid grid-cols-7 gap-2">
       {Array.from({ length: 35 }, (_, index) => (
-        <div key={index} className="min-h-24 animate-pulse rounded-2xl bg-slate-300/65 md:min-h-32" />
+        <div key={index} className="min-h-24 site-skeleton rounded-2xl bg-slate-300/65 md:min-h-32" />
       ))}
     </div>
   );
@@ -79,7 +80,7 @@ function EventCard({ event, language, compact = false }) {
   const officialSourceUrl = event.official_source_url || event.source_url;
 
   return (
-    <article className={`rounded-[26px] border border-white/10 bg-[#081321]/55 transition hover:border-cyan-200/25 ${compact ? "p-5" : "p-6 md:p-7"}`}>
+    <article className={`site-card rounded-[26px] border border-white/10 bg-[#081321]/55 transition hover:border-cyan-200/25 ${compact ? "p-5" : "p-6 md:p-7"}`}>
       <div className="flex flex-wrap items-center gap-2">
         <span
           className="rounded-full border px-3 py-1 text-xs font-bold uppercase tracking-[0.12em]"
@@ -238,9 +239,9 @@ export default function LegalCalendarPage() {
     <main className="min-h-screen bg-[radial-gradient(circle_at_top_right,rgba(0,183,255,0.11),transparent_28%),linear-gradient(135deg,#0d1726_0%,#101b2f_50%,#132238_100%)] text-white">
       <Navbar />
 
-      <section className="relative overflow-hidden border-b border-white/10 py-20 md:py-28">
+      <section className="relative overflow-hidden border-b border-white/10 py-20 md:py-28"><SiteBackdrop />
         <div className="absolute -right-24 top-8 h-80 w-80 rounded-full bg-cyan-400/10 blur-[110px]" />
-        <div className="container relative mx-auto px-6 lg:px-12">
+        <div className="z-10 container relative mx-auto px-6 lg:px-12">
           <div className="grid items-end gap-10 xl:grid-cols-[minmax(0,1fr)_440px]">
             <div className="max-w-4xl">
               <div className="mb-4 inline-flex items-center gap-2 rounded-full border border-cyan-200/20 bg-cyan-300/[0.06] px-4 py-2 text-sm font-semibold text-cyan-200">
@@ -262,7 +263,7 @@ export default function LegalCalendarPage() {
                 [RefreshCw, isVi ? "Cập nhật định kỳ" : "Regularly updated", isVi ? "Các mốc được rà soát và bổ sung thường xuyên" : "Deadlines are reviewed and updated regularly"],
                 [ExternalLink, isVi ? "Truy xuất nguồn" : "Source traceability", isVi ? "Lưu nguồn phát hiện và căn cứ chính thức" : "Discovery and official sources are retained"],
               ].map(([Icon, title, desc]) => (
-                <div key={title} className="flex gap-3 rounded-2xl border border-white/10 bg-white/[0.035] p-4">
+                <div key={title} className="site-card site-tile flex gap-3 rounded-2xl border border-white/10 bg-white/[0.035] p-4">
                   <Icon size={19} className="mt-0.5 shrink-0 text-cyan-300" />
                   <div>
                     <div className="text-sm font-semibold">{title}</div>
@@ -277,7 +278,7 @@ export default function LegalCalendarPage() {
 
       <section className="py-14 md:py-20">
         <div className="container mx-auto px-4 sm:px-6 lg:px-12">
-          <div className="rounded-[32px] border border-slate-300/45 bg-[linear-gradient(145deg,rgba(218,228,236,0.97),rgba(191,207,220,0.96))] p-4 text-[#0d1726] shadow-[0_32px_100px_rgba(0,0,0,0.24)] md:p-7">
+          <div className="site-card rounded-[32px] border border-slate-300/45 bg-[linear-gradient(145deg,rgba(218,228,236,0.97),rgba(191,207,220,0.96))] p-4 text-[#0d1726] shadow-[0_32px_100px_rgba(0,0,0,0.24)] md:p-7">
             <div className="flex flex-col gap-5 xl:flex-row xl:items-center xl:justify-between">
               <div className="flex items-center justify-between gap-3 sm:justify-start">
                 <button type="button" onClick={() => changeMonth(-1)} aria-label={isVi ? "Tháng trước" : "Previous month"} className="flex h-11 w-11 items-center justify-center rounded-2xl border border-slate-400/60 bg-slate-100/70 text-slate-600 transition hover:border-cyan-600/40 hover:bg-slate-50 hover:text-cyan-900">
@@ -345,7 +346,13 @@ export default function LegalCalendarPage() {
             </div>
 
             {loading ? <div className="mt-3"><LegalCalendarSkeleton /></div> : (
-              <div className="mt-3 grid grid-cols-7 gap-1.5 md:gap-2">
+              <motion.div
+                key={`${year}-${month}`}
+                initial={{ opacity: 0, y: 8 }}
+                animate={{ opacity: 1, y: 0 }}
+                transition={{ duration: 0.35, ease: [0.22, 1, 0.36, 1] }}
+                className="mt-3 grid grid-cols-7 gap-1.5 md:gap-2"
+              >
                 {cells.map((day, index) => {
                   if (!day) return <div key={`empty-${index}`} className="min-h-16 rounded-2xl border border-transparent md:min-h-32" />;
                   const dayEvents = eventsByDay.get(day) || [];
@@ -382,7 +389,7 @@ export default function LegalCalendarPage() {
                     </button>
                   );
                 })}
-              </div>
+              </motion.div>
             )}
           </div>
 
@@ -409,7 +416,7 @@ export default function LegalCalendarPage() {
                     <EventCard event={event} language={language} />
                   </motion.div>
                 )) : (
-                  <div className="rounded-[28px] border border-white/10 bg-white/[0.03] px-6 py-16 text-center">
+                  <div className="site-card rounded-[28px] border border-white/10 bg-white/[0.03] px-6 py-16 text-center">
                     <CalendarCheck2 size={34} className="mx-auto text-slate-600" />
                     <div className="mt-4 text-xl font-semibold">{isVi ? "Chưa có mốc đã công bố" : "No published deadlines"}</div>
                     <p className="mx-auto mt-2 max-w-lg text-sm leading-relaxed text-slate-500">
@@ -420,7 +427,7 @@ export default function LegalCalendarPage() {
               </div>
             </div>
 
-            <aside className="h-fit rounded-[28px] border border-white/10 bg-white/[0.035] p-6 xl:sticky xl:top-28">
+            <aside className="site-card h-fit rounded-[28px] border border-white/10 bg-white/[0.035] p-6 xl:sticky xl:top-28">
               <div className="flex items-center gap-3">
                 <ShieldCheck className="text-cyan-300" />
                 <h2 className="text-xl font-semibold">{isVi ? "Nguyên tắc sử dụng" : "How to use this calendar"}</h2>
@@ -430,7 +437,7 @@ export default function LegalCalendarPage() {
                 <p>{isVi ? "Ngày thực hiện có thể thay đổi do ngày nghỉ, phương thức nộp, cơ quan quản lý, địa phương hoặc đặc điểm của doanh nghiệp." : "Dates may change due to holidays, filing method, authority, locality or enterprise-specific circumstances."}</p>
               </div>
 
-              <a href="/contact" className="mt-6 inline-flex w-full items-center justify-center gap-2 rounded-2xl bg-cyan-300 px-5 py-3.5 font-bold text-[#071421] transition hover:-translate-y-0.5 hover:bg-cyan-200">
+              <a href="/contact" className="site-cta mt-6 inline-flex w-full items-center justify-center gap-2 rounded-2xl bg-cyan-300 px-5 py-3.5 font-bold text-[#071421] transition hover:-translate-y-0.5 hover:bg-cyan-200">
                 {isVi ? "Trao đổi với FACS" : "Discuss with FACS"} <ExternalLink size={16} />
               </a>
             </aside>

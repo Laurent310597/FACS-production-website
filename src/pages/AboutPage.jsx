@@ -1,4 +1,6 @@
 import Navbar from "../components/Navbar";
+import HeroInsightPanel from "../components/site/HeroInsightPanel";
+import SiteBackdrop from "../components/site/SiteBackdrop";
 import Footer from "../components/Footer";
 import AnimatedCounter from "../components/AnimatedCounter";
 import { Link } from "react-router-dom";
@@ -28,7 +30,7 @@ export default function AboutPage() {
     <>
       <Navbar />
       <main className="bg-[radial-gradient(circle_at_top_right,rgba(0,183,255,0.10),transparent_30%),linear-gradient(135deg,#0d1726_0%,#101b2f_48%,#132238_100%)] text-white overflow-hidden">
-        <section className="relative py-32 border-b border-white/10 overflow-hidden">
+        <section className="relative py-32 border-b border-white/10 overflow-hidden"><SiteBackdrop />
           <div className="absolute inset-0 bg-gradient-to-br from-cyan-500/5 via-transparent to-blue-500/5" />
           <div className="absolute top-0 left-0 w-[500px] h-[500px] bg-cyan-500/10 blur-[120px] rounded-full" />
           <div className="container mx-auto px-6 lg:px-12 relative z-10">
@@ -57,32 +59,14 @@ export default function AboutPage() {
               </motion.div>
 
               <motion.div initial={{ opacity: 0, scale: 0.95 }} animate={{ opacity: 1, scale: 1 }} transition={{ duration: 0.8 }} className="relative">
-                <div className="rounded-[40px] border border-white/10 bg-white/[0.045] backdrop-blur-xl p-8 lg:p-10 min-h-[640px] flex flex-col justify-between">
-                  <div className="grid grid-cols-2 gap-6">
-                    <div className="rounded-3xl bg-[#111827]/80 p-7 border border-white/10">
-                      <ShieldCheck size={40} className="text-cyan-400" />
-                      <AnimatedCounter value="8" className="mt-6 block text-4xl font-bold" />
-                      <div className="mt-2 text-slate-400">Industry Sectors</div>
-                    </div>
-                    <div className="rounded-3xl bg-[#111827]/80 p-7 border border-white/10">
-                      <Building2 size={40} className="text-cyan-400" />
-                      <AnimatedCounter value="10+" className="mt-6 block text-4xl font-bold" />
-                      <div className="mt-2 text-slate-400">Strategic Partners</div>
-                    </div>
-                  </div>
-                  <div className="rounded-[32px] bg-gradient-to-br from-cyan-500/10 to-blue-500/10 border border-cyan-400/10 p-9">
-                    <BarChart3 size={60} className="text-cyan-400" />
-                    <div className="mt-8 text-3xl font-bold leading-snug text-balance">Enterprise Financial Intelligence</div>
-                    <p className="mt-5 text-slate-400 leading-relaxed text-pretty">Modern consulting systems designed to optimize operations, compliance and sustainable growth.</p>
-                  </div>
-                  <div className="rounded-3xl bg-[#111827]/80 p-7 border border-white/10 flex items-center justify-between gap-6">
-                    <div>
-                      <div className="text-3xl font-bold text-balance">Strategic Advisory</div>
-                      <div className="mt-3 text-slate-400">Accounting · Tax · Legal · Governance</div>
-                    </div>
-                    <Briefcase size={50} className="text-cyan-400 shrink-0" />
-                  </div>
-                </div>
+                <HeroInsightPanel
+                  feature={{ icon: BarChart3, title: "Enterprise Financial Intelligence", desc: "Modern consulting systems designed to optimize operations, compliance and sustainable growth." }}
+                  stats={[
+                    { icon: ShieldCheck, value: "8", label: "Industry Sectors" },
+                    { icon: Building2, value: "10+", label: "Strategic Partners" },
+                  ]}
+                  scope={{ icon: Briefcase, title: "Strategic Advisory", subtitle: "Accounting · Tax · Legal · Governance" }}
+                />
               </motion.div>
             </div>
           </div>
@@ -114,7 +98,7 @@ export default function AboutPage() {
               ].map((item) => {
                 const Icon = item.icon;
                 return (
-                  <motion.div key={item.label} whileHover={{ y: -8 }} transition={{ duration: 0.3 }} className="h-full rounded-[32px] border border-white/10 bg-white/[0.045] backdrop-blur-xl p-8 hover:border-cyan-400/25 hover:shadow-[0_0_40px_rgba(34,211,238,0.10)]">
+                  <motion.div key={item.label} transition={{ duration: 0.3 }} className="site-card site-tile h-full rounded-[32px] border border-white/10 bg-white/[0.045] backdrop-blur-xl p-8 hover:border-cyan-400/25 hover:shadow-[0_0_40px_rgba(34,211,238,0.10)]">
                     <div className="w-14 h-14 rounded-2xl bg-cyan-500/10 flex items-center justify-center">
                       <Icon size={28} className="text-cyan-400" />
                     </div>
@@ -126,14 +110,13 @@ export default function AboutPage() {
               })}
             </div>
 
-            <div className="mt-10 rounded-[32px] border border-white/10 bg-[#111827]/60 p-8">
+            <div className="site-card mt-10 rounded-[32px] border border-white/10 bg-[#111827]/60 p-8">
               <div className="grid sm:grid-cols-2 lg:grid-cols-4 gap-4">
                 {values.map((value) => (
                   <motion.div
-                    key={value}
-                    whileHover={{ y: -5, scale: 1.015 }}
+                    key={value} 
                     transition={{ duration: 0.25 }}
-                    className="group relative overflow-hidden rounded-2xl border border-white/10 bg-white/[0.035] px-5 py-4 text-slate-300 text-sm leading-snug text-pretty cursor-default hover:border-cyan-300/35 hover:bg-cyan-400/[0.055] hover:text-white hover:shadow-[0_0_30px_rgba(34,211,238,0.12)] transition-all duration-300"
+                    className="site-card site-tile group relative overflow-hidden rounded-2xl border border-white/10 bg-white/[0.035] px-5 py-4 text-slate-300 text-sm leading-snug text-pretty cursor-default hover:border-cyan-300/35 hover:bg-cyan-400/[0.055] hover:text-white hover:shadow-[0_0_30px_rgba(34,211,238,0.12)] transition-all duration-300"
                   >
                     <span className="absolute inset-y-0 left-0 w-1 bg-cyan-300/0 transition-all duration-300 group-hover:bg-cyan-300/80" />
                     <span className="relative z-10 block transition-transform duration-300 group-hover:translate-x-1">{value}</span>
@@ -154,11 +137,11 @@ export default function AboutPage() {
 
             <div className="grid md:grid-cols-3 gap-8 mt-16">
               {leadership.map((member) => (
-                <motion.article key={member.slug} whileHover={{ y: -10 }} transition={{ duration: 0.3 }} className="group h-full overflow-hidden rounded-[36px] border border-white/10 bg-white/[0.045] backdrop-blur-xl transition-all duration-500 hover:border-cyan-300/25 hover:shadow-[0_0_50px_rgba(34,211,238,0.12)]">
+                <motion.article key={member.slug} transition={{ duration: 0.3 }} className="site-card site-tile site-acrylic site-acrylic--gold group h-full overflow-hidden rounded-[32px] border border-white/[0.12] bg-transparent backdrop-blur-[2px] transition-all duration-300">
                   <Link to={`/about/team/${member.slug}`} className="block h-full">
                     <div className="relative h-[420px] overflow-hidden bg-[#1f242c]">
                       <img src={member.photo} alt={getName(member)} className="h-full w-full object-cover object-top transition-all duration-700 group-hover:scale-105" />
-                      <div className="absolute inset-x-0 bottom-0 h-28 bg-gradient-to-t from-[#0d1726] to-transparent" />
+                      <div className="absolute inset-x-0 bottom-0 h-28 bg-gradient-to-t from-[#0d1726]/80 to-transparent" />
                     </div>
                     <div className="p-8">
                       <div className="flex items-start justify-between gap-4">

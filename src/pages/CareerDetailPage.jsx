@@ -3,6 +3,7 @@ import DOMPurify from "dompurify";
 import { ArrowLeft, ArrowRight, Briefcase, CalendarDays, Loader2, MapPin } from "lucide-react";
 import { Link, useParams } from "react-router-dom";
 import Navbar from "../components/Navbar";
+import SiteBackdrop from "../components/site/SiteBackdrop";
 import Footer from "../components/Footer";
 import { useLanguage } from "../components/LanguageContext";
 import {
@@ -70,7 +71,7 @@ export default function CareerDetailPage() {
           <div className="flex min-h-[70vh] items-center justify-center"><Loader2 className="animate-spin text-cyan-300" size={36} /></div>
         ) : !job || !localized ? (
           <section className="container mx-auto px-6 py-32 lg:px-12">
-            <div className="mx-auto max-w-3xl rounded-[36px] border border-white/10 bg-white/[0.035] px-8 py-20 text-center">
+            <div className="site-card mx-auto max-w-3xl rounded-[36px] border border-white/10 bg-white/[0.035] px-8 py-20 text-center">
               <h1 className="text-3xl font-bold">{isVi ? "Vị trí tuyển dụng không còn khả dụng" : "This career opportunity is no longer available"}</h1>
               <p className="mt-4 leading-relaxed text-slate-400">
                 {isVi ? "Vị trí có thể đã được đóng, chưa được xuất bản hoặc đường dẫn không chính xác." : "The position may have been closed, unpublished, or the link may be incorrect."}
@@ -82,8 +83,8 @@ export default function CareerDetailPage() {
           </section>
         ) : (
           <>
-            <section className="border-b border-white/10 py-24 md:py-32">
-              <div className="container mx-auto px-6 lg:px-12">
+            <section className="overflow-hidden relative border-b border-white/10 py-24 md:py-32"><SiteBackdrop />
+              <div className="relative z-10 container mx-auto px-6 lg:px-12">
                 <Link to="/careers" className="inline-flex items-center gap-2 text-sm text-slate-400 transition hover:text-cyan-200">
                   <ArrowLeft size={16} /> {isVi ? "Quay lại danh sách tuyển dụng" : "Back to career opportunities"}
                 </Link>
@@ -103,7 +104,7 @@ export default function CareerDetailPage() {
 
             <section className="py-20 md:py-28">
               <div className="container mx-auto grid gap-10 px-6 lg:grid-cols-[minmax(0,1fr)_340px] lg:px-12">
-                <article className="rounded-[36px] border border-white/10 bg-white/[0.035] p-7 md:p-10 lg:p-12">
+                <article className="site-card rounded-[36px] border border-white/10 bg-white/[0.035] p-7 md:p-10 lg:p-12">
                   <div className="mb-8 text-sm font-bold uppercase tracking-[0.18em] text-cyan-300">{isVi ? "Mô tả công việc" : "Job Description"}</div>
                   {safeContent ? (
                     <div className="facs-article" dangerouslySetInnerHTML={{ __html: safeContent }} />
@@ -112,7 +113,7 @@ export default function CareerDetailPage() {
                   )}
                 </article>
 
-                <aside className="h-fit rounded-[32px] border border-cyan-200/15 bg-gradient-to-br from-cyan-500/10 to-blue-600/10 p-7 lg:sticky lg:top-28">
+                <aside className="site-card h-fit rounded-[32px] border border-cyan-200/15 bg-gradient-to-br from-cyan-500/10 to-blue-600/10 p-7 lg:sticky lg:top-28">
                   <div className="text-sm font-bold uppercase tracking-[0.16em] text-cyan-300">{isVi ? "Ứng tuyển tại FACS" : "Apply To FACS"}</div>
                   <h2 className="mt-4 text-2xl font-bold">{isVi ? "Sẵn sàng cho bước tiếp theo?" : "Ready for your next step?"}</h2>
                   <p className="mt-4 leading-relaxed text-slate-400">
@@ -120,7 +121,7 @@ export default function CareerDetailPage() {
                   </p>
                   <Link
                     to={`/careers/apply?job=${encodeURIComponent(job.id)}&position=${encodeURIComponent(localized.title)}`}
-                    className="mt-7 inline-flex w-full items-center justify-center gap-2 rounded-2xl bg-cyan-300 px-5 py-3.5 font-bold text-[#071421] transition hover:-translate-y-0.5 hover:bg-cyan-200"
+                    className="site-cta mt-7 inline-flex w-full items-center justify-center gap-2 rounded-2xl bg-cyan-300 px-5 py-3.5 font-bold text-[#071421] transition hover:-translate-y-0.5 hover:bg-cyan-200"
                   >
                     {isVi ? "Ứng tuyển vị trí này" : "Apply For This Position"} <ArrowRight size={17} />
                   </Link>

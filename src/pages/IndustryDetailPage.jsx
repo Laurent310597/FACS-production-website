@@ -2,6 +2,7 @@ import { Link, Navigate, useParams } from "react-router-dom";
 import { motion } from "framer-motion";
 import { ArrowLeft, CheckCircle2, Layers3, Sparkles, Target } from "lucide-react";
 import Navbar from "../components/Navbar";
+import SiteBackdrop from "../components/site/SiteBackdrop";
 import Footer from "../components/Footer";
 import PageTransition from "../components/PageTransition";
 import { industries } from "../data/industries";
@@ -46,7 +47,7 @@ export default function IndustryDetailPage() {
     <PageTransition>
       <Navbar />
       <main className="bg-[radial-gradient(circle_at_top_right,rgba(0,183,255,0.10),transparent_30%),linear-gradient(135deg,#0d1726_0%,#101b2f_48%,#132238_100%)] text-white overflow-hidden">
-        <section className="relative py-28 border-b border-cyan-200/15 overflow-hidden">
+        <section className="relative py-28 border-b border-cyan-200/15 overflow-hidden"><SiteBackdrop />
           <div className="absolute inset-0 bg-gradient-to-br from-cyan-500/5 via-transparent to-blue-500/5" />
           <div className="absolute inset-x-0 bottom-0 h-[2px] bg-gradient-to-r from-transparent via-cyan-200/45 to-transparent" />
           <div className="absolute top-0 right-0 w-[520px] h-[520px] bg-cyan-500/12 blur-[120px] rounded-full" />
@@ -66,7 +67,7 @@ export default function IndustryDetailPage() {
                 <p className="mt-10 text-slate-400 text-xl leading-relaxed">{desc}</p>
               </motion.div>
 
-              <motion.div whileHover={{ y: -10, scale: 1.01 }} transition={{ duration: 0.35 }} className="rounded-[40px] border border-white/10 bg-white/[0.045] backdrop-blur-xl p-10 hover:border-cyan-300/25 hover:shadow-[0_30px_90px_rgba(8,145,178,0.13)]">
+              <motion.div transition={{ duration: 0.35 }} className="site-card rounded-[40px] border border-white/10 bg-white/[0.045] backdrop-blur-xl p-10 hover:border-cyan-300/25 hover:shadow-[0_30px_90px_rgba(8,145,178,0.13)]">
                 <div className="w-20 h-20 rounded-3xl bg-cyan-500/10 flex items-center justify-center shadow-[0_0_40px_rgba(34,211,238,0.14)]">
                   <Icon size={40} className="text-cyan-400" />
                 </div>
@@ -77,7 +78,7 @@ export default function IndustryDetailPage() {
 
                 <div className="mt-8 space-y-5">
                   {challenges.map((item) => (
-                    <div key={item} className="flex gap-4 rounded-3xl border border-white/10 bg-[#111827]/80 p-5 hover:border-cyan-400/25 hover:bg-white/[0.05] hover:translate-x-1 transition-all duration-300">
+                    <div key={item} className="site-card site-tile flex gap-4 rounded-3xl border border-white/10 bg-[#111827]/80 p-5 hover:border-cyan-400/25 hover:bg-white/[0.05] hover:translate-x-1 transition-all duration-300">
                       <CheckCircle2 className="text-cyan-400 shrink-0 mt-1" size={22} />
                       <div className="text-slate-300 leading-relaxed">{item}</div>
                     </div>
@@ -109,10 +110,9 @@ export default function IndustryDetailPage() {
                 const CardIcon = item.icon;
                 return (
                   <motion.div
-                    key={item.title}
-                    whileHover={{ y: -10, scale: 1.01 }}
+                    key={item.title} 
                     transition={{ duration: 0.3 }}
-                    className="group rounded-[32px] border border-white/10 bg-white/[0.045] backdrop-blur-xl p-8 hover:border-cyan-400/30 hover:bg-white/[0.055] hover:shadow-[0_24px_80px_rgba(8,145,178,0.12)] transition-all duration-500"
+                    className="site-card site-tile group rounded-[32px] border border-white/10 bg-white/[0.045] backdrop-blur-xl p-8 hover:border-cyan-400/30 hover:bg-white/[0.055] hover:shadow-[0_24px_80px_rgba(8,145,178,0.12)] transition-all duration-500"
                   >
                     <div className="w-16 h-16 rounded-2xl bg-cyan-500/10 flex items-center justify-center transition-all duration-500 group-hover:scale-110 group-hover:bg-cyan-500/15">
                       <CardIcon size={30} className="text-cyan-400" />
@@ -128,7 +128,7 @@ export default function IndustryDetailPage() {
 
         <section className="py-28">
           <div className="container mx-auto px-6 lg:px-12">
-            <div className="rounded-[48px] border border-white/10 bg-gradient-to-br from-cyan-500/10 to-blue-600/10 p-12 lg:p-20 backdrop-blur-xl hover:border-cyan-400/20 transition-all duration-500">
+            <div className="site-card rounded-[48px] border border-white/10 bg-gradient-to-br from-cyan-500/10 to-blue-600/10 p-12 lg:p-20 backdrop-blur-xl hover:border-cyan-400/20 transition-all duration-500">
               <div className="max-w-3xl">
                 <div className="text-cyan-400 mb-5 font-bold text-base">
                   {isVi ? "Giải pháp theo lĩnh vực" : "Industry-Focused Solution"}
@@ -141,7 +141,7 @@ export default function IndustryDetailPage() {
                     ? "FACS đồng hành cùng doanh nghiệp xây dựng mô hình vận hành rõ ràng, hồ sơ chứng từ vững chắc và hệ thống quản trị phù hợp với đặc thù ngành nghề."
                     : "FACS works with enterprises to build clear operating models, strong documentation and management systems tailored to industry-specific requirements."}
                 </p>
-                <Link to="/contact" className="inline-flex mt-10 px-8 py-4 rounded-2xl bg-cyan-500 hover:bg-cyan-400 hover:-translate-y-1 transition-all duration-300 text-[#06111f] font-semibold hover:shadow-[0_18px_42px_rgba(6,182,212,0.26)]">
+                <Link to="/contact" className="site-cta inline-flex mt-10 px-8 py-4 rounded-2xl bg-cyan-500 hover:bg-cyan-400 hover:-translate-y-1 transition-all duration-300 text-[#06111f] font-semibold hover:shadow-[0_18px_42px_rgba(6,182,212,0.26)]">
                   {isVi ? "Trao đổi cùng FACS" : "Schedule Consultation"}
                 </Link>
               </div>

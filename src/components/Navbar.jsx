@@ -1,13 +1,17 @@
-import { useState } from "react";
+import { useEffect, useState } from "react";
+import { createPortal } from "react-dom";
 import { Link, NavLink, useLocation } from "react-router-dom";
-import { motion } from "framer-motion";
-import { Banknote, Calculator, CalendarRange, ChevronDown, Coins, Landmark, Menu, PiggyBank, ShieldCheck, X } from "lucide-react";
+import { AnimatePresence, motion } from "framer-motion";
+import { ArrowRight, ChevronDown, Menu, Search, X } from "lucide-react";
 import { useLanguage } from "./LanguageContext";
 import { getServiceContent, services } from "../data/services";
 import { industries } from "../data/industries";
+import HeaderWave from "./admin/HeaderWave";
+import SiteSearch from "./site/SiteSearch";
+import { siteNavItems, siteResourceItems } from "./site/siteLinks";
 
 const linkBase = "relative rounded-full px-1 py-2 transition-all duration-300 whitespace-nowrap after:absolute after:left-0 after:-bottom-1 after:h-[2px] after:w-0 after:bg-gradient-to-r after:from-cyan-200 after:to-blue-400 after:transition-all after:duration-300 hover:text-white hover:after:w-full";
-const dropdownClass = "pointer-events-none absolute left-1/2 top-full z-50 mt-4 max-h-[calc(100vh-7rem)] w-[420px] -translate-x-1/2 translate-y-2 overflow-y-auto rounded-3xl border border-cyan-200/15 bg-[#0d1726]/96 p-3 opacity-0 shadow-[0_26px_90px_rgba(0,0,0,0.48)] backdrop-blur-2xl transition-all duration-300 group-hover:pointer-events-auto group-hover:translate-y-0 group-hover:opacity-100";
+const dropdownClass = "site-scroll pointer-events-none absolute left-1/2 top-full z-50 mt-4 max-h-[calc(100vh-7rem)] w-[420px] -translate-x-1/2 translate-y-2 overflow-y-auto rounded-3xl border border-cyan-200/15 bg-[#0d1726]/96 p-3 opacity-0 shadow-[0_26px_90px_rgba(0,0,0,0.48)] backdrop-blur-2xl transition-all duration-300 group-hover:pointer-events-auto group-hover:translate-y-0 group-hover:opacity-100";
 
 function LogoWordmark({ compact = false }) {
   return (
@@ -23,15 +27,35 @@ export default function Navbar() {
   const location = useLocation();
   const isVi = language === "vi";
 
-  const navItems = [
-    ["/about", isVi ? "Giới thiệu" : "About"],
-    ["/services", isVi ? "Dịch vụ" : "Services", "services"],
-    ["/industries", isVi ? "Lĩnh vực" : "Industries", "industries"],
-    ["/insights", isVi ? "Góc nhìn" : "Insights"],
-    ["/tools", isVi ? "Tiện ích" : "Resources", "resources"],
-    ["/careers", isVi ? "Tuyển dụng" : "Careers"],
-    ["/contact", isVi ? "Liên hệ" : "Contact"],
-  ];
+  const navItems = siteNavItems(isVi);
+  const [searchOpen, setSearchOpen] = useState(false);
+  const [openSection, setOpenSection] = useState(null);
+
+  // Ctrl/⌘ + K mở ô Tìm nhanh.
+  useEffect(() => {
+    const onKey = (e) => {
+      if ((e.ctrlKey || e.metaKey) && e.key.toLowerCase() === "k") {
+        e.preventDefault();
+        setSearchOpen((v) => !v);
+      }
+    };
+    window.addEventListener("keydown", onKey);
+    return () => window.removeEventListener("keydown", onKey);
+  }, []);
+
+  // Khoá cuộn trang khi menu điện thoại đang mở; phím Esc để đóng.
+  useEffect(() => {
+    if (!mobileOpen) return undefined;
+    const prev = document.body.style.overflow;
+    document.body.style.overflow = "hidden";
+    const onKey = (e) => e.key === "Escape" && setMobileOpen(false);
+    window.addEventListener("keydown", onKey);
+    return () => {
+      document.body.style.overflow = prev;
+      window.removeEventListener("keydown", onKey);
+    };
+  }, [mobileOpen]);
+
 
   const isActive = (to) => location.pathname === to || (to !== "/" && location.pathname.startsWith(`${to}/`));
 
@@ -56,10 +80,10 @@ export default function Navbar() {
       initial={{ y: -40, opacity: 0 }}
       animate={{ y: 0, opacity: 1 }}
       transition={{ duration: 0.65, ease: "easeOut" }}
-      className="sticky top-0 z-50 border-b border-cyan-200/20 bg-[#0d1726]/86 shadow-[0_18px_70px_rgba(0,0,0,0.30)] backdrop-blur-2xl"
+      className="sticky top-0 z-50 bg-[#0d1726]/86 shadow-[0_18px_70px_rgba(0,0,0,0.30)] backdrop-blur-2xl"
     >
-      <div className="absolute inset-x-0 bottom-0 h-[2px] bg-gradient-to-r from-transparent via-cyan-200/70 to-transparent" />
-      <div className="absolute inset-x-0 bottom-0 h-8 bg-gradient-to-r from-transparent via-cyan-400/14 to-transparent blur-xl" />
+      <div className="absolute inset-x-0 bottom-0 h-8 bg-gradient-to-r from-transparent via-cyan-400/10 to-transparent blur-xl" />
+      <HeaderWave colors={["#67E8F9", "#3B82F6"]} />
       <div className="container mx-auto px-5 lg:px-12">
         <div className="flex h-20 items-center justify-between gap-5">
           <Link to="/" className="group relative flex items-center rounded-2xl py-2 pr-3" onClick={() => setMobileOpen(false)}>
@@ -67,14 +91,14 @@ export default function Navbar() {
             <LogoWordmark />
           </Link>
 
-          <div className="hidden min-w-[178px] border-l border-cyan-200/18 pl-5 xl:block">
+          <div className="hidden min-w-[208px] border-l border-cyan-200/18 pl-5 2xl:block">
             <motion.div
               initial={{ opacity: 0, x: -8 }}
               animate={{ opacity: 1, x: 0 }}
               transition={{ duration: 0.65, delay: 0.2, ease: "easeOut" }}
               className="relative overflow-hidden rounded-2xl px-1 py-1"
             >
-              <div className="text-[12px] md:text-[20px] font-semibold italic leading-[1.45] tracking-[0.04em] text-cyan-50/95 drop-shadow-[0_0_12px_rgba(103,232,249,0.25)]">
+              <div className="font-[Cambria,Georgia,serif] text-[12px] md:text-[18px] xl:text-[19px] font-semibold italic leading-[1.45] tracking-[0.04em] text-cyan-50/95 drop-shadow-[0_0_12px_rgba(103,232,249,0.25)]">
   <span className="bg-gradient-to-r from-blue via-cyan-200 to-slate-300 bg-[length:220%_100%] bg-clip-text text-transparent animate-[facsSloganShine_5.5s_ease-in-out_infinite]">
     Your Growth Starts
     <br />
@@ -85,7 +109,7 @@ export default function Navbar() {
             </motion.div>
           </div>
 
-          <nav className="hidden flex-1 items-center justify-center gap-3 text-[14px] font-bold tracking-[0.01em] text-slate-200 lg:flex xl:gap-5 xl:text-[15px]">
+          <nav className="hidden flex-1 items-center justify-center gap-2 text-[14px] font-bold tracking-[0.01em] text-slate-200 lg:flex xl:gap-5 xl:text-[15px]">
             {navItems.map(([to, label, type]) => {
               if (type === "services") {
                 return (
@@ -138,22 +162,7 @@ export default function Navbar() {
                       <div className="px-4 pb-2 pt-1 text-xs font-bold uppercase tracking-[0.18em] text-cyan-300/80">
                         {isVi ? "Tiện ích tuân thủ" : "Compliance resources"}
                       </div>
-                      {renderDropdownItem({
-                        to: "/legal-calendar",
-                        title: isVi ? "Lịch pháp lý doanh nghiệp" : "Corporate Legal Calendar",
-                        desc: isVi
-                          ? "Theo dõi các mốc thuế, kế toán, lao động, bảo hiểm và HSE."
-                          : "Track tax, accounting, labour, insurance and HSE deadlines.",
-                        Icon: CalendarRange,
-                      })}
-                      {[
-                        ["/tools/gross-net", isVi ? "Tính lương Gross – Net" : "Gross – Net Salary", isVi ? "Ước tính lương thực nhận, bảo hiểm và thuế TNCN." : "Estimate take-home pay, insurance and PIT.", Banknote],
-                        ["/tools/personal-income-tax", isVi ? "Tính thuế TNCN" : "Personal Income Tax", isVi ? "Tính thuế tiền lương theo biểu lũy tiến 5 bậc." : "Calculate salary tax using the five-band schedule.", Calculator],
-                        ["/tools/unemployment-benefit", isVi ? "Tính BHTN" : "Unemployment Benefit", isVi ? "Ước tính mức hưởng và thời gian hưởng trợ cấp." : "Estimate benefit amount and entitlement duration.", ShieldCheck],
-                        ["/tools/one-time-social-insurance", isVi ? "Tính BHXH một lần" : "One-time Social Insurance", isVi ? "Ước tính quyền lợi theo quá trình đóng BHXH." : "Estimate benefits from contribution history.", Landmark],
-                        ["/tools/savings-plan", isVi ? "Kế hoạch tiết kiệm" : "Savings Planner", isVi ? "Mô phỏng lãi kép và khoản tiết kiệm định kỳ." : "Model compound growth and recurring savings.", PiggyBank],
-                        ["/tools/rates-and-gold", isVi ? "Thị trường tài chính" : "Financial Markets", isVi ? "Theo dõi tỷ giá, vàng và các chỉ số chứng khoán." : "Monitor FX, gold and securities market indices.", Coins],
-                      ].map(([itemTo, title, desc, Icon]) => renderDropdownItem({ to: itemTo, title, desc, Icon }))}
+                      {siteResourceItems(isVi).map(([itemTo, title, desc, Icon]) => renderDropdownItem({ to: itemTo, title, desc, Icon }))}
                     </div>
                   </div>
                 );
@@ -168,9 +177,19 @@ export default function Navbar() {
           </nav>
 
           <div className="hidden shrink-0 items-center gap-3 md:flex">
+            <button
+              type="button"
+              onClick={() => setSearchOpen(true)}
+              className="site-ripple group inline-flex h-12 items-center gap-2 lg:hidden xl:inline-flex rounded-2xl border border-white/10 bg-white/[0.035] px-3.5 text-sm text-slate-300 transition-all duration-300 hover:-translate-y-0.5 hover:border-cyan-300/40 hover:text-white"
+              aria-label={isVi ? "Tìm nhanh (Ctrl K)" : "Search (Ctrl K)"}
+              title="Ctrl / ⌘ + K"
+            >
+              <Search size={18} className="transition-transform duration-300 group-hover:scale-110" />
+              <kbd className="hidden rounded-md border border-white/[0.14] px-1.5 py-0.5 text-[11px] text-slate-400 2xl:inline">Ctrl K</kbd>
+            </button>
             <Link
               to="/contact"
-              className="whitespace-nowrap rounded-2xl border border-cyan-200/30 bg-white/[0.04] px-4 py-3 text-sm font-semibold text-cyan-100 transition-all duration-300 hover:-translate-y-1 hover:bg-cyan-300 hover:text-[#06111f] hover:shadow-[0_18px_42px_rgba(6,182,212,0.30)] xl:px-5 xl:text-base"
+              className="site-cta whitespace-nowrap rounded-2xl border border-cyan-200/30 bg-white/[0.04] px-4 py-3 text-sm font-semibold text-cyan-100 transition-all duration-300 hover:-translate-y-1 hover:bg-cyan-300 hover:text-[#06111f] hover:shadow-[0_18px_42px_rgba(6,182,212,0.30)] xl:px-5 xl:text-base"
             >
               {isVi ? "Kết nối cùng FACS" : "Let's Connect"}
             </Link>
@@ -181,6 +200,10 @@ export default function Navbar() {
             </div>
           </div>
 
+          <div className="flex items-center gap-2 md:hidden">
+          <button type="button" onClick={() => setSearchOpen(true)} className="inline-flex h-11 w-11 items-center justify-center rounded-2xl border border-cyan-200/20 bg-white/[0.045] text-cyan-100" aria-label={isVi ? "Tìm nhanh" : "Search"}>
+            <Search size={20} />
+          </button>
           <button
             type="button"
             onClick={() => setMobileOpen((current) => !current)}
@@ -189,26 +212,78 @@ export default function Navbar() {
           >
             {mobileOpen ? <X size={22} /> : <Menu size={22} />}
           </button>
+          </div>
         </div>
 
-        {mobileOpen && (
-          <div className="pb-5 md:hidden">
-            <div className="rounded-3xl border border-cyan-200/15 bg-[#0d1726]/95 p-3 shadow-[0_24px_70px_rgba(0,0,0,0.34)]">
-              <div className="grid gap-1">
-                {navItems.map(([to, label]) => (
-                  <Link key={to} to={to} onClick={() => setMobileOpen(false)} className="rounded-2xl px-4 py-3 font-semibold text-slate-200 hover:bg-cyan-400/10 hover:text-white">
-                    {label}
-                  </Link>
-                ))}
-              </div>
-              <div className="mt-4 grid grid-cols-2 gap-2">
-                <button type="button" onClick={() => setLanguage("en")} className={`rounded-2xl px-4 py-3 text-sm font-bold ${language === "en" ? "bg-cyan-400/18 text-cyan-100" : "bg-white/[0.035] text-slate-300"}`}>EN</button>
-                <button type="button" onClick={() => setLanguage("vi")} className={`rounded-2xl px-4 py-3 text-sm font-bold ${language === "vi" ? "bg-cyan-400/18 text-cyan-100" : "bg-white/[0.035] text-slate-300"}`}>VI</button>
-              </div>
-            </div>
-          </div>
-        )}
       </div>
+      <SiteSearch open={searchOpen} onClose={() => setSearchOpen(false)} />
+      {createPortal(
+        <AnimatePresence>
+          {mobileOpen && (
+            <motion.div className="fixed inset-0 z-[150] md:hidden" initial={{ opacity: 0 }} animate={{ opacity: 1 }} exit={{ opacity: 0 }}>
+              <button type="button" className="absolute inset-0 bg-[#030913]/70 backdrop-blur-sm" onClick={() => setMobileOpen(false)} aria-label={isVi ? "Đóng menu" : "Close menu"} />
+              <motion.nav
+                className="absolute inset-y-0 right-0 flex w-[88vw] max-w-[380px] flex-col border-l border-cyan-200/15 bg-[#0d1726] shadow-[-30px_0_80px_rgba(0,0,0,0.5)]"
+                initial={{ x: "100%" }} animate={{ x: 0 }} exit={{ x: "100%" }}
+                transition={{ type: "spring", stiffness: 360, damping: 38 }}
+                aria-label={isVi ? "Menu chính" : "Main menu"}
+              >
+                <div className="flex items-center justify-between border-b border-white/10 px-5 py-4">
+                  <Link to="/" onClick={() => setMobileOpen(false)}><LogoWordmark compact /></Link>
+                  <button type="button" onClick={() => setMobileOpen(false)} className="inline-flex h-10 w-10 items-center justify-center rounded-xl border border-white/10 text-slate-300" aria-label={isVi ? "Đóng menu" : "Close menu"}>
+                    <X size={20} />
+                  </button>
+                </div>
+                <div className="min-h-0 flex-1 overflow-y-auto px-3 py-3">
+                  {navItems.map(([to, label, type], i) => {
+                    const children =
+                      type === "services" ? services.map((sv) => [`/services/${sv.slug}`, getServiceContent(sv, isVi).title])
+                      : type === "industries" ? industries.map((ind) => [`/industries/${ind.slug}`, isVi ? ind.titleVi : ind.title])
+                      : type === "resources" ? siteResourceItems(isVi).map(([itemTo, title]) => [itemTo, title])
+                      : null;
+                    const expanded = openSection === to;
+                    return (
+                      <motion.div key={to} initial={{ opacity: 0, x: 24 }} animate={{ opacity: 1, x: 0 }} transition={{ delay: 0.04 * i + 0.08 }}>
+                        <div className="flex items-center">
+                          <Link to={to} onClick={() => setMobileOpen(false)} className={`flex-1 rounded-2xl px-4 py-3.5 text-[15px] font-semibold transition ${isActive(to) ? "bg-cyan-400/10 text-white shadow-[inset_3px_0_0_#22D3EE]" : "text-slate-200 hover:bg-white/[0.05]"}`}>
+                            {label}
+                          </Link>
+                          {children && (
+                            <button type="button" onClick={() => setOpenSection(expanded ? null : to)} className="ml-1 inline-flex h-11 w-11 items-center justify-center rounded-xl text-slate-400 hover:bg-white/[0.05]" aria-expanded={expanded} aria-label={label}>
+                              <ChevronDown size={18} className={`transition-transform ${expanded ? "rotate-180" : ""}`} />
+                            </button>
+                          )}
+                        </div>
+                        <AnimatePresence initial={false}>
+                          {children && expanded && (
+                            <motion.div initial={{ height: 0, opacity: 0 }} animate={{ height: "auto", opacity: 1 }} exit={{ height: 0, opacity: 0 }} className="overflow-hidden">
+                              <div className="ml-4 grid gap-0.5 border-l border-cyan-200/15 py-1 pl-3">
+                                {children.map(([childTo, childLabel]) => (
+                                  <Link key={childTo} to={childTo} onClick={() => setMobileOpen(false)} className="rounded-xl px-3 py-2.5 text-sm text-slate-400 hover:bg-white/[0.05] hover:text-white">{childLabel}</Link>
+                                ))}
+                              </div>
+                            </motion.div>
+                          )}
+                        </AnimatePresence>
+                      </motion.div>
+                    );
+                  })}
+                </div>
+                <div className="space-y-3 border-t border-white/10 p-4">
+                  <Link to="/contact" onClick={() => setMobileOpen(false)} className="site-cta flex items-center justify-center gap-2 rounded-2xl px-5 py-3.5 font-semibold">
+                    {isVi ? "Kết nối cùng FACS" : "Let's Connect"} <ArrowRight size={17} />
+                  </Link>
+                  <div className="grid grid-cols-2 gap-2">
+                    <button type="button" onClick={() => setLanguage("en")} className={`rounded-2xl px-4 py-3 text-sm font-bold ${language === "en" ? "bg-cyan-400/18 text-cyan-100" : "bg-white/[0.035] text-slate-300"}`}>EN</button>
+                    <button type="button" onClick={() => setLanguage("vi")} className={`rounded-2xl px-4 py-3 text-sm font-bold ${language === "vi" ? "bg-cyan-400/18 text-cyan-100" : "bg-white/[0.035] text-slate-300"}`}>VI</button>
+                  </div>
+                </div>
+              </motion.nav>
+            </motion.div>
+          )}
+        </AnimatePresence>,
+        document.body,
+      )}
     </motion.header>
   );
 }

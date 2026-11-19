@@ -1,6 +1,6 @@
 import { useEffect, useState } from "react";
 import { BrowserRouter, Routes, Route, Navigate, useLocation } from "react-router-dom";
-import { AnimatePresence, motion } from "framer-motion";
+import { AnimatePresence, MotionConfig, motion } from "framer-motion";
 
 import HomePage from "./pages/HomePage";
 import AboutPage from "./pages/AboutPage";
@@ -42,6 +42,8 @@ import TeamMemberDetailPage from "./pages/TeamMemberDetailPage";
 import ScrollToTop from "./components/ScrollToTop";
 import PageTransition from "./components/PageTransition";
 import MouseGlow from "./components/MouseGlow";
+import useSiteMotion from "./components/site/useSiteMotion";
+import SiteSideDecor from "./components/site/SiteSideDecor";
 import { LanguageProvider } from "./components/LanguageContext";
 
 function HomeIntroOverlay() {
@@ -94,7 +96,7 @@ function HomeIntroOverlay() {
               initial={{ x: -18, opacity: 0, filter: "blur(8px)" }}
               animate={{ x: 0, opacity: 1, filter: "blur(0px)" }}
               transition={{ duration: 0.9, delay: 0.9, ease: "easeOut" }}
-              className="text-3xl font-bold tracking-[-1px] text-white md:text-5xl"
+              className="font-[Cambria,Georgia,serif] text-3xl font-bold tracking-[-0.5px] text-white md:text-5xl"
             >
               Your Trusted <span className="text-cyan-300">Partner</span>
             </motion.div>
@@ -105,19 +107,32 @@ function HomeIntroOverlay() {
   );
 }
 
+// Chuyển động chung cho website (thẻ, hiện dần khi cuộn, gợn sóng nút kêu gọi hành động).
+function SiteMotion() {
+  useSiteMotion();
+  return null;
+}
+
 function AnimatedRoutes() {
   const location = useLocation();
 
   return (
-    <AnimatePresence mode="wait">
+    <AnimatePresence
+      mode="wait"
+      initial={false}
+      onExitComplete={() => {
+        // Trang cũ đã mờ hẳn → đưa về đầu trang ngay (không cuộn mượt), trừ khi có #mục cần tới.
+        if (!window.location.hash) window.scrollTo({ top: 0, left: 0, behavior: "instant" });
+      }}
+    >
       <Routes location={location} key={location.pathname}>
         <Route path="/" element={<PageTransition><HomePage /></PageTransition>} />
         <Route path="/about" element={<PageTransition><AboutPage /></PageTransition>} />
         <Route path="/about/team/:slug" element={<PageTransition><TeamMemberDetailPage /></PageTransition>} />
         <Route path="/services" element={<PageTransition><ServicesPage /></PageTransition>} />
-        <Route path="/services/:slug" element={<ServiceDetailPage />} />
+        <Route path="/services/:slug" element={<PageTransition><ServiceDetailPage /></PageTransition>} />
         <Route path="/industries" element={<PageTransition><IndustriesPage /></PageTransition>} />
-        <Route path="/industries/:slug" element={<IndustryDetailPage />} />
+        <Route path="/industries/:slug" element={<PageTransition><IndustryDetailPage /></PageTransition>} />
         <Route path="/insights" element={<PageTransition><InsightsPage /></PageTransition>} />
         <Route path="/insights/:slug" element={<PageTransition><InsightDetailPage /></PageTransition>} />
         <Route path="/legal-calendar" element={<PageTransition><LegalCalendarPage /></PageTransition>} />
@@ -161,9 +176,12 @@ function AnimatedRoutes() {
 export default function App() {
   return (
     <BrowserRouter>
+      <MotionConfig reducedMotion="user">
       <LanguageProvider>
         <ScrollToTop />
         <MouseGlow />
+        <SiteMotion />
+        <SiteSideDecor />
         <HomeIntroOverlay />
         {/* Thông báo dạng toast cho CMS; giữ qua các lần chuyển trang */}
         <ToastProvider>
@@ -172,6 +190,7 @@ export default function App() {
           </ConfirmProvider>
         </ToastProvider>
       </LanguageProvider>
+      </MotionConfig>
     </BrowserRouter>
   );
 }

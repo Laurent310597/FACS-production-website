@@ -19,7 +19,7 @@ function wavePath(amp, length, phase) {
  * Đường ngăn cách dưới header: hai sóng Electric Blue và Sunset Orange lệch pha, trôi rất chậm.
  * Lặng dần khi cuộn trang, dâng một nhịp khi chuyển trang; đứng yên nếu máy bật giảm chuyển động.
  */
-export default function HeaderWave() {
+export default function HeaderWave({ colors = ["#2B5BFF", "#FF6B35"] }) {
   const blue = useRef(null);
   const orange = useRef(null);
   const boost = useRef(0);
@@ -71,8 +71,8 @@ export default function HeaderWave() {
         </mask>
       </defs>
       <g mask="url(#facs-wave-mask)" fill="none" strokeLinecap="round">
-        <path ref={blue} d={wavePath(2.6, 300, 0)} stroke="#2B5BFF" strokeOpacity="0.8" strokeWidth="1.3" vectorEffect="non-scaling-stroke" />
-        <path ref={orange} d={wavePath(2, 230, 1.5)} stroke="#FF6B35" strokeOpacity="0.8" strokeWidth="1.2" vectorEffect="non-scaling-stroke" />
+        <path ref={blue} d={wavePath(2.6, 300, 0)} stroke={colors[0]} strokeOpacity="0.8" strokeWidth="1.3" vectorEffect="non-scaling-stroke" />
+        <path ref={orange} d={wavePath(2, 230, 1.5)} stroke={colors[1]} strokeOpacity="0.8" strokeWidth="1.2" vectorEffect="non-scaling-stroke" />
       </g>
     </svg>
   );

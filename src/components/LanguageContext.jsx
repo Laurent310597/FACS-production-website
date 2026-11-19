@@ -1,5 +1,5 @@
 /* eslint-disable react-refresh/only-export-components */
-import { createContext, useContext, useEffect, useMemo, useState } from "react";
+import { createContext, useContext, useEffect, useMemo, useState, useRef } from "react";
 import { useLocation } from "react-router-dom";
 
 const LanguageContext = createContext({ language: "en", setLanguage: () => {} });
@@ -346,6 +346,19 @@ export function LanguageProvider({ children }) {
       observer.disconnect();
     };
   }, [language, location.pathname, location.search, location.hash]);
+
+  // Đổi ngôn ngữ: nội dung mờ nhẹ rồi hiện lại cho êm (bỏ qua lần tải trang đầu tiên).
+  const firstLanguage = useRef(language);
+  useEffect(() => {
+    if (firstLanguage.current === language) return undefined;
+    firstLanguage.current = language;
+    const root = document.documentElement;
+    root.classList.remove("lang-swap");
+    void root.offsetWidth;
+    root.classList.add("lang-swap");
+    const timer = window.setTimeout(() => root.classList.remove("lang-swap"), 500);
+    return () => window.clearTimeout(timer);
+  }, [language]);
 
   const value = useMemo(() => ({ language, setLanguage }), [language]);
 

@@ -3,6 +3,7 @@ import { ArrowRight, Briefcase, CalendarDays, MapPin } from "lucide-react";
 import { Link } from "react-router-dom";
 import { motion } from "framer-motion";
 import Navbar from "../components/Navbar";
+import SiteBackdrop from "../components/site/SiteBackdrop";
 import Footer from "../components/Footer";
 import { useLanguage } from "../components/LanguageContext";
 import {
@@ -15,11 +16,11 @@ import { isSupabaseConfigured, supabase } from "../lib/supabaseClient";
 
 function JobSkeleton() {
   return (
-    <div className="rounded-[32px] border border-white/10 bg-white/[0.04] p-8 lg:p-10">
-      <div className="h-4 w-36 animate-pulse rounded-full bg-white/[0.08]" />
-      <div className="mt-5 h-8 w-3/4 animate-pulse rounded-full bg-white/[0.08]" />
-      <div className="mt-5 h-4 w-full animate-pulse rounded-full bg-white/[0.06]" />
-      <div className="mt-3 h-4 w-2/3 animate-pulse rounded-full bg-white/[0.06]" />
+    <div className="site-card rounded-[32px] border border-white/10 bg-white/[0.04] p-8 lg:p-10">
+      <div className="h-4 w-36 site-skeleton rounded-full bg-white/[0.08]" />
+      <div className="mt-5 h-8 w-3/4 site-skeleton rounded-full bg-white/[0.08]" />
+      <div className="mt-5 h-4 w-full site-skeleton rounded-full bg-white/[0.06]" />
+      <div className="mt-3 h-4 w-2/3 site-skeleton rounded-full bg-white/[0.06]" />
     </div>
   );
 }
@@ -74,7 +75,7 @@ export default function CareersPage() {
     <>
       <Navbar />
       <main className="overflow-hidden bg-[radial-gradient(circle_at_top_right,rgba(0,183,255,0.10),transparent_30%),linear-gradient(135deg,#0d1726_0%,#101b2f_48%,#132238_100%)] text-white">
-        <section className="relative border-b border-white/10 py-32">
+        <section className="overflow-hidden relative border-b border-white/10 py-32"><SiteBackdrop />
           <div className="absolute left-0 top-0 h-[500px] w-[500px] rounded-full bg-cyan-500/10 blur-[120px]" />
           <div className="container relative z-10 mx-auto px-6 lg:px-12">
             <div className="max-w-5xl">
@@ -115,9 +116,8 @@ export default function CareersPage() {
                 },
               ].map((item) => (
                 <motion.div
-                  key={item.title}
-                  whileHover={{ y: -10 }}
-                  className="rounded-[32px] border border-white/10 bg-white/[0.045] p-10 transition-all duration-300 hover:border-cyan-300/25 hover:shadow-[0_0_42px_rgba(34,211,238,0.12)]"
+                  key={item.title} 
+                  className="site-card site-tile rounded-[32px] border border-white/10 bg-white/[0.045] p-10 transition-all duration-300 hover:border-cyan-300/25 hover:shadow-[0_0_42px_rgba(34,211,238,0.12)]"
                 >
                   <h3 className="text-3xl font-bold">{item.title}</h3>
                   <p className="mt-6 text-pretty text-lg leading-relaxed text-slate-400">{item.desc}</p>
@@ -141,7 +141,7 @@ export default function CareersPage() {
                 {[0, 1].map((item) => <JobSkeleton key={item} />)}
               </div>
             ) : jobs.length === 0 ? (
-              <div className="mt-16 rounded-[36px] border border-white/10 bg-white/[0.035] px-7 py-16 text-center md:px-12 md:py-20">
+              <div className="site-card mt-16 rounded-[36px] border border-white/10 bg-white/[0.035] px-7 py-16 text-center md:px-12 md:py-20">
                 <div className="mx-auto flex h-14 w-14 items-center justify-center rounded-2xl border border-cyan-200/15 bg-cyan-300/8 text-cyan-200">
                   <Briefcase size={27} />
                 </div>
@@ -172,9 +172,8 @@ export default function CareersPage() {
                       initial={{ opacity: 0, y: 22 }}
                       whileInView={{ opacity: 1, y: 0 }}
                       viewport={{ once: true, amount: 0.15 }}
-                      transition={{ duration: 0.5, delay: Math.min(index * 0.06, 0.24) }}
-                      whileHover={{ scale: 1.008 }}
-                      className="rounded-[32px] border border-white/10 bg-white/[0.045] p-8 transition-all duration-300 hover:border-cyan-300/25 hover:shadow-[0_0_42px_rgba(34,211,238,0.12)] lg:p-10"
+                      transition={{ duration: 0.5, delay: Math.min(index * 0.06, 0.24) }} 
+                      className="site-card site-tile rounded-[32px] border border-white/10 bg-white/[0.045] p-8 transition-all duration-300 hover:border-cyan-300/25 hover:shadow-[0_0_42px_rgba(34,211,238,0.12)] lg:p-10"
                     >
                       <div className="flex flex-col gap-8 lg:flex-row lg:items-center lg:justify-between">
                         <div className="min-w-0">
@@ -204,7 +203,7 @@ export default function CareersPage() {
 
         <section className="py-32">
           <div className="container mx-auto px-6 lg:px-12">
-            <div className="rounded-[48px] border border-white/10 bg-gradient-to-br from-cyan-500/10 to-blue-600/10 p-12 backdrop-blur-xl lg:p-24">
+            <div className="site-card rounded-[48px] border border-white/10 bg-gradient-to-br from-cyan-500/10 to-blue-600/10 p-12 backdrop-blur-xl lg:p-24">
               <div className="max-w-3xl">
                 <div className="mb-5 font-medium text-cyan-400">{isVi ? "Gia nhập đội ngũ" : "Join Our Team"}</div>
                 <h2 className="text-balance text-4xl font-bold leading-tight lg:text-6xl">
@@ -215,7 +214,7 @@ export default function CareersPage() {
                     ? "Phát triển sự nghiệp trong môi trường tư vấn hiện đại, tập trung vào tác động thực tiễn, đổi mới và tăng trưởng bền vững."
                     : "Build your career in a modern consulting environment focused on impact, innovation and sustainable growth."}
                 </p>
-                <Link to="/careers/apply" className="mt-10 inline-flex rounded-2xl bg-cyan-500 px-8 py-4 transition-all hover:-translate-y-1 hover:bg-cyan-400 hover:shadow-[0_0_30px_rgba(34,211,238,0.20)]">
+                <Link to="/careers/apply" className="site-cta mt-10 inline-flex rounded-2xl bg-cyan-500 px-8 py-4 transition-all hover:-translate-y-1 hover:bg-cyan-400 hover:shadow-[0_0_30px_rgba(34,211,238,0.20)]">
                   {isVi ? "Gửi CV của bạn" : "Submit Your CV"}
                 </Link>
               </div>
