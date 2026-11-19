@@ -127,7 +127,7 @@ export default function InsightScheduledWorkflow({
         </div>
       )}
       {!active && (
-        <fieldset className="rounded-2xl border border-white/10 bg-[#081321]/60 p-4">
+        <fieldset className="rounded-2xl border border-white/10 bg-cms-2 p-4">
           <legend className="px-2 font-semibold text-white">
             Gửi email cùng thời điểm đăng bài?
           </legend>
@@ -207,7 +207,7 @@ export default function InsightScheduledWorkflow({
             </p>
             <button
               type="button"
-              className={`${button} bg-cyan-300 !text-[#071421]`}
+              className={`${button} bg-cyan-300/[0.12] !text-cyan-100`}
               disabled={
                 disabled || choice !== "yes" || !previewReady || !testReady
               }
@@ -239,7 +239,7 @@ export default function InsightScheduledWorkflow({
             role="dialog"
             aria-modal="true"
             aria-label="Xác nhận lịch gửi Audience"
-            className="max-h-[90vh] w-full max-w-xl overflow-y-auto rounded-[28px] border border-cyan-200/25 bg-[#0b1625] p-6 md:p-8"
+            className="max-h-[90vh] w-full max-w-xl overflow-y-auto rounded-[20px] border border-cyan-200/25 bg-cms-2 p-6 md:p-8"
           >
             <div className="flex items-start justify-between gap-4">
               <h2 className="text-2xl font-bold">Xác nhận lịch gửi Audience</h2>
@@ -258,7 +258,7 @@ export default function InsightScheduledWorkflow({
             <p className="mt-3 font-semibold text-cyan-100">
               {formatVietnamDateTime(plan.scheduled_at)} · Giờ Việt Nam (UTC+7)
             </p>
-            <div className="mt-4 rounded-2xl bg-[#081321] p-4 text-sm leading-7 text-slate-300">
+            <div className="mt-4 rounded-2xl bg-cms-2 p-4 text-sm leading-7 text-slate-300">
               <p>From: infor@facs.vn</p>
               <p>To: tunguyen@facs.vn</p>
               <p>Cc: yendoan@facs.vn, thanhhuynh@facs.vn</p>
@@ -291,12 +291,12 @@ export default function InsightScheduledWorkflow({
                 autoFocus
                 value={confirmation}
                 onChange={(event) => setConfirmation(event.target.value)}
-                className="mt-2 w-full rounded-xl border border-white/20 bg-[#081321] p-3 text-white"
+                className="mt-2 w-full rounded-xl border border-white/20 bg-cms-2 p-3 text-white"
               />
             </label>
             <button
               type="button"
-              className={`${button} bg-cyan-300 !text-[#071421]`}
+              className={`${button} bg-cyan-300/[0.12] !text-cyan-100`}
               disabled={working || confirmation !== "SCHEDULE-AUDIENCE"}
               onClick={confirm}
             >
@@ -314,7 +314,7 @@ export default function InsightScheduledWorkflow({
 function Step({ title, complete, children }) {
   return (
     <div
-      className={`rounded-2xl border p-4 ${complete ? "border-emerald-300/25 bg-emerald-300/5" : "border-white/10 bg-[#081321]/45"}`}
+      className={`rounded-2xl border p-4 ${complete ? "border-emerald-300/25 bg-emerald-300/5" : "border-white/10 bg-cms-2"}`}
     >
       <div className="flex items-center justify-between gap-2">
         <strong>{title}</strong>

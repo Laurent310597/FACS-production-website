@@ -6,7 +6,7 @@ import { EMPTY_POST_FILTERS, INSIGHT_POST_PAGE_SIZE, publicationDateBounds, sear
 import { supabase } from "../../lib/supabaseClient";
 
 const publicationLabels = { draft: "Bản nháp", published: "Đã xuất bản", scheduled: "Đã lên lịch" };
-const fieldClass = "mt-2 w-full min-w-0 rounded-xl border border-white/15 bg-[#081321] px-3 py-2.5 text-sm text-white outline-none focus:border-cyan-300/60 [color-scheme:dark]";
+const fieldClass = "mt-2 w-full min-w-0 rounded-xl border border-white/15 bg-cms-2 px-3 py-2.5 text-sm text-white outline-none focus:border-cyan-300/60 [color-scheme:dark]";
 
 export default function InsightPostPicker({ selectedId, onSelect, onClose }) {
   const dialogRef = useRef(null);
@@ -55,8 +55,8 @@ export default function InsightPostPicker({ selectedId, onSelect, onClose }) {
   return (
     <dialog ref={dialogRef} aria-labelledby="insight-picker-title" onCancel={onClose}
       onClick={(event) => { if (event.target === event.currentTarget) onClose(); }}
-      className="m-auto max-h-[92dvh] w-[calc(100%-2rem)] max-w-6xl overflow-y-auto rounded-[28px] border border-cyan-200/25 bg-[#0d1b2b] p-0 text-white shadow-2xl backdrop:bg-[#020811]/85 backdrop:backdrop-blur-sm">
-      <div className="sticky top-0 z-10 flex items-start justify-between gap-4 border-b border-white/10 bg-[#0d1b2b] px-5 py-5 md:px-7">
+      className="m-auto max-h-[92dvh] w-[calc(100%-2rem)] max-w-6xl overflow-y-auto rounded-[20px] border border-cyan-200/25 bg-cms-2 p-0 text-white shadow-2xl backdrop:bg-[#020811]/85 backdrop:backdrop-blur-sm">
+      <div className="sticky top-0 z-10 flex items-start justify-between gap-4 border-b border-white/10 bg-cms-2 px-5 py-5 md:px-7">
         <div><h2 id="insight-picker-title" className="text-2xl font-bold">Tìm và chọn bài viết</h2><p className="mt-1 text-sm text-slate-300">Tìm trong tiêu đề và nội dung tiếng Việt, tiếng Anh.</p></div>
         <button type="button" onClick={onClose} aria-label="Đóng chọn bài viết" className="rounded-xl border border-white/15 p-2.5 text-slate-300 hover:text-white"><X size={20} /></button>
       </div>
@@ -81,7 +81,7 @@ export default function InsightPostPicker({ selectedId, onSelect, onClose }) {
                 : <div className="divide-y divide-white/10">{result.rows.map((post) => {
                   const selected = post.id === selectedId;
                   return <button key={post.id} type="button" onClick={() => onSelect(post)} aria-label={`Chọn bài ${post.title_vi || post.title_en || "chưa có tiêu đề"}`} aria-pressed={selected}
-                    className={`grid w-full gap-3 p-4 text-left transition hover:bg-cyan-300/10 md:grid-cols-[minmax(0,1fr)_160px_150px_85px] md:items-center ${selected ? "bg-cyan-300/10" : "bg-[#081321]/40"}`}>
+                    className={`grid w-full gap-3 p-4 text-left transition hover:bg-cyan-300/10 md:grid-cols-[minmax(0,1fr)_160px_150px_85px] md:items-center ${selected ? "bg-cyan-300/10" : "bg-cms-2"}`}>
                     <span className="min-w-0"><span className="block line-clamp-2 font-semibold text-white">{post.title_vi || post.title_en || "Bài viết chưa có tiêu đề"}</span>{post.title_en && post.title_vi && <span className="mt-1 block truncate text-xs text-slate-300">{post.title_en}</span>}<span className="mt-1 block line-clamp-1 text-xs text-slate-400">{post.excerpt_vi || post.excerpt_en || "Chưa có mô tả ngắn"}</span></span>
                     <span className="text-xs leading-relaxed text-slate-300">{post.published_at ? formatVietnamDateTime(post.published_at) : "Chưa có ngày đăng"}</span>
                     <span className="text-xs leading-relaxed"><span className="block text-cyan-100">{publicationLabels[getPublicationState(post)] || "Bản nháp"}</span><span className="mt-1 block text-slate-300">{emailStatusLabels[post.email_notification_status] || "Chưa cấu hình email"}</span></span>

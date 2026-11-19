@@ -154,21 +154,21 @@ export default function AdminPostsPage() {
     <AdminLayout>
       <div className="flex flex-col gap-5 sm:flex-row sm:items-end sm:justify-between">
         <div>
-          <div className="text-xs font-bold uppercase tracking-[0.18em] text-cyan-300">Quản lý nội dung</div>
+          <div className="text-xs font-bold uppercase tracking-[0.18em] text-sunset">Quản lý nội dung</div>
           <h1 className="mt-2 text-3xl font-bold md:text-4xl">Danh sách bài viết</h1>
           <p className="mt-2 text-sm text-slate-400">Tạo, lưu nháp, hẹn giờ hoặc đăng ngay bài viết trên trang Insights.</p>
         </div>
-        <Link to="/admin/posts/new" className="inline-flex items-center justify-center gap-2 rounded-2xl bg-cyan-300 px-5 py-3 font-bold text-[#071421] transition hover:-translate-y-0.5 hover:bg-cyan-200">
+        <Link to="/admin/posts/new" className="inline-flex items-center justify-center gap-2 rounded-2xl bg-brand px-5 py-3 font-bold text-white transition hover:-translate-y-0.5 hover:bg-brand-hover">
           <FilePlus2 size={18} /> Viết bài mới
         </Link>
       </div>
 
-      <div className="mt-7 grid gap-3 rounded-[26px] border border-white/10 bg-white/[0.035] p-4 md:grid-cols-[1fr_auto]">
-        <label className="flex items-center rounded-2xl border border-white/10 bg-[#081321]/70 px-4 focus-within:border-cyan-300/35">
-          <Search size={18} className="text-slate-500" />
-          <input value={query} onChange={(event) => setQuery(event.target.value)} placeholder="Tìm theo tiêu đề, tác giả hoặc đường dẫn..." className="w-full bg-transparent px-3 py-3 text-sm text-white outline-none placeholder:text-slate-600" />
+      <div className="mt-7 grid gap-3 facs-card rounded-[20px] border border-cyan-300/[0.14] bg-cms-1 p-4 md:grid-cols-[1fr_auto]">
+        <label className="flex items-center rounded-2xl border border-white/10 bg-cms-2 px-4 focus-within:border-cyan-300/35">
+          <Search size={18} className="text-ink-3" />
+          <input value={query} onChange={(event) => setQuery(event.target.value)} placeholder="Tìm theo tiêu đề, tác giả hoặc đường dẫn..." className="w-full bg-transparent px-3 py-3 text-sm text-white outline-none placeholder:text-[#6A7BA3]" />
         </label>
-        <select value={status} onChange={(event) => setStatus(event.target.value)} className="rounded-2xl border border-white/10 bg-[#081321] px-4 py-3 text-sm text-white outline-none">
+        <select value={status} onChange={(event) => setStatus(event.target.value)} className="rounded-2xl border border-white/10 bg-cms-2 px-4 py-3 text-sm text-white outline-none">
           <option value="all">Tất cả trạng thái</option>
           <option value="published">Đã xuất bản</option>
           <option value="scheduled">Đã lên lịch</option>
@@ -176,7 +176,7 @@ export default function AdminPostsPage() {
         </select>
       </div>
 
-      <div className="mt-6 overflow-hidden rounded-[26px] border border-white/10 bg-white/[0.035]">
+      <div className="mt-6 overflow-hidden facs-card rounded-[20px] border border-cyan-300/[0.14] bg-cms-1">
         {loading ? (
           <div className="flex min-h-60 items-center justify-center"><div className="h-9 w-9 animate-spin rounded-full border-2 border-cyan-300/20 border-t-cyan-300" /></div>
         ) : error ? (
@@ -193,8 +193,8 @@ export default function AdminPostsPage() {
               const publicationState = getPublicationState(post, now);
               return (
                 <article key={post.id} className="grid gap-4 p-5 transition hover:bg-white/[0.025] md:grid-cols-[96px_minmax(0,1fr)_auto] md:items-center md:p-6">
-                  <div className="h-20 overflow-hidden rounded-2xl border border-white/10 bg-[#081321]">
-                    {post.cover_image_url ? <img src={post.cover_image_url} alt="" className="h-full w-full object-cover" /> : <div className="flex h-full items-center justify-center text-xs text-slate-600">No image</div>}
+                  <div className="h-20 overflow-hidden rounded-2xl border border-white/10 bg-cms-2">
+                    {post.cover_image_url ? <img src={post.cover_image_url} alt="" className="h-full w-full object-cover" /> : <div className="flex h-full items-center justify-center text-xs text-ink-3">No image</div>}
                   </div>
                   <div className="min-w-0">
                     <div className="flex flex-wrap items-center gap-2 text-xs">
@@ -209,8 +209,8 @@ export default function AdminPostsPage() {
                       )}
                     </div>
                     <h2 className="mt-3 truncate text-lg font-semibold text-white">{localized.title}</h2>
-                    <div className="mt-1 truncate text-sm text-slate-500">/insights/{localized.slug}</div>
-                    <div className="mt-1 truncate text-xs text-slate-600">{localized.author}</div>
+                    <div className="mt-1 truncate text-sm text-ink-3">/insights/{localized.slug}</div>
+                    <div className="mt-1 truncate text-xs text-ink-3">{localized.author}</div>
                     {publicationState === "scheduled" && (
                       <div className="mt-2 inline-flex items-center gap-1.5 text-xs font-medium text-violet-200">
                         <CalendarClock size={14} /> Tự động đăng lúc {formatVietnamDateTime(post.published_at)} (UTC+7)

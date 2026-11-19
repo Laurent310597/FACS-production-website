@@ -21,7 +21,6 @@ import * as ui from "../../components/admin/ui/styles";
 
 const cardClass = ui.card;
 const ghostButton = ui.btnSecondary;
-const primaryButton = ui.btnPrimary;
 
 const fmt = (value) => (value ? new Date(value).toLocaleString("vi-VN", { timeZone: "Asia/Ho_Chi_Minh", hour12: false }) : "—");
 const statusStyle = {
@@ -152,10 +151,10 @@ export default function AdminHubSocialPage() {
       <section className={cardClass}>
         <h2 className="font-serif text-xl font-bold text-white">1. Tài khoản đã kết nối</h2>
         <div className="mt-4 flex flex-wrap gap-3">
-          <button type="button" className={primaryButton} onClick={() => connect("facebook")} disabled={busy === "facebook" || status?.meta_configured === false}>
+          <button type="button" className={ghostButton} onClick={() => connect("facebook")} disabled={busy === "facebook" || status?.meta_configured === false}>
             {busy === "facebook" ? <Loader2 size={16} className="animate-spin" /> : <Plug size={16} />} Kết nối Facebook & Instagram
           </button>
-          <button type="button" className={primaryButton} onClick={() => connect("linkedin")} disabled={busy === "linkedin" || status?.linkedin_configured === false}>
+          <button type="button" className={ghostButton} onClick={() => connect("linkedin")} disabled={busy === "linkedin" || status?.linkedin_configured === false}>
             {busy === "linkedin" ? <Loader2 size={16} className="animate-spin" /> : <Plug size={16} />} Kết nối LinkedIn
           </button>
         </div>

@@ -298,15 +298,15 @@ export default function AdminPostEditorPage() {
 
       <div className="mt-7 grid gap-6 xl:grid-cols-[minmax(0,1fr)_360px] xl:items-start">
         <div className="space-y-6">
-          <section className="rounded-[28px] border border-white/10 bg-white/[0.035] p-5 md:p-7">
+          <section className="facs-card rounded-[20px] border border-cyan-300/[0.14] bg-cms-1 p-5 md:p-7">
             <div className="flex flex-wrap items-center justify-between gap-4 border-b border-white/10 pb-5">
               <div>
                 <h2 className="text-xl font-semibold">Nội dung bài viết</h2>
-                <p className="mt-1 text-sm text-slate-500">Chọn ngôn ngữ rồi nhập nội dung tương ứng.</p>
+                <p className="mt-1 text-sm text-ink-3">Chọn ngôn ngữ rồi nhập nội dung tương ứng.</p>
               </div>
-              <div className="flex rounded-2xl border border-white/10 bg-[#081321]/70 p-1">
+              <div className="flex rounded-2xl border border-white/10 bg-cms-2 p-1">
                 {[["vi", "Tiếng Việt"], ["en", "English"]].map(([value, label]) => (
-                  <button key={value} type="button" onClick={() => setActiveLanguage(value)} className={`rounded-xl px-4 py-2 text-sm font-semibold transition ${activeLanguage === value ? "bg-cyan-300 text-[#071421]" : "text-slate-400 hover:text-white"}`}>{label}</button>
+                  <button key={value} type="button" onClick={() => setActiveLanguage(value)} className={`rounded-xl px-4 py-2 text-sm font-semibold transition ${activeLanguage === value ? "bg-cyan-300/[0.12] text-cyan-100" : "text-slate-400 hover:text-white"}`}>{label}</button>
                 ))}
               </div>
             </div>
@@ -314,13 +314,13 @@ export default function AdminPostEditorPage() {
             <div className="mt-6 space-y-5">
               <label className="block">
                 <span className="mb-2 block text-sm font-semibold text-slate-200">{activeLanguage === "vi" ? "Tiêu đề tiếng Việt" : "English title"}</span>
-                <input value={form[`title_${activeLanguage}`] || ""} onChange={(event) => handleTitleChange(event.target.value)} className="w-full rounded-2xl border border-white/10 bg-[#081321]/70 px-4 py-3.5 text-white outline-none placeholder:text-slate-600 focus:border-cyan-300/35" placeholder={activeLanguage === "vi" ? "Nhập tiêu đề bài viết..." : "Enter article title..."} />
+                <input value={form[`title_${activeLanguage}`] || ""} onChange={(event) => handleTitleChange(event.target.value)} className="w-full rounded-2xl border border-white/10 bg-cms-2 px-4 py-3.5 text-white outline-none placeholder:text-[#6A7BA3] focus:border-cyan-300/35" placeholder={activeLanguage === "vi" ? "Nhập tiêu đề bài viết..." : "Enter article title..."} />
               </label>
 
               <label className="block">
                 <span className="mb-2 block text-sm font-semibold text-slate-200">{activeLanguage === "vi" ? "Mô tả ngắn" : "Short description"}</span>
-                <textarea value={form[`excerpt_${activeLanguage}`] || ""} onChange={(event) => updateField(`excerpt_${activeLanguage}`, event.target.value)} rows={3} maxLength={320} className="w-full resize-y rounded-2xl border border-white/10 bg-[#081321]/70 px-4 py-3.5 leading-relaxed text-white outline-none placeholder:text-slate-600 focus:border-cyan-300/35" placeholder={activeLanguage === "vi" ? "Đoạn giới thiệu ngắn hiển thị trên thẻ bài viết..." : "Short introduction shown on the article card..."} />
-                <span className="mt-1 block text-right text-xs text-slate-600">{(form[`excerpt_${activeLanguage}`] || "").length}/320</span>
+                <textarea value={form[`excerpt_${activeLanguage}`] || ""} onChange={(event) => updateField(`excerpt_${activeLanguage}`, event.target.value)} rows={3} maxLength={320} className="w-full resize-y rounded-2xl border border-white/10 bg-cms-2 px-4 py-3.5 leading-relaxed text-white outline-none placeholder:text-[#6A7BA3] focus:border-cyan-300/35" placeholder={activeLanguage === "vi" ? "Đoạn giới thiệu ngắn hiển thị trên thẻ bài viết..." : "Short introduction shown on the article card..."} />
+                <span className="mt-1 block text-right text-xs text-ink-3">{(form[`excerpt_${activeLanguage}`] || "").length}/320</span>
               </label>
 
               <div>
@@ -330,17 +330,17 @@ export default function AdminPostEditorPage() {
             </div>
           </section>
 
-          <section className="rounded-[28px] border border-white/10 bg-white/[0.035] p-5 md:p-7">
+          <section className="facs-card rounded-[20px] border border-cyan-300/[0.14] bg-cms-1 p-5 md:p-7">
             <div className="flex items-center gap-3">
               <ImagePlus size={20} className="text-cyan-300" />
               <div>
                 <h2 className="text-xl font-semibold">Ảnh bìa</h2>
-                <p className="mt-1 text-sm text-slate-500">Ảnh dùng chung cho cả hai ngôn ngữ; mô tả ảnh thay đổi theo tab đang chọn.</p>
+                <p className="mt-1 text-sm text-ink-3">Ảnh dùng chung cho cả hai ngôn ngữ; mô tả ảnh thay đổi theo tab đang chọn.</p>
               </div>
             </div>
             <div className="mt-6 grid gap-5 lg:grid-cols-[230px_minmax(0,1fr)]">
-              <div className="flex min-h-40 items-center justify-center overflow-hidden rounded-2xl border border-dashed border-white/15 bg-[#081321]/70 p-2">
-                {form.cover_image_url ? <img src={form.cover_image_url} alt="Cover preview" className="max-h-72 h-auto w-full rounded-xl object-contain" /> : <div className="px-6 text-center text-sm text-slate-600">Chưa có ảnh bìa</div>}
+              <div className="flex min-h-40 items-center justify-center overflow-hidden rounded-2xl border border-dashed border-white/15 bg-cms-2 p-2">
+                {form.cover_image_url ? <img src={form.cover_image_url} alt="Cover preview" className="max-h-72 h-auto w-full rounded-xl object-contain" /> : <div className="px-6 text-center text-sm text-ink-3">Chưa có ảnh bìa</div>}
               </div>
               <div className="space-y-4">
                 <div className="flex flex-wrap gap-3">
@@ -352,34 +352,34 @@ export default function AdminPostEditorPage() {
                 </div>
                 <label className="block">
                   <span className="mb-2 block text-sm font-semibold text-slate-200">URL ảnh</span>
-                  <input value={form.cover_image_url || ""} onChange={(event) => updateField("cover_image_url", event.target.value)} className="w-full rounded-2xl border border-white/10 bg-[#081321]/70 px-4 py-3.5 text-white outline-none placeholder:text-slate-600 focus:border-cyan-300/35" placeholder="https://..." />
+                  <input value={form.cover_image_url || ""} onChange={(event) => updateField("cover_image_url", event.target.value)} className="w-full rounded-2xl border border-white/10 bg-cms-2 px-4 py-3.5 text-white outline-none placeholder:text-[#6A7BA3] focus:border-cyan-300/35" placeholder="https://..." />
                 </label>
                 <label className="block">
                   <span className="mb-2 block text-sm font-semibold text-slate-200">{activeLanguage === "vi" ? "Mô tả ảnh tiếng Việt" : "English image alt text"}</span>
-                  <input value={form[`cover_image_alt_${activeLanguage}`] || ""} onChange={(event) => updateField(`cover_image_alt_${activeLanguage}`, event.target.value)} className="w-full rounded-2xl border border-white/10 bg-[#081321]/70 px-4 py-3 text-sm text-white outline-none placeholder:text-slate-600 focus:border-cyan-300/35" placeholder={activeLanguage === "vi" ? "Mô tả ngắn nội dung ảnh" : "Short description of the image"} />
+                  <input value={form[`cover_image_alt_${activeLanguage}`] || ""} onChange={(event) => updateField(`cover_image_alt_${activeLanguage}`, event.target.value)} className="w-full rounded-2xl border border-white/10 bg-cms-2 px-4 py-3 text-sm text-white outline-none placeholder:text-[#6A7BA3] focus:border-cyan-300/35" placeholder={activeLanguage === "vi" ? "Mô tả ngắn nội dung ảnh" : "Short description of the image"} />
                 </label>
-                <p className="text-xs leading-relaxed text-slate-600">JPG, PNG, WEBP hoặc GIF; tối đa 5 MB.</p>
+                <p className="text-xs leading-relaxed text-ink-3">JPG, PNG, WEBP hoặc GIF; tối đa 5 MB.</p>
               </div>
             </div>
           </section>
 
-          <details className="rounded-[28px] border border-white/10 bg-white/[0.035] p-5 md:p-7">
+          <details className="facs-card rounded-[20px] border border-cyan-300/[0.14] bg-cms-1 p-5 md:p-7">
             <summary className="cursor-pointer text-xl font-semibold">SEO nâng cao · {activeLanguageLabel}</summary>
             <div className="mt-6 space-y-4">
               <label className="block">
                 <span className="mb-2 block text-sm font-semibold text-slate-200">SEO title</span>
-                <input value={form[`seo_title_${activeLanguage}`] || ""} onChange={(event) => updateField(`seo_title_${activeLanguage}`, event.target.value)} className="w-full rounded-xl border border-white/10 bg-[#081321]/70 px-4 py-3 text-sm text-white outline-none focus:border-cyan-300/35" placeholder={activeTitle} />
+                <input value={form[`seo_title_${activeLanguage}`] || ""} onChange={(event) => updateField(`seo_title_${activeLanguage}`, event.target.value)} className="w-full rounded-xl border border-white/10 bg-cms-2 px-4 py-3 text-sm text-white outline-none focus:border-cyan-300/35" placeholder={activeTitle} />
               </label>
               <label className="block">
                 <span className="mb-2 block text-sm font-semibold text-slate-200">Meta description</span>
-                <textarea value={form[`seo_description_${activeLanguage}`] || ""} onChange={(event) => updateField(`seo_description_${activeLanguage}`, event.target.value)} rows={3} className="w-full rounded-xl border border-white/10 bg-[#081321]/70 px-4 py-3 text-sm text-white outline-none focus:border-cyan-300/35" placeholder={activeExcerpt || "Mô tả hiển thị trên công cụ tìm kiếm"} />
+                <textarea value={form[`seo_description_${activeLanguage}`] || ""} onChange={(event) => updateField(`seo_description_${activeLanguage}`, event.target.value)} rows={3} className="w-full rounded-xl border border-white/10 bg-cms-2 px-4 py-3 text-sm text-white outline-none focus:border-cyan-300/35" placeholder={activeExcerpt || "Mô tả hiển thị trên công cụ tìm kiếm"} />
               </label>
             </div>
           </details>
         </div>
 
         <aside className="space-y-5 xl:sticky xl:top-24">
-          <section className="rounded-[26px] border border-white/10 bg-white/[0.04] p-5">
+          <section className="facs-card rounded-[20px] border border-cyan-300/[0.14] bg-cms-1 p-5">
             <div className="flex items-center justify-between gap-3">
               <div className="flex items-center gap-2">
                 <Settings2 size={19} className="text-cyan-300" />
@@ -387,45 +387,45 @@ export default function AdminPostEditorPage() {
               </div>
               <span className="rounded-full bg-cyan-300/10 px-3 py-1 text-xs font-semibold text-cyan-200">{activeLanguage === "vi" ? "VI" : "EN"}</span>
             </div>
-            <p className="mt-2 text-xs leading-relaxed text-slate-500">Tác giả và đường dẫn dưới đây áp dụng cho tab {activeLanguageLabel}.</p>
+            <p className="mt-2 text-xs leading-relaxed text-ink-3">Tác giả và đường dẫn dưới đây áp dụng cho tab {activeLanguageLabel}.</p>
 
             <div className="mt-5 space-y-4">
               <label className="block">
                 <span className="mb-2 block text-sm font-semibold text-slate-200">Chuyên mục</span>
-                <select value={form.category} onChange={(event) => updateField("category", event.target.value)} className="w-full rounded-2xl border border-white/10 bg-[#081321] px-4 py-3 text-white outline-none focus:border-cyan-300/35">
+                <select value={form.category} onChange={(event) => updateField("category", event.target.value)} className="w-full rounded-2xl border border-white/10 bg-cms-2 px-4 py-3 text-white outline-none focus:border-cyan-300/35">
                   {insightCategories.map((category) => <option key={category.value} value={category.value}>{category.vi} / {category.en}</option>)}
                 </select>
               </label>
 
               <label className="block">
                 <span className="mb-2 block text-sm font-semibold text-slate-200">{activeLanguage === "vi" ? "Tác giả tiếng Việt" : "Author (English)"}</span>
-                <input value={form[`author_name_${activeLanguage}`] || ""} onChange={(event) => updateField(`author_name_${activeLanguage}`, event.target.value)} className="w-full rounded-2xl border border-white/10 bg-[#081321]/70 px-4 py-3 text-white outline-none focus:border-cyan-300/35" placeholder={activeLanguage === "vi" ? "Ví dụ: Anh Nguyễn Hoàng Tú" : "Example: Mr. Tu Hoang Nguyen"} />
+                <input value={form[`author_name_${activeLanguage}`] || ""} onChange={(event) => updateField(`author_name_${activeLanguage}`, event.target.value)} className="w-full rounded-2xl border border-white/10 bg-cms-2 px-4 py-3 text-white outline-none focus:border-cyan-300/35" placeholder={activeLanguage === "vi" ? "Ví dụ: Anh Nguyễn Hoàng Tú" : "Example: Mr. Tu Hoang Nguyen"} />
               </label>
 
               <label className="block">
                 <span className="mb-2 flex items-center gap-2 text-sm font-semibold text-slate-200"><Link2 size={15} /> {activeLanguage === "vi" ? "Slug tiếng Việt" : "English slug"}</span>
-                <div className="overflow-hidden rounded-2xl border border-white/10 bg-[#081321]/70 focus-within:border-cyan-300/35">
-                  <div className="border-b border-white/10 px-3 py-2 text-[11px] text-slate-600">facs.vn/insights/</div>
+                <div className="overflow-hidden rounded-2xl border border-white/10 bg-cms-2 focus-within:border-cyan-300/35">
+                  <div className="border-b border-white/10 px-3 py-2 text-[11px] text-ink-3">facs.vn/insights/</div>
                   <input value={form[`slug_${activeLanguage}`] || ""} onChange={(event) => updateField(`slug_${activeLanguage}`, slugify(event.target.value))} className="w-full bg-transparent px-3 py-3 text-sm text-white outline-none" placeholder={activeLanguage === "vi" ? "duong-dan-tieng-viet" : "english-article-url"} />
                 </div>
               </label>
 
               {isEditing && form.slug && (
-                <div className="rounded-2xl border border-white/8 bg-[#081321]/45 px-3 py-3 text-xs leading-relaxed text-slate-500">
+                <div className="rounded-2xl border border-white/8 bg-cms-2 px-3 py-3 text-xs leading-relaxed text-ink-3">
                   Link cũ được giữ làm đường dẫn dự phòng: <span className="break-all text-slate-400">/insights/{form.slug}</span>
                 </div>
               )}
             </div>
           </section>
 
-          <section className="rounded-[26px] border border-white/10 bg-white/[0.04] p-5">
+          <section className="facs-card rounded-[20px] border border-cyan-300/[0.14] bg-cms-1 p-5">
             <div className="flex items-center gap-2">
               <Clock3 size={19} className="text-violet-300" />
               <h2 className="font-semibold">Xuất bản</h2>
             </div>
 
-            <div className="mt-4 rounded-2xl border border-white/10 bg-[#081321]/60 px-4 py-3 text-sm">
-              <div className="text-xs font-semibold uppercase tracking-[0.12em] text-slate-500">Trạng thái</div>
+            <div className="mt-4 rounded-2xl border border-white/10 bg-cms-2 px-4 py-3 text-sm">
+              <div className="text-xs font-semibold uppercase tracking-[0.12em] text-ink-3">Trạng thái</div>
               {publicationState === "scheduled" ? (
                 <div className="mt-1 font-medium text-violet-200">Đã lên lịch · {formatVietnamDateTime(form.published_at)}</div>
               ) : publicationState === "published" ? (
@@ -435,21 +435,21 @@ export default function AdminPostEditorPage() {
               )}
             </div>
 
-            <label className="mt-4 flex items-start gap-3 rounded-2xl border border-white/10 bg-[#081321]/55 px-4 py-3.5">
+            <label className="mt-4 flex items-start gap-3 rounded-2xl border border-white/10 bg-cms-2 px-4 py-3.5">
               <input type="checkbox" checked={form.featured} onChange={(event) => updateField("featured", event.target.checked)} className="mt-0.5 h-4 w-4 accent-cyan-300" />
-              <span><strong className="flex items-center gap-1.5 text-sm"><Star size={14} /> Bài viết nổi bật</strong><span className="mt-1 block text-xs leading-relaxed text-slate-500">Ưu tiên bài trong các khu vực nổi bật của Insights.</span></span>
+              <span><strong className="flex items-center gap-1.5 text-sm"><Star size={14} /> Bài viết nổi bật</strong><span className="mt-1 block text-xs leading-relaxed text-ink-3">Ưu tiên bài trong các khu vực nổi bật của Insights.</span></span>
             </label>
 
             <div className="mt-4">
               <div className="text-sm font-semibold text-slate-200">Phương thức gửi Email Insights</div>
-              <p className="mt-1 text-xs leading-relaxed text-slate-500">Email Audience cần xem trước, gửi thử và xác nhận. Với bài hẹn đăng, có thể xác nhận lịch gửi cùng giờ đăng tại Email & Audience.</p>
+              <p className="mt-1 text-xs leading-relaxed text-ink-3">Email Audience cần xem trước, gửi thử và xác nhận. Với bài hẹn đăng, có thể xác nhận lịch gửi cùng giờ đăng tại Email & Audience.</p>
               <div className="mt-3 space-y-2">
                 {[
                   ["disabled", "Không gửi email", "Chỉ xuất bản bài viết; không tạo quy trình email."],
                   ["review_after_publish", "Gửi sau khi kiểm duyệt", "Khuyến nghị: sau khi đăng, mở ngay quy trình Xem trước → Gửi thử → Xác nhận."],
                   ["manual_later", "Gửi thủ công sau", "Xuất bản trước; xử lý email sau tại trang Email & Audience."],
                 ].map(([value, label, description]) => (
-                  <label key={value} className={`flex cursor-pointer items-start gap-3 rounded-2xl border px-4 py-3 transition ${form.email_delivery_mode === value ? "border-cyan-200/30 bg-cyan-300/8" : "border-white/10 bg-[#081321]/45 hover:border-white/20"}`}>
+                  <label key={value} className={`flex cursor-pointer items-start gap-3 rounded-2xl border px-4 py-3 transition ${form.email_delivery_mode === value ? "border-cyan-200/30 bg-cyan-300/8" : "border-white/10 bg-cms-2 hover:border-white/20"}`}>
                     <input
                       type="radio"
                       name="email-delivery-mode"
@@ -461,7 +461,7 @@ export default function AdminPostEditorPage() {
                     />
                     <span>
                       <strong className="block text-sm text-white">{label}</strong>
-                      <span className="mt-1 block text-xs leading-relaxed text-slate-500">{description}</span>
+                      <span className="mt-1 block text-xs leading-relaxed text-ink-3">{description}</span>
                     </span>
                   </label>
                 ))}
@@ -478,19 +478,19 @@ export default function AdminPostEditorPage() {
                 value={scheduleAt}
                 min={getMinimumVietnamDateTimeInput(2)}
                 onChange={(event) => setScheduleAt(event.target.value)}
-                className="w-full rounded-2xl border border-white/10 bg-[#081321]/80 px-4 py-3 text-white outline-none focus:border-violet-300/40"
+                className="w-full rounded-2xl border border-white/10 bg-cms-2 px-4 py-3 text-white outline-none focus:border-violet-300/40"
               />
-              <span className="mt-2 block text-xs leading-relaxed text-slate-500">Múi giờ Việt Nam (UTC+7).</span>
+              <span className="mt-2 block text-xs leading-relaxed text-ink-3">Múi giờ Việt Nam (UTC+7).</span>
             </label>
 
             <div className="mt-5 grid gap-3">
-              <button type="button" disabled={saving} onClick={() => savePost("draft")} className="inline-flex w-full items-center justify-center gap-2 rounded-2xl border border-cyan-200/25 bg-white/[0.035] px-4 py-3 font-semibold text-cyan-100 transition hover:bg-white/[0.08] disabled:opacity-50">
+              <button type="button" disabled={saving} onClick={() => savePost("draft")} className="inline-flex w-full items-center justify-center gap-2 rounded-2xl border border-cyan-200/25 bg-cms-1 px-4 py-3 font-semibold text-cyan-100 transition hover:bg-white/[0.08] disabled:opacity-50">
                 <Save size={17} /> Lưu nháp
               </button>
               <button type="button" disabled={saving} onClick={() => savePost("schedule")} className="inline-flex w-full items-center justify-center gap-2 rounded-2xl border border-violet-200/25 bg-violet-300/10 px-4 py-3 font-semibold text-violet-100 transition hover:bg-violet-300/15 disabled:opacity-50">
                 {saving ? <Loader2 size={17} className="animate-spin" /> : <CalendarClock size={17} />} Hẹn giờ đăng
               </button>
-              <button type="button" disabled={saving} onClick={() => savePost("publish")} className="inline-flex w-full items-center justify-center gap-2 rounded-2xl bg-cyan-300 px-4 py-3 font-bold text-[#071421] transition hover:-translate-y-0.5 hover:bg-cyan-200 disabled:opacity-50">
+              <button type="button" disabled={saving} onClick={() => savePost("publish")} className="inline-flex w-full items-center justify-center gap-2 rounded-2xl bg-brand px-4 py-3 font-bold text-white transition hover:-translate-y-0.5 hover:bg-brand-hover disabled:opacity-50">
                 {saving ? <Loader2 size={17} className="animate-spin" /> : <Send size={17} />} Đăng ngay
               </button>
             </div>
@@ -500,23 +500,23 @@ export default function AdminPostEditorPage() {
 
       {previewOpen && (
         <div role="presentation" onClick={() => setPreviewOpen(false)} className="fixed inset-0 z-[120] flex items-center justify-center bg-[#020811]/85 p-4 backdrop-blur-md">
-          <section role="dialog" aria-modal="true" aria-label="Xem trước bài viết" onClick={(event) => event.stopPropagation()} className="max-h-[92vh] w-full max-w-5xl overflow-hidden rounded-[30px] border border-cyan-200/15 bg-[#0b1625] shadow-[0_40px_140px_rgba(0,0,0,0.6)]">
+          <section role="dialog" aria-modal="true" aria-label="Xem trước bài viết" onClick={(event) => event.stopPropagation()} className="max-h-[92vh] w-full max-w-5xl overflow-hidden rounded-[20px] border border-cyan-200/15 bg-cms-2 shadow-[0_40px_140px_rgba(0,0,0,0.6)]">
             <div className="flex items-center justify-between border-b border-white/10 px-5 py-4 md:px-7">
               <div>
-                <div className="text-xs font-bold uppercase tracking-[0.18em] text-cyan-300">Bản xem trước · {activeLanguageLabel}</div>
-                <div className="mt-1 text-xs text-slate-500">/insights/{activeSlug || "duong-dan-bai-viet"}</div>
+                <div className="text-xs font-bold uppercase tracking-[0.18em] text-sunset">Bản xem trước · {activeLanguageLabel}</div>
+                <div className="mt-1 text-xs text-ink-3">/insights/{activeSlug || "duong-dan-bai-viet"}</div>
               </div>
               <button type="button" onClick={() => setPreviewOpen(false)} className="flex h-10 w-10 items-center justify-center rounded-xl border border-white/10 text-slate-400 transition hover:text-white" aria-label="Đóng xem trước"><X size={19} /></button>
             </div>
             <div className="max-h-[calc(92vh-74px)] overflow-y-auto">
               {form.cover_image_url && <img src={form.cover_image_url} alt="" className="max-h-[560px] h-auto w-full bg-white/[0.025] p-3 object-contain" />}
               <div className="mx-auto max-w-3xl p-7 md:p-10">
-                <div className="text-xs font-semibold uppercase tracking-[0.18em] text-cyan-300">{insightCategories.find((item) => item.value === form.category)?.[activeLanguage] || "FACS Insight"}</div>
+                <div className="text-xs font-semibold uppercase tracking-[0.18em] text-sunset">{insightCategories.find((item) => item.value === form.category)?.[activeLanguage] || "FACS Insight"}</div>
                 <h2 className="mt-4 text-3xl font-bold leading-tight md:text-5xl">{activeTitle}</h2>
                 {activeExcerpt && <p className="mt-5 text-lg leading-relaxed text-slate-400">{activeExcerpt}</p>}
-                <div className="mt-5 text-sm text-slate-500">{activeAuthor} · /insights/{activeSlug || "duong-dan-bai-viet"}</div>
+                <div className="mt-5 text-sm text-ink-3">{activeAuthor} · /insights/{activeSlug || "duong-dan-bai-viet"}</div>
                 <div className="mt-8 border-t border-white/10 pt-8">
-                  {safePreview ? <div className="facs-article" dangerouslySetInnerHTML={{ __html: safePreview }} /> : <p className="text-sm text-slate-600">Nội dung xem trước sẽ hiển thị tại đây.</p>}
+                  {safePreview ? <div className="facs-article" dangerouslySetInnerHTML={{ __html: safePreview }} /> : <p className="text-sm text-ink-3">Nội dung xem trước sẽ hiển thị tại đây.</p>}
                 </div>
               </div>
             </div>

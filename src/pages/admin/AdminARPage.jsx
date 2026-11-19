@@ -173,7 +173,7 @@ function StatusBar({ status, onEdit, onRefresh, loading }) {
           </div>
         </div>
         <div className="flex flex-wrap gap-2">
-          <button type="button" className={primary} onClick={onEdit}><Pencil size={16} /> Mẫu email & tài khoản ngân hàng</button>
+          <button type="button" className={ui.btnSecondary} onClick={onEdit}><Pencil size={16} /> Mẫu email & tài khoản ngân hàng</button>
           <button type="button" className={ghost} onClick={onRefresh} disabled={loading}>{loading ? <Loader2 size={16} className="animate-spin" /> : <RefreshCw size={16} />} Làm mới</button>
         </div>
       </div>
@@ -249,9 +249,9 @@ function AddReminders({ onSaved, onError, onPreview }) {
       {mode === "manual" ? (
         <div className="mt-5 space-y-4">
           {manual.map((row, index) => (
-            <div key={index} className="rounded-2xl border border-white/10 bg-cms-2 p-4">
-              <div className="mb-3 flex items-center justify-between text-sm font-semibold text-slate-300">
-                <span>Khách hàng {index + 1}</span>
+            <div key={index} className="border-t border-white/[0.07] pt-5 first:border-t-0 first:pt-1">
+              <div className="mb-3 flex items-center justify-between text-sm font-semibold text-ink-1">
+                <span className="inline-flex items-center gap-2"><span className="flex h-6 w-6 items-center justify-center rounded-full bg-cyan-300/[0.14] text-xs text-cyan-100">{index + 1}</span> Khách hàng</span>
                 <div className="flex gap-3">
                   <button type="button" className="inline-flex items-center gap-1 text-xs text-cyan-300 hover:text-cyan-100" onClick={() => onPreview(row)}><Eye size={14} /> Xem trước email</button>
                   {manual.length > 1 && <button type="button" className="text-ink-3 hover:text-rose-200" onClick={() => setManual((list) => list.filter((_, i) => i !== index))} aria-label="Xóa dòng"><Trash2 size={15} /></button>}

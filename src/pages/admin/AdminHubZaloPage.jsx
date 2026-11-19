@@ -131,7 +131,7 @@ export default function AdminHubZaloPage() {
             <p className="mt-1 text-sm text-slate-400">Tạo khóa thiết bị, rồi điền HUB_SYNC_URL và HUB_DEVICE_KEY vào .env của AI Zalo (xem HUONG-DAN-FACS-HUB.md).</p>
             <div className="mt-4 flex flex-wrap gap-2">
               <input className={`${inputClass} max-w-xs`} value={newName} onChange={(e) => setNewName(e.target.value)} maxLength={80} />
-              <button type="button" className={primaryButton} onClick={add} disabled={busy}><Plus size={16} /> Tạo khóa thiết bị</button>
+              <button type="button" className={ghostButton} onClick={add} disabled={busy}><Plus size={16} /> Tạo khóa thiết bị</button>
             </div>
           </div>
         )}

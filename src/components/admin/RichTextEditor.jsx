@@ -48,8 +48,8 @@ export default function RichTextEditor({ value, onChange, placeholder }) {
   };
 
   return (
-    <div className="overflow-hidden rounded-2xl border border-white/10 bg-[#081321]/70 focus-within:border-cyan-300/35">
-      <div className="flex flex-wrap gap-1 border-b border-white/10 bg-white/[0.035] p-2">
+    <div className="overflow-hidden rounded-2xl border border-white/10 bg-cms-2 focus-within:border-cyan-300/35">
+      <div className="flex flex-wrap gap-1 border-b border-white/10 bg-cms-1 p-2">
         {tools.map(([Icon, label, command, commandValue]) => (
           <button
             key={label}

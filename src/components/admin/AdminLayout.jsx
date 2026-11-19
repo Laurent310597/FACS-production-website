@@ -1,10 +1,12 @@
-import { useEffect, useState } from "react";
+import { useEffect, useRef, useState } from "react";
 import { AnimatePresence, MotionConfig, motion } from "framer-motion";
 import { Link, NavLink, useLocation, useNavigate } from "react-router-dom";
-import { ChevronDown, ExternalLink, LogOut, Orbit, PanelLeftClose, PanelLeftOpen } from "lucide-react";
+import { ChevronDown, ChevronRight, ExternalLink, Globe, LogOut, Menu, Orbit, PanelLeftClose, PanelLeftOpen, Search, X } from "lucide-react";
 import { supabase } from "../../lib/supabaseClient";
 import AdminNavWheel from "./AdminNavWheel";
-import { ADMIN_NAV, activeGroupId, activeItemPath, loadNavMode, loadOpenGroups, saveNavMode, saveOpenGroups } from "./adminNav";
+import CommandPalette from "./CommandPalette";
+import HeaderWave from "./HeaderWave";
+import { ADMIN_NAV, PUBLIC_SITE_LINKS, activeGroupId, activeItemPath, activeTrail, loadNavMode, loadOpenGroups, saveNavMode, saveOpenGroups } from "./adminNav";
 
 const itemClass = (active) =>
   `flex items-center gap-3 rounded-xl px-4 py-2.5 text-sm font-semibold transition-colors ${
@@ -39,17 +41,17 @@ function ExpandedNav({ currentPath, activeId, openGroups, toggleGroup }) {
         const isActive = group.id === activeId;
         const isOpen = isActive || openGroups.includes(group.id);
         return (
-          <div key={group.id} className={index ? "border-t border-white/10 pt-1" : ""}>
+          <div key={group.id} className={index ? "border-t border-white/[0.06] pt-1" : ""}>
             <button
               type="button"
               onClick={() => toggleGroup(group.id)}
               disabled={isActive}
-              className="flex w-full items-center gap-2 rounded-xl px-4 py-2.5 text-[11px] font-bold uppercase tracking-[0.18em] text-ink-3 transition hover:text-slate-200 disabled:cursor-default disabled:hover:text-ink-3"
+              className="flex w-full items-center gap-2.5 rounded-xl px-4 py-2.5 text-[13px] font-semibold text-ink-3 transition hover:text-ink-1 disabled:cursor-default disabled:hover:text-ink-3"
               aria-expanded={isOpen}
             >
-              <GroupIcon size={14} className={isActive ? "text-cyan-300" : ""} />
-              <span className={isActive ? "text-cyan-200" : ""}>{group.label}</span>
-              {!isOpen && <span className="ml-1 rounded-full bg-white/[0.06] px-1.5 text-[10px] tracking-normal text-ink-3">{group.items.length}</span>}
+              <GroupIcon size={15} className={isActive ? "text-sunset" : ""} />
+              <span className={isActive ? "text-ink-1" : ""}>{group.label}</span>
+              
               {!isActive && <ChevronDown size={14} className={`ml-auto transition-transform ${isOpen ? "" : "-rotate-90"}`} />}
             </button>
             <AnimatePresence initial={false}>
@@ -94,7 +96,7 @@ function CollapsedNav({ currentPath, activeId }) {
             {/* pl-3 làm "cầu nối" để rê chuột từ biểu tượng sang bảng không bị tắt */}
             <div className="invisible absolute left-full top-0 z-50 pl-3 opacity-0 transition group-focus-within:visible group-focus-within:opacity-100 group-hover:visible group-hover:opacity-100">
               <div className="w-64 rounded-2xl border border-cyan-200/15 bg-cms-3 p-2 shadow-2xl">
-                <div className="px-3 pb-2 pt-1 text-[11px] font-bold uppercase tracking-[0.18em] text-cyan-300">{group.label}</div>
+                <div className="px-3 pb-2 pt-1 text-[13px] font-semibold text-sunset">{group.label}</div>
                 <div className="grid gap-1">
                   {group.items.map((item) => <NavItem key={item.to || item.href} item={item} currentPath={currentPath} compact />)}
                 </div>
@@ -144,6 +146,43 @@ export default function AdminLayout({ children }) {
   const [mode, setMode] = useState(loadNavMode); // expanded | collapsed | wheel
   const [openGroups, setOpenGroups] = useState(() => loadOpenGroups() ?? []);
   const [wheelOpen, setWheelOpen] = useState(false);
+  const [paletteOpen, setPaletteOpen] = useState(false);
+  const [siteMenuOpen, setSiteMenuOpen] = useState(false);
+  const [drawerOpen, setDrawerOpen] = useState(false);
+  const siteMenuRef = useRef(null);
+  const trail = activeTrail(location.pathname);
+
+  // Ctrl/⌘ + K mở bảng tìm nhanh.
+  useEffect(() => {
+    const onKey = (e) => {
+      if ((e.ctrlKey || e.metaKey) && e.key.toLowerCase() === "k") {
+        e.preventDefault();
+        setPaletteOpen((v) => !v);
+      }
+    };
+    window.addEventListener("keydown", onKey);
+    return () => window.removeEventListener("keydown", onKey);
+  }, []);
+
+  // Đóng menu "Xem website" khi bấm ra ngoài; đóng ngăn kéo menu khi chuyển trang.
+  useEffect(() => {
+    if (!siteMenuOpen) return undefined;
+    const onDown = (e) => {
+      if (!siteMenuRef.current?.contains(e.target)) setSiteMenuOpen(false);
+    };
+    const onKey = (e) => e.key === "Escape" && setSiteMenuOpen(false);
+    document.addEventListener("pointerdown", onDown);
+    window.addEventListener("keydown", onKey);
+    return () => {
+      document.removeEventListener("pointerdown", onDown);
+      window.removeEventListener("keydown", onKey);
+    };
+  }, [siteMenuOpen]);
+  const [drawerPath, setDrawerPath] = useState(location.pathname);
+  if (drawerPath !== location.pathname) {
+    setDrawerPath(location.pathname);
+    if (drawerOpen) setDrawerOpen(false);
+  }
 
   const changeMode = (next) => {
     setMode(next);
@@ -166,41 +205,90 @@ export default function AdminLayout({ children }) {
   return (
     <MotionConfig reducedMotion="user">
     <div data-no-translate className="facs-cms facs-aurora min-h-screen text-ink-1">
-      <header className="sticky top-0 z-40 border-b border-white/[0.06] bg-midnight-2/80 backdrop-blur-xl">
-        <div className="mx-auto flex min-h-20 max-w-[1500px] items-center justify-between gap-4 px-5 py-3 lg:px-8">
-          <div className="flex items-center gap-3">
-            <button type="button" onClick={() => setWheelOpen(true)} className={iconButton} title="Menu vòng xoay" aria-label="Mở menu vòng xoay">
+      <header className="sticky top-0 z-40 bg-midnight-2/80 backdrop-blur-xl">
+        <div className="mx-auto flex h-[68px] max-w-[1500px] items-center justify-between gap-3 px-4 sm:px-5 lg:px-8">
+          <div className="flex min-w-0 items-center gap-2 sm:gap-3">
+            <button type="button" onClick={() => setDrawerOpen(true)} className={`${iconButton} lg:hidden`} title="Mở menu" aria-label="Mở menu">
+              <Menu size={19} />
+            </button>
+            <button type="button" onClick={() => setWheelOpen(true)} className={`${iconButton} hidden lg:flex`} title="Menu vòng xoay" aria-label="Mở menu vòng xoay">
               <Orbit size={19} />
             </button>
-            <Link to="/admin/posts" className="font-serif text-2xl font-black tracking-[-0.04em]">
-              FACS<span className="text-cyan-300">.</span>
-              <span className="ml-3 hidden font-sans text-xs font-bold uppercase tracking-[0.18em] text-slate-400 sm:inline">Content CMS</span>
+            <Link to="/admin/posts" className="shrink-0 font-serif text-2xl font-black tracking-[-0.04em]" aria-label="FACS CMS – về trang đầu">
+              FACS<span className="text-sunset">.</span>
             </Link>
+            {trail.group && (
+              <nav aria-label="Vị trí hiện tại" className="ml-1 hidden min-w-0 items-center gap-1.5 border-l border-white/[0.08] pl-4 text-sm md:flex">
+                <span className="shrink-0 text-ink-3">{trail.group.label}</span>
+                <ChevronRight size={14} className="shrink-0 text-ink-3" />
+                {trail.isSubPage ? (
+                  <>
+                    <Link to={trail.item.to} className="truncate text-ink-2 transition hover:text-ink-1">{trail.item.label}</Link>
+                    <ChevronRight size={14} className="shrink-0 text-ink-3" />
+                    <span className="truncate font-semibold text-ink-1">Chi tiết</span>
+                  </>
+                ) : (
+                  <span className="truncate font-semibold text-ink-1">{trail.item.label}</span>
+                )}
+              </nav>
+            )}
           </div>
-          <div className="flex items-center gap-2">
-            <Link to="/insights" target="_blank" className="hidden items-center gap-2 rounded-xl border border-white/[0.1] px-4 py-2 text-sm text-ink-2 transition hover:border-cyan-200/40 hover:text-ink-1 md:flex">
-              Insights <ExternalLink size={15} />
-            </Link>
-            <Link to="/careers" target="_blank" className="hidden items-center gap-2 rounded-xl border border-white/[0.1] px-4 py-2 text-sm text-ink-2 transition hover:border-cyan-200/40 hover:text-ink-1 md:flex">
-              Careers <ExternalLink size={15} />
-            </Link>
-            <Link to="/legal-calendar" target="_blank" className="hidden items-center gap-2 rounded-xl border border-white/[0.1] px-4 py-2 text-sm text-ink-2 transition hover:border-cyan-200/40 hover:text-ink-1 xl:flex">
-              Legal Calendar <ExternalLink size={15} />
-            </Link>
-            <button type="button" onClick={handleLogout} className="flex items-center gap-2 rounded-xl border border-white/[0.1] px-4 py-2 text-sm text-ink-2 transition hover:border-rose-300/40 hover:text-rose-200">
-              <LogOut size={15} /> Đăng xuất
+          <div className="flex shrink-0 items-center gap-2">
+            <button
+              type="button"
+              onClick={() => setPaletteOpen(true)}
+              className="flex h-10 items-center gap-2 rounded-xl border border-white/[0.1] bg-white/[0.03] px-3 text-sm text-ink-3 transition hover:border-cyan-300/40 hover:text-ink-1 sm:w-56 lg:w-64"
+              aria-label="Tìm nhanh (Ctrl K)"
+            >
+              <Search size={16} />
+              <span className="hidden sm:inline">Tìm nhanh…</span>
+              <kbd className="ml-auto hidden rounded-md border border-white/[0.12] px-1.5 py-0.5 font-sans text-[11px] sm:inline">Ctrl K</kbd>
+            </button>
+            <div ref={siteMenuRef} className="relative">
+              <button
+                type="button"
+                onClick={() => setSiteMenuOpen((v) => !v)}
+                className="flex h-10 items-center gap-2 rounded-xl border border-white/[0.1] px-3 text-sm text-ink-2 transition hover:border-cyan-300/40 hover:text-ink-1"
+                aria-haspopup="menu"
+                aria-expanded={siteMenuOpen}
+              >
+                <Globe size={16} />
+                <span className="hidden md:inline">Xem website</span>
+                <ChevronDown size={14} className={`hidden transition-transform md:block ${siteMenuOpen ? "rotate-180" : ""}`} />
+              </button>
+              <AnimatePresence>
+                {siteMenuOpen && (
+                  <motion.div
+                    role="menu"
+                    className="absolute right-0 top-12 w-56 rounded-2xl border border-cyan-300/[0.16] bg-cms-3 p-1.5 shadow-[0_24px_60px_-20px_rgba(0,0,0,0.9)]"
+                    initial={{ opacity: 0, y: -6, scale: 0.97 }} animate={{ opacity: 1, y: 0, scale: 1 }} exit={{ opacity: 0, y: -4, scale: 0.98 }}
+                    transition={{ duration: 0.16 }}
+                  >
+                    {PUBLIC_SITE_LINKS.map((link) => (
+                      <a key={link.href} role="menuitem" href={link.href} target="_blank" rel="noreferrer noopener" onClick={() => setSiteMenuOpen(false)}
+                        className="flex items-center justify-between rounded-xl px-3 py-2 text-sm text-ink-2 transition hover:bg-white/[0.06] hover:text-ink-1">
+                        {link.label} <ExternalLink size={14} className="opacity-60" />
+                      </a>
+                    ))}
+                  </motion.div>
+                )}
+              </AnimatePresence>
+            </div>
+            <button type="button" onClick={handleLogout} className={`${iconButton} hover:border-rose-300/40! hover:text-rose-200!`} title="Đăng xuất" aria-label="Đăng xuất">
+              <LogOut size={17} />
             </button>
           </div>
         </div>
+        <HeaderWave />
       </header>
 
       <div className={`mx-auto grid max-w-[1500px] gap-6 px-5 py-6 lg:px-8 lg:py-8 ${gridCols}`}>
         {mode !== "wheel" && (
-          <aside className="h-fit lg:sticky lg:top-28">
+          <aside className="hidden h-fit lg:sticky lg:top-24 lg:block">
             {/* Màn hình nhỏ luôn dùng thanh mở rộng; màn hình lớn theo lựa chọn */}
-            <div className={`rounded-[20px] border border-white/[0.07] bg-midnight-2/90 p-3 lg:max-h-[calc(100vh-8.5rem)] lg:overflow-y-auto ${mode === "collapsed" ? "lg:hidden" : ""}`}>
+            <div className={`rounded-[20px] border border-white/[0.07] bg-midnight-2/90 p-3 lg:max-h-[calc(100vh-7.5rem)] lg:overflow-y-auto ${mode === "collapsed" ? "lg:hidden" : ""}`}>
               <div className="mb-1 flex items-center justify-between px-2 pb-2">
-                <span className="text-[11px] font-bold uppercase tracking-[0.18em] text-ink-3">Menu</span>
+                <span className="text-[13px] font-semibold text-ink-3">Menu</span>
                 <div className="flex gap-1.5">
                   <button type="button" onClick={() => changeMode("wheel")} className={iconButtonSm} title="Ẩn thanh bên, dùng menu vòng xoay" aria-label="Dùng menu vòng xoay">
                     <Orbit size={15} />
@@ -258,6 +346,32 @@ export default function AdminLayout({ children }) {
         </div>
       )}
 
+      {/* Màn hình nhỏ: menu trượt từ trái thay cho thanh bên */}
+      <AnimatePresence>
+        {drawerOpen && (
+          <motion.div className="fixed inset-0 z-[90] lg:hidden" initial={{ opacity: 0 }} animate={{ opacity: 1 }} exit={{ opacity: 0 }}>
+            <button type="button" className="absolute inset-0 bg-[#020409]/70 backdrop-blur-sm" onClick={() => setDrawerOpen(false)} aria-label="Đóng menu" />
+            <motion.div
+              className="absolute inset-y-0 left-0 flex w-[86vw] max-w-[320px] flex-col border-r border-white/[0.07] bg-midnight-2 p-3"
+              initial={{ x: "-100%" }} animate={{ x: 0 }} exit={{ x: "-100%" }}
+              transition={{ type: "spring", stiffness: 380, damping: 38 }}
+            >
+              <div className="mb-2 flex items-center justify-between px-2 py-1">
+                <span className="font-serif text-xl font-black">FACS<span className="text-sunset">.</span></span>
+                <div className="flex gap-1.5">
+                  <button type="button" onClick={() => { setDrawerOpen(false); setWheelOpen(true); }} className={iconButtonSm} aria-label="Dùng menu vòng xoay"><Orbit size={15} /></button>
+                  <button type="button" onClick={() => setDrawerOpen(false)} className={iconButtonSm} aria-label="Đóng menu"><X size={15} /></button>
+                </div>
+              </div>
+              <div className="min-h-0 flex-1 overflow-y-auto">
+                <ExpandedNav currentPath={currentPath} activeId={activeId} openGroups={openGroups} toggleGroup={toggleGroup} />
+              </div>
+            </motion.div>
+          </motion.div>
+        )}
+      </AnimatePresence>
+
+      <CommandPalette open={paletteOpen} onClose={() => setPaletteOpen(false)} />
       {wheelOpen && <AdminNavWheel open onClose={() => setWheelOpen(false)} />}
     </div>
     </MotionConfig>

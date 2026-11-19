@@ -140,3 +140,25 @@ export function saveOpenGroups(ids) {
     // Bỏ qua.
   }
 }
+
+// Các trang công khai mở nhanh từ menu "Xem website" và bảng lệnh Ctrl+K.
+export const PUBLIC_SITE_LINKS = [
+  { href: "/", label: "Trang chủ" },
+  { href: "/insights", label: "Insights" },
+  { href: "/careers", label: "Careers" },
+  { href: "/legal-calendar", label: "Legal Calendar" },
+  { href: "/contact", label: "Liên hệ" },
+];
+
+/** Nhóm và mục đang mở, dùng cho breadcrumb trên header. */
+export function activeTrail(pathname) {
+  const path = activeItemPath(pathname);
+  const group = ADMIN_NAV.find((g) => g.items.some((i) => i.to === path));
+  const item = group?.items.find((i) => i.to === path);
+  return { group, item, isSubPage: Boolean(path && pathname !== path) };
+}
+
+/** Bỏ dấu tiếng Việt để tìm kiếm không phân biệt dấu. */
+export function foldVi(text = "") {
+  return text.normalize("NFD").replace(/[̀-ͯ]/g, "").replace(/đ/g, "d").replace(/Đ/g, "D").toLowerCase();
+}

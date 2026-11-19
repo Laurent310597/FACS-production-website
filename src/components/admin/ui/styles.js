@@ -19,3 +19,6 @@ export const card = "facs-card rounded-[20px] border border-cyan-300/[0.14] bg-c
 export const input = "w-full min-h-10 rounded-xl border border-white/[0.1] bg-cms-2 px-3 py-2 text-sm text-ink-1 outline-none transition placeholder:text-[#6A7BA3] focus:border-cyan-300/60 focus:ring-2 focus:ring-cyan-300/15";
 export const label = "mb-1.5 block text-[13px] font-semibold text-ink-2";
 export const badge = "inline-flex items-center gap-1.5 rounded-lg px-2 py-0.5 text-[11px] font-semibold";
+
+/** Khối con bên trong thẻ: không viền, nền rất nhạt, để tránh cảm giác "thẻ chồng thẻ". */
+export const subtle = "rounded-2xl bg-white/[0.03] p-4 ring-1 ring-inset ring-white/[0.05]";

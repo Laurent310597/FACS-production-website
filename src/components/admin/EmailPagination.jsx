@@ -5,7 +5,7 @@ export default function EmailPagination({ count, page, pageSize, onPageChange, o
       <label className="flex items-center gap-2">
         <select aria-label={`Số ${label} mỗi trang`} value={pageSize} disabled={busy}
           onChange={(event) => onPageSizeChange(Number(event.target.value))}
-          className="rounded-xl border border-white/10 bg-[#081321] px-3 py-2 text-white">
+          className="rounded-xl border border-white/10 bg-cms-2 px-3 py-2 text-white">
           {[5, 10, 20, 50, 100].map((size) => <option key={size} value={size}>{size}</option>)}
         </select>
         {label}/trang

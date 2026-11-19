@@ -132,7 +132,7 @@ function GuidelinesFolder({ rows, reload, setError, setNotice }) {
           Mỗi mục là một hướng dẫn AI phải đọc trước khi viết: quy tắc bắt buộc, văn phong thương hiệu, kỹ năng (cách viết một loại bài), hoặc tài liệu tham chiếu. Chọn kênh áp dụng, để trống là áp dụng cho mọi kênh. Tắt một mục khi muốn tạm ngưng mà không xóa.
         </p>
         {!form && (
-          <button type="button" className={primaryButton} onClick={() => { setForm({ ...emptyGuideline }); setPreviews({}); }}>
+          <button type="button" className={ghostButton} onClick={() => { setForm({ ...emptyGuideline }); setPreviews({}); }}>
             <Plus size={16} /> Thêm hướng dẫn
           </button>
         )}

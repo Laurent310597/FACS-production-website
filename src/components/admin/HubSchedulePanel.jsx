@@ -156,7 +156,7 @@ export default function HubSchedulePanel({ channel, caption, infographic, itemId
   if (!loaded) return <div className="mt-6 text-sm text-ink-3"><Loader2 size={14} className="mr-2 inline animate-spin" />Đang tải…</div>;
 
   return (
-    <div className="mt-6 rounded-2xl border border-white/10 bg-cms-2 p-5">
+    <div className="mt-6 rounded-2xl bg-white/[0.03] p-5 ring-1 ring-inset ring-white/[0.05]">
       <div className="flex items-center gap-2 font-serif text-lg font-bold text-white"><CalendarClock size={18} className="text-cyan-300" /> Đăng lên {platformName[channel]}</div>
 
       {!accounts.length ? (
