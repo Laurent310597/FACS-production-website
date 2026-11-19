@@ -13,11 +13,21 @@ export default function useSiteMotion() {
     const root = document.documentElement;
     let frame = 0;
     let last = null;
+    let hovered = new Set();
+
+    // Thẻ vừa rời chuột: trả vệt phản chiếu / độ nghiêng về vị trí ban đầu.
+    const release = (el) => {
+      el.style.removeProperty("--gx");
+      el.style.removeProperty("--rx");
+      el.style.removeProperty("--ry");
+    };
 
     const apply = () => {
       frame = 0;
+      const now = new Set();
       let el = last?.target instanceof Element ? last.target.closest(".site-card, .site-tile") : null;
       while (el) {
+        now.add(el);
         const r = el.getBoundingClientRect();
         const x = last.clientX - r.left;
         const y = last.clientY - r.top;
@@ -27,9 +37,19 @@ export default function useSiteMotion() {
           el.style.setProperty("--rx", `${((0.5 - y / r.height) * 6).toFixed(2)}deg`);
           el.style.setProperty("--ry", `${((x / r.width - 0.5) * 8).toFixed(2)}deg`);
         }
+        if (el.classList.contains("site-glass")) el.style.setProperty("--gx", `${x.toFixed(0)}px`);
         el = el.parentElement?.closest(".site-card, .site-tile") || null;
       }
+      hovered.forEach((old) => {
+        if (!now.has(old)) release(old);
+      });
+      hovered = now;
     };
+    const onLeaveWindow = () => {
+      hovered.forEach(release);
+      hovered = new Set();
+    };
+    document.addEventListener("pointerleave", onLeaveWindow);
     const onMove = (e) => {
       if (e.pointerType === "touch") return;
       last = e;
@@ -96,6 +116,7 @@ export default function useSiteMotion() {
 
     return () => {
       window.removeEventListener("pointermove", onMove);
+      document.removeEventListener("pointerleave", onLeaveWindow);
       document.removeEventListener("pointerdown", onDown);
       cancelAnimationFrame(frame);
       io?.disconnect();

@@ -940,6 +940,13 @@ html:not(:has(.facs-cms)) {
   scrollbar-color: rgb(103 232 249 / 0.3) #0b1422;
 }
 
+/* Vị trí vệt phản chiếu trên thẻ kính – khai báo kiểu để có thể chuyển động mượt khi trở về vị trí ban đầu. */
+@property --gx {
+  syntax: "<length-percentage>";
+  inherits: true;
+  initial-value: 32%;
+}
+
 /* Thẻ kính: ảnh và chữ như in trên một tấm kính – nền trong mờ, viền sáng, vệt phản chiếu chạy theo con trỏ. */
 .site-glass {
   background: linear-gradient(150deg, rgb(255 255 255 / 0.1), rgb(255 255 255 / 0.025) 36%, rgb(255 255 255 / 0.012) 62%, rgb(255 255 255 / 0.06)) !important;
@@ -951,14 +958,25 @@ html:not(:has(.facs-cms)) {
     inset 1px 0 0 rgb(255 255 255 / 0.08),
     inset 0 -1px 0 rgb(255 255 255 / 0.06),
     0 40px 80px -40px rgb(0 0 0 / 0.9);
+  transition:
+    border-color 0.4s,
+    box-shadow 0.45s,
+    opacity 0.7s cubic-bezier(0.2, 0.8, 0.2, 1),
+    translate 0.55s cubic-bezier(0.2, 0.8, 0.2, 1),
+    scale 0.5s cubic-bezier(0.2, 0.8, 0.2, 1),
+    transform 0.5s cubic-bezier(0.2, 0.8, 0.2, 1),
+    --gx 0.35s cubic-bezier(0.2, 0.8, 0.2, 1);
+}
+.site-glass:not(:hover) {
+  transition-duration: 0.4s, 0.45s, 0.7s, 0.55s, 0.5s, 0.5s, 0.9s;
 }
 .site-card.site-glass::before {
   z-index: 4;
   opacity: 0.85;
   mix-blend-mode: screen;
   background:
-    linear-gradient(118deg, transparent calc(var(--mx, 35%) - 220px), rgb(255 255 255 / 0.14) calc(var(--mx, 35%) - 60px), rgb(255 255 255 / 0.05) calc(var(--mx, 35%) - 20px), transparent calc(var(--mx, 35%) + 60px)),
-    linear-gradient(118deg, transparent calc(var(--mx, 35%) + 40px), rgb(255 255 255 / 0.07) calc(var(--mx, 35%) + 70px), transparent calc(var(--mx, 35%) + 110px)),
+    linear-gradient(118deg, transparent calc(var(--gx) - 220px), rgb(255 255 255 / 0.14) calc(var(--gx) - 60px), rgb(255 255 255 / 0.05) calc(var(--gx) - 20px), transparent calc(var(--gx) + 60px)),
+    linear-gradient(118deg, transparent calc(var(--gx) + 40px), rgb(255 255 255 / 0.07) calc(var(--gx) + 70px), transparent calc(var(--gx) + 110px)),
     linear-gradient(180deg, rgb(255 255 255 / 0.12), transparent 18%, transparent 82%, rgb(255 255 255 / 0.04));
   transition: opacity 0.4s;
 }
@@ -969,8 +987,7 @@ html:not(:has(.facs-cms)) {
   filter: saturate(1.05) contrast(1.03);
 }
 
-/* Trang trí hai bên lề (từ 1440px): đường viền sáng + hạt sáng chạy dọc + vòng tròn xoay.
-   Chỉ nằm trong phần lề ngoài khung nội dung (container 1280px / 1536px), không đè lên chữ. */
+/* Vòng định vị bên phải (từ 1440px): canh giữa màn hình, nằm trong phần lề ngoài khung nội dung. */
 .site-side {
   display: none;
 }
@@ -978,98 +995,83 @@ html:not(:has(.facs-cms)) {
   .site-side {
     display: block;
     position: fixed;
-    inset: 0;
-    z-index: 5;
+    top: 0;
+    right: 0;
+    bottom: 0;
+    width: 0;
+    z-index: 30;
     pointer-events: none;
-    --rail-x: calc((100vw - 1280px) / 4);
+    /* mép chữ của khung nội dung tính từ cạnh phải màn hình */
+    --gutter: calc((100vw - 1280px) / 2 + 48px);
   }
 }
 @media (min-width: 1536px) {
   .site-side {
-    --rail-x: calc((100vw - 1536px) / 4 + 12px);
+    --gutter: calc((100vw - 1536px) / 2 + 48px);
   }
 }
-.site-side__col {
+.site-ring {
   position: absolute;
-  top: 0;
-  bottom: 0;
-  width: 0;
+  top: 50%;
+  /* kim chỉ (điểm x=20 của vòng) nằm cách mép phải màn hình đúng (lề – 16px) */
+  left: calc(-1 * (var(--gutter) - 16px) - 20px);
+  translate: 0 -50%;
 }
-.site-side__col--left {
-  left: var(--rail-x);
+.site-ring__svg {
+  display: block;
+  overflow: visible;
 }
-.site-side__col--right {
-  right: var(--rail-x);
+.site-ring__rot {
+  transform-origin: 220px 220px;
+  rotate: var(--ring-rot, 0deg);
+  transition: rotate 0.7s cubic-bezier(0.2, 0.8, 0.2, 1);
 }
-.site-side__rail {
+.site-ring__spin {
+  transform-origin: 220px 220px;
+  animation: site-spin 90s linear infinite;
+}
+.site-ring__seg {
+  cursor: pointer;
+  pointer-events: auto;
+}
+.site-ring__seg:hover path:last-of-type {
+  stroke-opacity: 0.85;
+}
+.site-ring__label {
   position: absolute;
-  top: 90px;
-  bottom: 0;
-  left: 0;
-  width: 1px;
-  background: linear-gradient(180deg, transparent, rgb(103 232 249 / 0.28) 18%, rgb(59 130 246 / 0.22) 60%, transparent);
+  top: calc(50% + 20px);
+  left: 46px;
+  width: calc(var(--gutter) - 74px);
+  max-width: 170px;
+  pointer-events: none;
 }
-.site-side__spark {
-  position: absolute;
-  left: -2px;
-  top: 0;
-  width: 5px;
-  height: 90px;
-  border-radius: 999px;
-  background: linear-gradient(180deg, transparent, #67e8f9, transparent);
-  box-shadow: 0 0 14px 2px rgb(103 232 249 / 0.6);
-  animation: site-spark 9s cubic-bezier(0.45, 0, 0.55, 1) infinite;
+.site-ring__count {
+  display: block;
+  font-size: 18px;
+  font-weight: 700;
+  color: #cffafe;
+  letter-spacing: 0.04em;
 }
-.site-side__spark--up {
-  animation-direction: reverse;
-  animation-delay: -4.5s;
+.site-ring__count span {
+  font-size: 11px;
+  color: rgb(103 232 249 / 0.6);
 }
-@keyframes site-spark {
-  0% { translate: 0 10vh; opacity: 0; }
-  12% { opacity: 1; }
-  88% { opacity: 1; }
-  100% { translate: 0 100vh; opacity: 0; }
+.site-ring__title {
+  display: none;
+  margin-top: 4px;
+  font-size: 11px;
+  line-height: 1.35;
+  color: rgb(148 163 184);
 }
-.site-side__ring-wrap {
-  position: absolute;
-  width: 520px;
-  height: 520px;
-  translate: -50% var(--scroll-shift, 0px);
-}
-.site-side__col--left .site-side__ring-wrap {
-  left: calc(var(--rail-x) * -1 - 90px);
-  top: 50vh;
-}
-.site-side__col--right .site-side__ring-wrap {
-  left: calc(var(--rail-x) + 90px);
-  top: 14vh;
-}
-.site-side__rings {
-  width: 100%;
-  height: 100%;
-  opacity: 0.9;
-  rotate: var(--scroll-rot, 0deg);
-  -webkit-mask-image: radial-gradient(circle, #000 55%, transparent 72%);
-  mask-image: radial-gradient(circle, #000 55%, transparent 72%);
-}
-.site-side__col--right .site-side__rings {
-  rotate: calc(var(--scroll-rot, 0deg) * -1);
-}
-.site-side__spin {
-  transform-origin: 300px 300px;
-  animation: site-spin 70s linear infinite;
-}
-.site-side__spin--rev {
-  animation-duration: 95s;
-  animation-direction: reverse;
-}
-.site-side__spin--slow {
-  animation-duration: 140s;
+@media (min-width: 1600px) {
+  .site-ring__title {
+    display: block;
+  }
 }
 @keyframes site-spin {
   to { rotate: 360deg; }
 }
 @media (prefers-reduced-motion: reduce) {
-  .site-side__spark,
-  .site-side__spin { animation: none; }
+  .site-ring__spin { animation: none; }
+  .site-ring__rot { transition: none; }
 }

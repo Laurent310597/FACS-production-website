@@ -1,76 +1,162 @@
-import { useEffect, useRef } from "react";
+import { useCallback, useEffect, useRef, useState } from "react";
 import { useLocation } from "react-router-dom";
 
-function Rings({ id }) {
-  return (
-    <svg viewBox="0 0 600 600" className="site-side__rings" aria-hidden="true">
-      <defs>
-        <linearGradient id={`ring-${id}`} x1="0" x2="1" y1="0" y2="1">
-          <stop offset="0" stopColor="#67E8F9" stopOpacity="0.55" />
-          <stop offset="1" stopColor="#3B82F6" stopOpacity="0.15" />
-        </linearGradient>
-      </defs>
-      <g className="site-side__spin">
-        <circle cx="300" cy="300" r="290" fill="none" stroke={`url(#ring-${id})`} strokeWidth="1" />
-        <circle cx="300" cy="300" r="290" fill="none" stroke="#67E8F9" strokeOpacity="0.55" strokeWidth="2" strokeDasharray="60 1762" strokeLinecap="round" />
-        <circle cx="300" cy="10" r="4" fill="#67E8F9" />
-      </g>
-      <g className="site-side__spin site-side__spin--rev">
-        <circle cx="300" cy="300" r="220" fill="none" stroke="#60A5FA" strokeOpacity="0.4" strokeWidth="1.2" strokeDasharray="2 10" />
-        <circle cx="520" cy="300" r="3" fill="#3B82F6" fillOpacity="0.9" />
-      </g>
-      <g className="site-side__spin site-side__spin--slow">
-        <circle cx="300" cy="300" r="150" fill="none" stroke={`url(#ring-${id})`} strokeWidth="1" strokeOpacity="0.6" />
-        <circle cx="300" cy="300" r="150" fill="none" stroke="#22D3EE" strokeOpacity="0.5" strokeWidth="1.5" strokeDasharray="120 822" strokeLinecap="round" />
-      </g>
-      <circle cx="300" cy="300" r="80" fill="none" stroke="#67E8F9" strokeOpacity="0.2" strokeWidth="1" />
-    </svg>
-  );
+const SIZE = 440; // đường kính vòng (px)
+const R = 200; // bán kính vòng chặng
+const C = SIZE / 2;
+const GAP = 4; // khoảng hở giữa các chặng (độ)
+
+const polar = (deg, r = R) => {
+  const rad = (deg * Math.PI) / 180;
+  return [C + r * Math.cos(rad), C + r * Math.sin(rad)];
+};
+const arc = (from, to, r = R) => {
+  const [x1, y1] = polar(from, r);
+  const [x2, y2] = polar(to, r);
+  return `M${x1.toFixed(2)} ${y1.toFixed(2)} A${r} ${r} 0 ${to - from > 180 ? 1 : 0} 1 ${x2.toFixed(2)} ${y2.toFixed(2)}`;
+};
+
+// Các phần (chặng) của trang: section cấp ngoài cùng, đủ cao, không nằm trong header/footer/CMS.
+function readSections() {
+  const all = [...document.querySelectorAll("section, main > header, body > div header.border-b")].filter((el) => {
+    if (el.closest(".facs-cms, footer, nav, [role=dialog]")) return false;
+    if (el.parentElement?.closest("section")) return false;
+    return el.getBoundingClientRect().height > 160;
+  });
+  return all.map((el, i) => {
+    const heading = el.querySelector("h1, h2");
+    const text = (heading?.textContent || "").replace(/\s+/g, " ").trim();
+    return { el, label: text.length > 34 ? `${text.slice(0, 32)}…` : text || `Phần ${i + 1}` };
+  });
 }
 
 /**
- * Trang trí hai bên lề website (màn hình rộng): đường viền sáng có hạt sáng chạy dọc, vòng tròn đồng tâm xoay chậm
- * và xoay thêm theo thao tác cuộn trang. Không nhận chuột, không hiện trong CMS và trên màn hình hẹp.
+ * Vòng định vị bên phải (màn hình từ 1440px): vòng chia thành các chặng ứng với từng phần của trang đang xem.
+ * Cuộn tới đâu, vòng xoay để chặng tương ứng nằm ở kim chỉ (giữa màn hình); bấm vào chặng để nhảy tới phần đó.
  */
 export default function SiteSideDecor() {
   const { pathname } = useLocation();
-  const ref = useRef(null);
   const hidden = pathname.startsWith("/admin");
+  const [sections, setSections] = useState([]);
+  const [active, setActive] = useState(0);
+  const ringRef = useRef(null);
+  const sectionsRef = useRef([]);
 
+  // Đọc lại danh sách chặng khi đổi trang, khi nội dung thay đổi và khi đổi kích thước cửa sổ.
   useEffect(() => {
-    const el = ref.current;
-    if (!el || window.matchMedia?.("(prefers-reduced-motion: reduce)").matches) return undefined;
-    let frame = 0;
-    const onScroll = () => {
-      if (frame) return;
-      frame = requestAnimationFrame(() => {
-        frame = 0;
-        const y = window.scrollY;
-        el.style.setProperty("--scroll-rot", `${(y * 0.06).toFixed(2)}deg`);
-        el.style.setProperty("--scroll-shift", `${(-y * 0.04).toFixed(1)}px`);
-      });
+    if (hidden) return undefined;
+    let timer = 0;
+    const refresh = () => {
+      clearTimeout(timer);
+      timer = setTimeout(() => {
+        const next = readSections();
+        sectionsRef.current = next;
+        setSections((prev) => (prev.length === next.length && prev.every((p, i) => p.label === next[i].label) ? prev : next));
+      }, 250);
     };
-    onScroll();
+    refresh();
+    const later = setTimeout(refresh, 900);
+    const mo = new MutationObserver(refresh);
+    mo.observe(document.body, { childList: true, subtree: true });
+    window.addEventListener("resize", refresh);
+    return () => {
+      clearTimeout(timer);
+      clearTimeout(later);
+      mo.disconnect();
+      window.removeEventListener("resize", refresh);
+    };
+  }, [pathname, hidden]);
+
+  // Cuộn trang → góc xoay của vòng.
+  useEffect(() => {
+    if (hidden || !sections.length) return undefined;
+    let frame = 0;
+    const update = () => {
+      frame = 0;
+      const list = sectionsRef.current;
+      if (!list.length || !ringRef.current) return;
+      const line = window.innerHeight / 2;
+      let progress = 0;
+      for (let i = 0; i < list.length; i += 1) {
+        const r = list[i].el.getBoundingClientRect();
+        if (line >= r.top) progress = i + Math.min(1, (line - r.top) / Math.max(r.height, 1));
+      }
+      if (window.innerHeight + window.scrollY >= document.documentElement.scrollHeight - 4) progress = list.length - 0.5;
+      progress = Math.max(0.0001, Math.min(list.length - 0.0001, progress));
+      const seg = 360 / list.length;
+      ringRef.current.style.setProperty("--ring-rot", `${(-progress * seg).toFixed(2)}deg`);
+      const idx = Math.floor(progress);
+      setActive((a) => (a === idx ? a : idx));
+    };
+    const onScroll = () => {
+      if (!frame) frame = requestAnimationFrame(update);
+    };
+    update();
     window.addEventListener("scroll", onScroll, { passive: true });
+    window.addEventListener("resize", onScroll);
     return () => {
       window.removeEventListener("scroll", onScroll);
+      window.removeEventListener("resize", onScroll);
       cancelAnimationFrame(frame);
     };
-  }, [hidden]);
+  }, [sections, hidden]);
 
-  if (hidden) return null;
+  const jump = useCallback((i) => {
+    const el = sectionsRef.current[i]?.el;
+    if (!el) return;
+    const top = el.getBoundingClientRect().top + window.scrollY - 96;
+    window.scrollTo({ top, behavior: "smooth" });
+  }, []);
+
+  if (hidden || sections.length < 2) return null;
+  const n = sections.length;
+  const seg = 360 / n;
+  const current = sections[Math.min(active, n - 1)];
+
   return (
-    <div ref={ref} className="site-side" aria-hidden="true">
-      <div className="site-side__col site-side__col--left">
-        <span className="site-side__rail" />
-        <span className="site-side__spark" />
-        <div className="site-side__ring-wrap"><Rings id="l" /></div>
-      </div>
-      <div className="site-side__col site-side__col--right">
-        <span className="site-side__rail" />
-        <span className="site-side__spark site-side__spark--up" />
-        <div className="site-side__ring-wrap"><Rings id="r" /></div>
-      </div>
+    <div className="site-side" aria-hidden="false">
+      <nav className="site-ring" aria-label="Các phần của trang">
+        <div className="site-ring__label">
+          <span className="site-ring__count">{String(active + 1).padStart(2, "0")}<span>/{String(n).padStart(2, "0")}</span></span>
+          <span className="site-ring__title">{current?.label}</span>
+        </div>
+        <svg ref={ringRef} className="site-ring__svg" viewBox={`0 0 ${SIZE} ${SIZE}`} width={SIZE} height={SIZE}>
+          <defs>
+            <linearGradient id="site-ring-grad" x1="0" x2="1" y1="0" y2="1">
+              <stop offset="0" stopColor="#67E8F9" />
+              <stop offset="1" stopColor="#3B82F6" />
+            </linearGradient>
+          </defs>
+          {/* Vòng trang trí bên trong (tự xoay chậm) */}
+          <g className="site-ring__spin">
+            <circle cx={C} cy={C} r={R - 34} fill="none" stroke="#60A5FA" strokeOpacity="0.35" strokeWidth="1" strokeDasharray="2 9" />
+            <circle cx={C + R - 34} cy={C} r="2.5" fill="#60A5FA" />
+          </g>
+          <circle cx={C} cy={C} r={R - 70} fill="none" stroke="#67E8F9" strokeOpacity="0.12" />
+          {/* Các chặng: xoay theo vị trí cuộn */}
+          <g className="site-ring__rot">
+            {sections.map((s, i) => {
+              const from = 180 + i * seg + GAP / 2;
+              const to = 180 + (i + 1) * seg - GAP / 2;
+              const on = i === active;
+              const [tx, ty] = polar(180 + (i + 0.5) * seg, R + 16);
+              return (
+                <g key={`${i}-${s.label}`} className="site-ring__seg" onClick={() => jump(i)}>
+                  <title>{s.label}</title>
+                  <path d={arc(from, to)} fill="none" stroke="transparent" strokeWidth="22" />
+                  <path d={arc(from, to)} fill="none" stroke={on ? "url(#site-ring-grad)" : "#67E8F9"} strokeOpacity={on ? 1 : 0.28} strokeWidth={on ? 4 : 2} strokeLinecap="round" />
+                  <text x={tx} y={ty} fill={on ? "#CFFAFE" : "#67E8F9"} fillOpacity={on ? 1 : 0.45} fontSize="11" fontWeight="700" textAnchor="middle" dominantBaseline="middle">
+                    {String(i + 1).padStart(2, "0")}
+                  </text>
+                </g>
+              );
+            })}
+          </g>
+          {/* Kim chỉ cố định ở giữa màn hình */}
+          <circle cx={C - R} cy={C} r="7" fill="#0d1726" stroke="#67E8F9" strokeWidth="2" />
+          <circle cx={C - R} cy={C} r="2.5" fill="#67E8F9" />
+        </svg>
+      </nav>
     </div>
   );
 }
