@@ -7,10 +7,11 @@ import AdminNavWheel from "./AdminNavWheel";
 import { ADMIN_NAV, activeGroupId, activeItemPath, loadNavMode, loadOpenGroups, saveNavMode, saveOpenGroups } from "./adminNav";
 
 const itemClass = (active) =>
-  `flex items-center gap-3 rounded-2xl px-4 py-3 text-sm font-semibold transition-all ${
-    active ? "bg-cyan-300 text-[#071421] shadow-[0_16px_38px_rgba(34,211,238,0.20)]" : "text-slate-300 hover:bg-white/[0.07] hover:text-white"
+  `flex items-center gap-3 rounded-xl px-4 py-2.5 text-sm font-semibold transition-colors ${
+    active ? "bg-cyan-300/[0.1] text-cyan-100 shadow-[inset_3px_0_0_#67E8F9]" : "text-ink-2 hover:bg-white/[0.06] hover:text-ink-1"
   }`;
-const iconButton = "flex h-10 w-10 items-center justify-center rounded-xl border border-white/10 text-slate-400 transition hover:border-cyan-200/30 hover:text-white";
+const iconButton = "flex h-10 w-10 items-center justify-center rounded-xl border border-white/[0.1] text-ink-2 transition hover:border-cyan-200/40 hover:bg-white/[0.05] hover:text-ink-1";
+const iconButtonSm = "flex h-8 w-8 items-center justify-center rounded-lg border border-white/[0.1] text-ink-2 transition hover:border-cyan-200/40 hover:bg-white/[0.05] hover:text-ink-1";
 
 function NavItem({ item, currentPath, compact = false }) {
   const Icon = item.icon;
@@ -43,12 +44,12 @@ function ExpandedNav({ currentPath, activeId, openGroups, toggleGroup }) {
               type="button"
               onClick={() => toggleGroup(group.id)}
               disabled={isActive}
-              className="flex w-full items-center gap-2 rounded-xl px-4 py-2.5 text-[11px] font-bold uppercase tracking-[0.18em] text-slate-500 transition hover:text-slate-200 disabled:cursor-default disabled:hover:text-slate-500"
+              className="flex w-full items-center gap-2 rounded-xl px-4 py-2.5 text-[11px] font-bold uppercase tracking-[0.18em] text-ink-3 transition hover:text-slate-200 disabled:cursor-default disabled:hover:text-ink-3"
               aria-expanded={isOpen}
             >
               <GroupIcon size={14} className={isActive ? "text-cyan-300" : ""} />
               <span className={isActive ? "text-cyan-200" : ""}>{group.label}</span>
-              {!isOpen && <span className="ml-1 rounded-full bg-white/[0.06] px-1.5 text-[10px] tracking-normal text-slate-500">{group.items.length}</span>}
+              {!isOpen && <span className="ml-1 rounded-full bg-white/[0.06] px-1.5 text-[10px] tracking-normal text-ink-3">{group.items.length}</span>}
               {!isActive && <ChevronDown size={14} className={`ml-auto transition-transform ${isOpen ? "" : "-rotate-90"}`} />}
             </button>
             <AnimatePresence initial={false}>
@@ -85,14 +86,14 @@ function CollapsedNav({ currentPath, activeId }) {
           <div key={group.id} className="group relative">
             <button
               type="button"
-              className={`flex h-12 w-12 items-center justify-center rounded-2xl transition ${isActive ? "bg-cyan-300 text-[#071421]" : "text-slate-400 hover:bg-white/[0.07] hover:text-white"}`}
+              className={`flex h-12 w-12 items-center justify-center rounded-2xl transition ${isActive ? "bg-cyan-300/[0.12] text-cyan-100" : "text-slate-400 hover:bg-white/[0.07] hover:text-white"}`}
               aria-label={group.label}
             >
               <GroupIcon size={20} />
             </button>
             {/* pl-3 làm "cầu nối" để rê chuột từ biểu tượng sang bảng không bị tắt */}
             <div className="invisible absolute left-full top-0 z-50 pl-3 opacity-0 transition group-focus-within:visible group-focus-within:opacity-100 group-hover:visible group-hover:opacity-100">
-              <div className="w-64 rounded-2xl border border-cyan-200/15 bg-[#0d1726] p-2 shadow-2xl">
+              <div className="w-64 rounded-2xl border border-cyan-200/15 bg-cms-3 p-2 shadow-2xl">
                 <div className="px-3 pb-2 pt-1 text-[11px] font-bold uppercase tracking-[0.18em] text-cyan-300">{group.label}</div>
                 <div className="grid gap-1">
                   {group.items.map((item) => <NavItem key={item.to || item.href} item={item} currentPath={currentPath} compact />)}
@@ -135,8 +136,8 @@ export default function AdminLayout({ children }) {
 
   return (
     <MotionConfig reducedMotion="user">
-    <div data-no-translate className="min-h-screen bg-[radial-gradient(circle_at_top_right,rgba(0,183,255,0.10),transparent_28%),linear-gradient(135deg,#0d1726_0%,#101b2f_55%,#132238_100%)] text-white">
-      <header className="sticky top-0 z-40 border-b border-cyan-200/15 bg-[#0d1726]/90 backdrop-blur-2xl">
+    <div data-no-translate className="facs-cms min-h-screen bg-cms-0 bg-[radial-gradient(ellipse_at_top_right,rgba(37,99,235,0.08),transparent_45%)] text-ink-1">
+      <header className="sticky top-0 z-40 border-b border-white/[0.07] bg-cms-0/85 backdrop-blur-xl">
         <div className="mx-auto flex min-h-20 max-w-[1500px] items-center justify-between gap-4 px-5 py-3 lg:px-8">
           <div className="flex items-center gap-3">
             <button type="button" onClick={() => setWheelOpen(true)} className={iconButton} title="Menu vòng xoay" aria-label="Mở menu vòng xoay">
@@ -148,16 +149,16 @@ export default function AdminLayout({ children }) {
             </Link>
           </div>
           <div className="flex items-center gap-2">
-            <Link to="/insights" target="_blank" className="hidden items-center gap-2 rounded-xl border border-white/10 px-4 py-2 text-sm text-slate-300 transition hover:border-cyan-200/30 hover:text-white md:flex">
+            <Link to="/insights" target="_blank" className="hidden items-center gap-2 rounded-xl border border-white/[0.1] px-4 py-2 text-sm text-ink-2 transition hover:border-cyan-200/40 hover:text-ink-1 md:flex">
               Insights <ExternalLink size={15} />
             </Link>
-            <Link to="/careers" target="_blank" className="hidden items-center gap-2 rounded-xl border border-white/10 px-4 py-2 text-sm text-slate-300 transition hover:border-cyan-200/30 hover:text-white md:flex">
+            <Link to="/careers" target="_blank" className="hidden items-center gap-2 rounded-xl border border-white/[0.1] px-4 py-2 text-sm text-ink-2 transition hover:border-cyan-200/40 hover:text-ink-1 md:flex">
               Careers <ExternalLink size={15} />
             </Link>
-            <Link to="/legal-calendar" target="_blank" className="hidden items-center gap-2 rounded-xl border border-white/10 px-4 py-2 text-sm text-slate-300 transition hover:border-cyan-200/30 hover:text-white xl:flex">
+            <Link to="/legal-calendar" target="_blank" className="hidden items-center gap-2 rounded-xl border border-white/[0.1] px-4 py-2 text-sm text-ink-2 transition hover:border-cyan-200/40 hover:text-ink-1 xl:flex">
               Legal Calendar <ExternalLink size={15} />
             </Link>
-            <button type="button" onClick={handleLogout} className="flex items-center gap-2 rounded-xl border border-white/10 px-4 py-2 text-sm text-slate-300 transition hover:border-red-300/30 hover:text-red-200">
+            <button type="button" onClick={handleLogout} className="flex items-center gap-2 rounded-xl border border-white/[0.1] px-4 py-2 text-sm text-ink-2 transition hover:border-rose-300/40 hover:text-rose-200">
               <LogOut size={15} /> Đăng xuất
             </button>
           </div>
@@ -168,14 +169,14 @@ export default function AdminLayout({ children }) {
         {mode !== "wheel" && (
           <aside className="h-fit lg:sticky lg:top-28">
             {/* Màn hình nhỏ luôn dùng thanh mở rộng; màn hình lớn theo lựa chọn */}
-            <div className={`rounded-[26px] border border-white/10 bg-white/[0.035] p-3 lg:max-h-[calc(100vh-8.5rem)] lg:overflow-y-auto ${mode === "collapsed" ? "lg:hidden" : ""}`}>
+            <div className={`rounded-[20px] border border-white/10 bg-cms-1 p-3 lg:max-h-[calc(100vh-8.5rem)] lg:overflow-y-auto ${mode === "collapsed" ? "lg:hidden" : ""}`}>
               <div className="mb-1 flex items-center justify-between px-2 pb-2">
-                <span className="text-[11px] font-bold uppercase tracking-[0.18em] text-slate-600">Menu</span>
+                <span className="text-[11px] font-bold uppercase tracking-[0.18em] text-ink-3">Menu</span>
                 <div className="flex gap-1.5">
-                  <button type="button" onClick={() => changeMode("wheel")} className={`${iconButton} h-8 w-8`} title="Ẩn thanh bên, dùng menu vòng xoay" aria-label="Dùng menu vòng xoay">
+                  <button type="button" onClick={() => changeMode("wheel")} className={iconButtonSm} title="Ẩn thanh bên, dùng menu vòng xoay" aria-label="Dùng menu vòng xoay">
                     <Orbit size={15} />
                   </button>
-                  <button type="button" onClick={() => changeMode("collapsed")} className={`${iconButton} hidden h-8 w-8 lg:flex`} title="Thu gọn thanh bên" aria-label="Thu gọn thanh bên">
+                  <button type="button" onClick={() => changeMode("collapsed")} className={`${iconButtonSm} hidden lg:flex`} title="Thu gọn thanh bên" aria-label="Thu gọn thanh bên">
                     <PanelLeftClose size={15} />
                   </button>
                 </div>
@@ -184,7 +185,7 @@ export default function AdminLayout({ children }) {
             </div>
 
             {mode === "collapsed" && (
-              <div className="hidden flex-col items-center gap-3 rounded-[26px] border border-white/10 bg-white/[0.035] px-2 py-3 lg:flex">
+              <div className="hidden flex-col items-center gap-3 rounded-[20px] border border-white/10 bg-cms-1 px-2 py-3 lg:flex">
                 <button type="button" onClick={() => changeMode("expanded")} className={iconButton} title="Mở rộng thanh bên" aria-label="Mở rộng thanh bên">
                   <PanelLeftOpen size={18} />
                 </button>
@@ -216,13 +217,13 @@ export default function AdminLayout({ children }) {
           <button
             type="button"
             onClick={() => setWheelOpen(true)}
-            className="flex h-14 w-14 items-center justify-center rounded-full bg-cyan-300 text-[#071421] shadow-[0_12px_40px_rgba(34,211,238,0.45)] transition hover:scale-105"
+            className="flex h-14 w-14 items-center justify-center rounded-full bg-brand text-white shadow-[0_12px_32px_rgba(37,99,235,0.45)] hover:bg-brand-hover transition hover:scale-105"
             title="Mở menu vòng xoay"
             aria-label="Mở menu vòng xoay"
           >
             <Orbit size={24} />
           </button>
-          <button type="button" onClick={() => changeMode("expanded")} className={`${iconButton} bg-[#0d1726]/90`} title="Hiện lại thanh bên" aria-label="Hiện lại thanh bên">
+          <button type="button" onClick={() => changeMode("expanded")} className={`${iconButton} bg-cms-3/95`} title="Hiện lại thanh bên" aria-label="Hiện lại thanh bên">
             <PanelLeftOpen size={18} />
           </button>
         </div>

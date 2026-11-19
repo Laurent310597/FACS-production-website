@@ -179,7 +179,7 @@ export default function AdminNavWheel({ open, onClose }) {
                   >
                     <motion.span
                       className={`flex h-full w-full flex-col items-center justify-center gap-1 rounded-full border text-center transition-colors ${
-                        isSelected ? "border-cyan-200 bg-cyan-300 text-[#071421] shadow-[0_0_40px_rgba(34,211,238,0.45)]" : "border-white/10 bg-[#0d1726] text-slate-300 hover:border-cyan-200/40 hover:text-white"
+                        isSelected ? "border-cyan-200 bg-cyan-300 text-[#071421] shadow-[0_0_40px_rgba(34,211,238,0.45)]" : "border-white/10 bg-cms-3 text-slate-300 hover:border-cyan-200/40 hover:text-white"
                       }`}
                       style={{ rotate: counter }}
                       animate={{ scale: isSelected ? 1.12 : 1 }}
@@ -195,12 +195,12 @@ export default function AdminNavWheel({ open, onClose }) {
             </motion.div>
 
             {/* Tâm vòng */}
-            <div className="pointer-events-none absolute left-1/2 top-1/2 flex h-[150px] w-[150px] -translate-x-1/2 -translate-y-1/2 flex-col items-center justify-center rounded-full border border-cyan-200/20 bg-[#0b1423] text-center">
+            <div className="pointer-events-none absolute left-1/2 top-1/2 flex h-[150px] w-[150px] -translate-x-1/2 -translate-y-1/2 flex-col items-center justify-center rounded-full border border-cyan-200/20 bg-cms-2 text-center">
               <motion.span key={group.id} initial={{ scale: 0.6, opacity: 0 }} animate={{ scale: 1, opacity: 1 }} transition={{ type: "spring", stiffness: 320, damping: 18 }}>
                 <GroupIcon size={28} className="text-cyan-300" />
               </motion.span>
               <div className="mt-2 px-3 text-sm font-bold">{group.label}</div>
-              <div className="text-xs text-slate-500">{group.items.length} chức năng</div>
+              <div className="text-xs text-ink-3">{group.items.length} chức năng</div>
             </div>
           </div>
 
@@ -215,14 +215,14 @@ export default function AdminNavWheel({ open, onClose }) {
           </div>
         </motion.div>
 
-        <div key={group.id} className="w-full max-w-sm rounded-[28px] border border-cyan-200/15 bg-[#0d1726]/95 p-5">
+        <div key={group.id} className="w-full max-w-sm rounded-[20px] border border-cyan-200/15 bg-cms-3/95 p-5">
           <div className="text-xs font-bold uppercase tracking-[.18em] text-cyan-300">{group.label}</div>
           <motion.ul className="mt-4 space-y-2" initial="hidden" animate="show" variants={{ show: { transition: { staggerChildren: 0.05 } } }}>
             {group.items.map((item, index) => {
               const Icon = item.icon;
               const active = item.to && item.to === currentPath;
               const className = `flex items-center gap-3 rounded-2xl px-4 py-3.5 text-sm font-semibold transition ${
-                active ? "bg-cyan-300 text-[#071421]" : "border border-white/10 text-slate-200 hover:border-cyan-200/40 hover:bg-white/[0.05] hover:text-white"
+                active ? "bg-cyan-300/[0.12] text-cyan-100 shadow-[inset_3px_0_0_#67E8F9]" : "border border-white/10 text-slate-200 hover:border-cyan-200/40 hover:bg-white/[0.05] hover:text-white"
               }`;
               return (
                 <motion.li key={item.to || item.href} variants={{ hidden: { opacity: 0, x: 16 }, show: { opacity: 1, x: 0 } }}>

@@ -16,11 +16,12 @@ import {
   revokeDevice,
   sendCommand,
 } from "../../lib/hubZalo";
+import * as ui from "../../components/admin/ui/styles";
 
-const cardClass = "rounded-[26px] border border-white/10 bg-white/[0.035] p-5 lg:p-6";
-const ghostButton = "inline-flex items-center gap-2 rounded-xl border border-white/10 px-4 py-2 text-sm text-slate-200 transition hover:border-cyan-200/30 hover:text-white disabled:opacity-50";
-const primaryButton = "inline-flex items-center gap-2 rounded-xl bg-cyan-300 px-5 py-2.5 text-sm font-bold text-[#071421] transition hover:bg-cyan-200 disabled:cursor-not-allowed disabled:opacity-50";
-const inputClass = "w-full rounded-xl border border-white/10 bg-[#0b1423] px-3 py-2 text-sm text-white outline-none focus:border-cyan-300/50";
+const cardClass = ui.card;
+const ghostButton = ui.btnSecondary;
+const primaryButton = ui.btnPrimary;
+const inputClass = ui.input;
 
 const fmtTs = (ms) => (ms ? new Date(Number(ms)).toLocaleString("vi-VN", { timeZone: "Asia/Ho_Chi_Minh", hour12: false }) : "—");
 const fmtIso = (value) => (value ? new Date(value).toLocaleString("vi-VN", { timeZone: "Asia/Ho_Chi_Minh", hour12: false }) : "—");
@@ -150,7 +151,7 @@ export default function AdminHubZaloPage() {
 
             <div className="flex flex-wrap gap-2">
               {tabs.map(([key, label]) => (
-                <button key={key} type="button" onClick={() => setTab(key)} className={`rounded-xl px-4 py-2 text-sm font-semibold transition ${tab === key ? "bg-cyan-300 text-[#071421]" : "border border-white/10 text-slate-300 hover:text-white"}`}>{label}</button>
+                <button key={key} type="button" onClick={() => setTab(key)} className={`rounded-xl px-4 py-2 text-sm font-semibold transition ${tab === key ? "bg-cyan-300/[0.12] text-cyan-100" : "border border-white/10 text-slate-300 hover:text-white"}`}>{label}</button>
               ))}
             </div>
 
@@ -191,7 +192,7 @@ function useMirror(deviceId, kind, options) {
   return { rows, loading, error, reload };
 }
 
-const Empty = ({ children }) => <div className="rounded-2xl border border-dashed border-white/10 p-6 text-center text-sm text-slate-500">{children}</div>;
+const Empty = ({ children }) => <div className="rounded-2xl border border-dashed border-white/10 p-6 text-center text-sm text-ink-3">{children}</div>;
 const Loading = () => <SkeletonRows rows={3} />;
 
 function Overview({ device, confirmRevoke, setConfirmRevoke, revoke, add, busy, newName, setNewName }) {
@@ -238,7 +239,7 @@ function Overview({ device, confirmRevoke, setConfirmRevoke, revoke, add, busy, 
           {tile("Việc đang mở", stats.openItems)}
           {tile("Hội thoại đang tắt AI", stats.muted)}
         </div>
-        <p className="mt-3 text-xs text-slate-500">Số liệu tính trên dữ liệu đã đồng bộ lên Hub (tối đa 500 dòng mỗi loại).</p>
+        <p className="mt-3 text-xs text-ink-3">Số liệu tính trên dữ liệu đã đồng bộ lên Hub (tối đa 500 dòng mỗi loại).</p>
       </div>
       <div className={cardClass}>
         <h2 className="font-bold">Quản lý khóa thiết bị</h2>
@@ -314,7 +315,7 @@ function Conversations({ device, setError, setNotice }) {
                 {ordered.map((m) => (
                   <li key={m.key} className={`max-w-[85%] rounded-2xl px-3 py-2 text-sm ${m.data?.role === "user" ? "bg-white/[0.07]" : "ml-auto bg-cyan-300/15 text-cyan-50"}`}>
                     <div className="whitespace-pre-wrap break-words">{m.data?.content}</div>
-                    <div className="mt-1 text-[11px] text-slate-500">{m.data?.role === "user" ? "Khách" : m.data?.role === "assistant" ? "AI" : m.data?.role} · {fmtTs(m.ts)}{m.data?.flagged ? " · đã gắn cờ" : ""}</div>
+                    <div className="mt-1 text-[11px] text-ink-3">{m.data?.role === "user" ? "Khách" : m.data?.role === "assistant" ? "AI" : m.data?.role} · {fmtTs(m.ts)}{m.data?.flagged ? " · đã gắn cờ" : ""}</div>
                   </li>
                 ))}
               </ul>
@@ -396,7 +397,7 @@ function Groups({ device, setError, setNotice }) {
             <AnimatePresence initial={false}>
             {open.map((r) => (
               <motion.li key={r.key} layout {...listItem} className="flex flex-wrap items-center justify-between gap-2 rounded-2xl border border-white/10 p-3 text-sm">
-                <div><span className="mr-2 rounded-full bg-white/10 px-2 py-0.5 text-[11px]">{r.data?.priority || "NORMAL"}</span>{r.data?.summary}<div className="mt-1 text-xs text-slate-500">{fmtTs(r.ts)}</div></div>
+                <div><span className="mr-2 rounded-full bg-white/10 px-2 py-0.5 text-[11px]">{r.data?.priority || "NORMAL"}</span>{r.data?.summary}<div className="mt-1 text-xs text-ink-3">{fmtTs(r.ts)}</div></div>
                 <button type="button" className={ghostButton} disabled={busy === `i${r.key}`} onClick={() => run(`i${r.key}`, "resolve_item", { local_id: Number(r.key) }, "Đã gửi lệnh đánh dấu xong.")}><CheckCircle2 size={15} /> Xong</button>
               </motion.li>
             ))}
@@ -425,7 +426,7 @@ function Groups({ device, setError, setNotice }) {
             ))}
           </ul>
         )}
-        <p className="mt-3 text-xs text-slate-500">Nhóm quản lý (CONTROL) chỉ đặt được trong Zalo hoặc dashboard trên laptop, không đổi từ xa.</p>
+        <p className="mt-3 text-xs text-ink-3">Nhóm quản lý (CONTROL) chỉ đặt được trong Zalo hoặc dashboard trên laptop, không đổi từ xa.</p>
       </div>
     </div>
   );
@@ -443,8 +444,8 @@ function Security({ device }) {
           {rows.map((r) => (
             <li key={r.key} className="py-2">
               <span className={`mr-2 text-xs font-bold ${sev[r.data?.severity] || "text-slate-300"}`}>{r.data?.severity}</span>
-              <span className="mr-2 text-xs text-slate-500">{r.data?.type}</span>{r.data?.detail}
-              <div className="text-xs text-slate-500">{fmtTs(r.ts)}</div>
+              <span className="mr-2 text-xs text-ink-3">{r.data?.type}</span>{r.data?.detail}
+              <div className="text-xs text-ink-3">{fmtTs(r.ts)}</div>
             </li>
           ))}
         </ul>
@@ -567,7 +568,7 @@ function Commands({ device }) {
               <span className="font-semibold">{commandLabel[r.type] || r.type}</span>
               <span className={`ml-2 text-xs font-bold ${style[r.status]}`}>{commandStatusLabel[r.status] || r.status}</span>
               {r.result && <div className="text-xs text-slate-400">{r.result}</div>}
-              <div className="text-xs text-slate-500">{fmtIso(r.created_at)}</div>
+              <div className="text-xs text-ink-3">{fmtIso(r.created_at)}</div>
             </motion.li>
           ))}
           </AnimatePresence>

@@ -29,7 +29,7 @@ export default function ProtectedAdminRoute({ children }) {
 
   if (session === undefined) {
     return (
-      <div data-no-translate className="flex min-h-screen items-center justify-center bg-[#0d1726] text-cyan-100">
+      <div data-no-translate className="flex min-h-screen items-center justify-center bg-cms-0 text-cyan-100">
         <div className="h-9 w-9 animate-spin rounded-full border-2 border-cyan-300/20 border-t-cyan-300" />
       </div>
     );

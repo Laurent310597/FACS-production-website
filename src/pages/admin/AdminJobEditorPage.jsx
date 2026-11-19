@@ -194,13 +194,13 @@ export default function AdminJobEditorPage() {
           <button type="button" onClick={() => setPreviewOpen((current) => !current)} className="inline-flex items-center gap-2 rounded-2xl border border-white/10 px-5 py-3 font-semibold text-slate-200 transition hover:border-cyan-200/30 hover:text-cyan-100">
             <Eye size={18} /> {previewOpen ? "Ẩn xem trước" : "Xem trước"}
           </button>
-          <button type="button" disabled={saving} onClick={() => saveJob("draft")} className="inline-flex items-center gap-2 rounded-2xl border border-cyan-200/25 bg-white/[0.04] px-5 py-3 font-semibold text-cyan-100 transition hover:bg-white/[0.08] disabled:opacity-50">
+          <button type="button" disabled={saving} onClick={() => saveJob("draft")} className="inline-flex items-center gap-2 rounded-2xl border border-cyan-200/25 bg-cms-1 px-5 py-3 font-semibold text-cyan-100 transition hover:bg-white/[0.08] disabled:opacity-50">
             <Save size={18} /> Lưu nháp
           </button>
           <button type="button" disabled={saving} onClick={() => saveJob("schedule")} className="inline-flex items-center gap-2 rounded-2xl border border-violet-200/25 bg-violet-300/10 px-5 py-3 font-semibold text-violet-100 transition hover:bg-violet-300/15 disabled:opacity-50">
             {saving ? <Loader2 size={18} className="animate-spin" /> : <CalendarClock size={18} />} Hẹn giờ đăng
           </button>
-          <button type="button" disabled={saving} onClick={() => saveJob("publish")} className="inline-flex items-center gap-2 rounded-2xl bg-cyan-300 px-5 py-3 font-bold text-[#071421] transition hover:-translate-y-0.5 hover:bg-cyan-200 disabled:opacity-50">
+          <button type="button" disabled={saving} onClick={() => saveJob("publish")} className="inline-flex items-center gap-2 rounded-2xl bg-brand px-5 py-3 font-bold text-white transition hover:-translate-y-0.5 hover:bg-brand-hover disabled:opacity-50">
             {saving ? <Loader2 size={18} className="animate-spin" /> : <Send size={18} />} Đăng ngay
           </button>
         </div>
@@ -210,15 +210,15 @@ export default function AdminJobEditorPage() {
 
       <div className={`mt-7 grid gap-6 ${previewOpen ? "2xl:grid-cols-[minmax(0,1fr)_500px]" : ""}`}>
         <div className="space-y-6">
-          <section className="rounded-[28px] border border-white/10 bg-white/[0.035] p-5 md:p-7">
+          <section className="rounded-[20px] border border-white/10 bg-cms-1 p-5 md:p-7">
             <div className="flex flex-wrap items-center justify-between gap-4 border-b border-white/10 pb-5">
               <div>
                 <h2 className="text-xl font-semibold">Nội dung tuyển dụng</h2>
-                <p className="mt-1 text-sm text-slate-500">Chọn ngôn ngữ và nhập JD tương ứng.</p>
+                <p className="mt-1 text-sm text-ink-3">Chọn ngôn ngữ và nhập JD tương ứng.</p>
               </div>
-              <div className="flex rounded-2xl border border-white/10 bg-[#081321]/70 p-1">
+              <div className="flex rounded-2xl border border-white/10 bg-cms-2 p-1">
                 {[["vi", "Tiếng Việt"], ["en", "English"]].map(([value, label]) => (
-                  <button key={value} type="button" onClick={() => setActiveLanguage(value)} className={`rounded-xl px-4 py-2 text-sm font-semibold transition ${activeLanguage === value ? "bg-cyan-300 text-[#071421]" : "text-slate-400 hover:text-white"}`}>{label}</button>
+                  <button key={value} type="button" onClick={() => setActiveLanguage(value)} className={`rounded-xl px-4 py-2 text-sm font-semibold transition ${activeLanguage === value ? "bg-cyan-300/[0.12] text-cyan-100" : "text-slate-400 hover:text-white"}`}>{label}</button>
                 ))}
               </div>
             </div>
@@ -226,24 +226,24 @@ export default function AdminJobEditorPage() {
             <div className="mt-6 space-y-5">
               <label className="block">
                 <span className="mb-2 block text-sm font-semibold text-slate-200">Chức danh {activeLanguage === "vi" ? "tiếng Việt" : "tiếng Anh"}</span>
-                <input value={form[`title_${activeLanguage}`]} onChange={(event) => handleTitleChange(event.target.value)} className="w-full rounded-2xl border border-white/10 bg-[#081321]/70 px-4 py-3.5 text-white outline-none placeholder:text-slate-600 focus:border-cyan-300/35" placeholder={activeLanguage === "vi" ? "Ví dụ: Chuyên viên tư vấn thuế..." : "Example: Tax Consultant..."} />
+                <input value={form[`title_${activeLanguage}`]} onChange={(event) => handleTitleChange(event.target.value)} className="w-full rounded-2xl border border-white/10 bg-cms-2 px-4 py-3.5 text-white outline-none placeholder:text-[#5f6f86] focus:border-cyan-300/35" placeholder={activeLanguage === "vi" ? "Ví dụ: Chuyên viên tư vấn thuế..." : "Example: Tax Consultant..."} />
               </label>
 
               <div className="grid gap-5 md:grid-cols-2">
                 <label className="block">
                   <span className="mb-2 block text-sm font-semibold text-slate-200">Phòng ban / Bộ phận</span>
-                  <input value={form[`department_${activeLanguage}`]} onChange={(event) => updateField(`department_${activeLanguage}`, event.target.value)} className="w-full rounded-2xl border border-white/10 bg-[#081321]/70 px-4 py-3.5 text-white outline-none placeholder:text-slate-600 focus:border-cyan-300/35" placeholder={activeLanguage === "vi" ? "Tư vấn Thuế" : "Tax Advisory"} />
+                  <input value={form[`department_${activeLanguage}`]} onChange={(event) => updateField(`department_${activeLanguage}`, event.target.value)} className="w-full rounded-2xl border border-white/10 bg-cms-2 px-4 py-3.5 text-white outline-none placeholder:text-[#5f6f86] focus:border-cyan-300/35" placeholder={activeLanguage === "vi" ? "Tư vấn Thuế" : "Tax Advisory"} />
                 </label>
                 <label className="block">
                   <span className="mb-2 block text-sm font-semibold text-slate-200">Địa điểm làm việc</span>
-                  <input value={form[`location_${activeLanguage}`]} onChange={(event) => updateField(`location_${activeLanguage}`, event.target.value)} className="w-full rounded-2xl border border-white/10 bg-[#081321]/70 px-4 py-3.5 text-white outline-none placeholder:text-slate-600 focus:border-cyan-300/35" placeholder={activeLanguage === "vi" ? "Thành phố Hồ Chí Minh" : "Ho Chi Minh City"} />
+                  <input value={form[`location_${activeLanguage}`]} onChange={(event) => updateField(`location_${activeLanguage}`, event.target.value)} className="w-full rounded-2xl border border-white/10 bg-cms-2 px-4 py-3.5 text-white outline-none placeholder:text-[#5f6f86] focus:border-cyan-300/35" placeholder={activeLanguage === "vi" ? "Thành phố Hồ Chí Minh" : "Ho Chi Minh City"} />
                 </label>
               </div>
 
               <label className="block">
                 <span className="mb-2 block text-sm font-semibold text-slate-200">Mô tả ngắn</span>
-                <textarea value={form[`summary_${activeLanguage}`]} onChange={(event) => updateField(`summary_${activeLanguage}`, event.target.value)} rows={3} maxLength={360} className="w-full resize-y rounded-2xl border border-white/10 bg-[#081321]/70 px-4 py-3.5 leading-relaxed text-white outline-none placeholder:text-slate-600 focus:border-cyan-300/35" placeholder={activeLanguage === "vi" ? "Tóm tắt vai trò và cơ hội nghề nghiệp..." : "Summarize the role and career opportunity..."} />
-                <span className="mt-1 block text-right text-xs text-slate-600">{form[`summary_${activeLanguage}`].length}/360</span>
+                <textarea value={form[`summary_${activeLanguage}`]} onChange={(event) => updateField(`summary_${activeLanguage}`, event.target.value)} rows={3} maxLength={360} className="w-full resize-y rounded-2xl border border-white/10 bg-cms-2 px-4 py-3.5 leading-relaxed text-white outline-none placeholder:text-[#5f6f86] focus:border-cyan-300/35" placeholder={activeLanguage === "vi" ? "Tóm tắt vai trò và cơ hội nghề nghiệp..." : "Summarize the role and career opportunity..."} />
+                <span className="mt-1 block text-right text-xs text-ink-3">{form[`summary_${activeLanguage}`].length}/360</span>
               </label>
 
               <div>
@@ -258,34 +258,34 @@ export default function AdminJobEditorPage() {
             </div>
           </section>
 
-          <section className="rounded-[28px] border border-white/10 bg-white/[0.035] p-5 md:p-7">
+          <section className="rounded-[20px] border border-white/10 bg-cms-1 p-5 md:p-7">
             <h2 className="text-xl font-semibold">Thiết lập vị trí tuyển dụng</h2>
             <div className="mt-6 grid gap-5 md:grid-cols-2">
               <label className="block md:col-span-2">
                 <span className="mb-2 block text-sm font-semibold text-slate-200">Đường dẫn tuyển dụng (slug)</span>
-                <div className="flex overflow-hidden rounded-2xl border border-white/10 bg-[#081321]/70 focus-within:border-cyan-300/35">
-                  <span className="border-r border-white/10 px-4 py-3.5 text-sm text-slate-500">facs.vn/careers/</span>
+                <div className="flex overflow-hidden rounded-2xl border border-white/10 bg-cms-2 focus-within:border-cyan-300/35">
+                  <span className="border-r border-white/10 px-4 py-3.5 text-sm text-ink-3">facs.vn/careers/</span>
                   <input value={form.slug} onChange={(event) => updateField("slug", slugify(event.target.value))} className="min-w-0 flex-1 bg-transparent px-4 py-3.5 text-white outline-none" placeholder="chuyen-vien-tu-van-thue" />
                 </div>
               </label>
 
               <label className="block">
                 <span className="mb-2 block text-sm font-semibold text-slate-200">Loại hình công việc</span>
-                <select value={form.employment_type} onChange={(event) => updateField("employment_type", event.target.value)} className="w-full rounded-2xl border border-white/10 bg-[#081321] px-4 py-3.5 text-white outline-none focus:border-cyan-300/35">
+                <select value={form.employment_type} onChange={(event) => updateField("employment_type", event.target.value)} className="w-full rounded-2xl border border-white/10 bg-cms-2 px-4 py-3.5 text-white outline-none focus:border-cyan-300/35">
                   {employmentTypes.map((item) => <option key={item.value} value={item.value}>{item.vi} / {item.en}</option>)}
                 </select>
               </label>
 
               <label className="block">
                 <span className="mb-2 block text-sm font-semibold text-slate-200">Hình thức làm việc</span>
-                <select value={form.workplace_type} onChange={(event) => updateField("workplace_type", event.target.value)} className="w-full rounded-2xl border border-white/10 bg-[#081321] px-4 py-3.5 text-white outline-none focus:border-cyan-300/35">
+                <select value={form.workplace_type} onChange={(event) => updateField("workplace_type", event.target.value)} className="w-full rounded-2xl border border-white/10 bg-cms-2 px-4 py-3.5 text-white outline-none focus:border-cyan-300/35">
                   {workplaceTypes.map((item) => <option key={item.value} value={item.value}>{item.vi} / {item.en}</option>)}
                 </select>
               </label>
 
               <label className="block md:col-span-2">
                 <span className="mb-2 block text-sm font-semibold text-slate-200">Hạn nhận hồ sơ (không bắt buộc)</span>
-                <input type="date" value={form.application_deadline || ""} onChange={(event) => updateField("application_deadline", event.target.value)} className="w-full rounded-2xl border border-white/10 bg-[#081321]/70 px-4 py-3.5 text-white outline-none focus:border-cyan-300/35" />
+                <input type="date" value={form.application_deadline || ""} onChange={(event) => updateField("application_deadline", event.target.value)} className="w-full rounded-2xl border border-white/10 bg-cms-2 px-4 py-3.5 text-white outline-none focus:border-cyan-300/35" />
               </label>
 
               <div className="rounded-2xl border border-violet-200/15 bg-violet-300/[0.055] p-4 md:col-span-2">
@@ -297,11 +297,11 @@ export default function AdminJobEditorPage() {
                       value={scheduleAt}
                       min={getMinimumVietnamDateTimeInput(2)}
                       onChange={(event) => setScheduleAt(event.target.value)}
-                      className="w-full rounded-2xl border border-white/10 bg-[#081321]/80 px-4 py-3.5 text-white outline-none focus:border-violet-300/40"
+                      className="w-full rounded-2xl border border-white/10 bg-cms-2 px-4 py-3.5 text-white outline-none focus:border-violet-300/40"
                     />
-                    <span className="mt-2 block text-xs leading-relaxed text-slate-500">Thời gian được hiểu theo múi giờ Việt Nam (UTC+7). Sau khi chọn, bấm “Hẹn giờ đăng”.</span>
+                    <span className="mt-2 block text-xs leading-relaxed text-ink-3">Thời gian được hiểu theo múi giờ Việt Nam (UTC+7). Sau khi chọn, bấm “Hẹn giờ đăng”.</span>
                   </label>
-                  <div className="min-w-[250px] rounded-2xl border border-white/10 bg-[#081321]/55 px-4 py-3.5 text-sm">
+                  <div className="min-w-[250px] rounded-2xl border border-white/10 bg-cms-2 px-4 py-3.5 text-sm">
                     <div className="font-semibold text-slate-200">Trạng thái hiện tại</div>
                     {getPublicationState(form) === "scheduled" ? (
                       <div className="mt-1 text-violet-200">Đã lên lịch: {formatVietnamDateTime(form.published_at)}</div>
@@ -318,17 +318,17 @@ export default function AdminJobEditorPage() {
         </div>
 
         {previewOpen && (
-          <aside className="h-fit overflow-hidden rounded-[28px] border border-cyan-200/15 bg-[#0b1625] 2xl:sticky 2xl:top-28">
+          <aside className="h-fit overflow-hidden rounded-[20px] border border-cyan-200/15 bg-cms-2 2xl:sticky 2xl:top-28">
             <div className="p-7">
               <div className="text-xs font-bold uppercase tracking-[0.18em] text-cyan-300">Bản xem trước · {activeLanguage.toUpperCase()}</div>
               {activeDepartment && <div className="mt-5 text-sm font-semibold uppercase tracking-[0.14em] text-cyan-200">{activeDepartment}</div>}
               <h2 className="mt-3 text-3xl font-bold leading-tight">{activeTitle}</h2>
-              <div className="mt-4 text-sm text-slate-500">
+              <div className="mt-4 text-sm text-ink-3">
                 {[activeLocation, getEmploymentTypeLabel(form.employment_type, activeLanguage), getWorkplaceTypeLabel(form.workplace_type, activeLanguage)].filter(Boolean).join(" · ")}
               </div>
               {activeSummary && <p className="mt-5 leading-relaxed text-slate-400">{activeSummary}</p>}
               <div className="mt-7 border-t border-white/10 pt-7">
-                {safePreview ? <div className="facs-article" dangerouslySetInnerHTML={{ __html: safePreview }} /> : <p className="text-sm text-slate-600">Nội dung xem trước sẽ hiển thị tại đây.</p>}
+                {safePreview ? <div className="facs-article" dangerouslySetInnerHTML={{ __html: safePreview }} /> : <p className="text-sm text-ink-3">Nội dung xem trước sẽ hiển thị tại đây.</p>}
               </div>
             </div>
           </aside>

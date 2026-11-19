@@ -31,6 +31,7 @@ import AdminHubLibraryPage from "./pages/admin/AdminHubLibraryPage";
 import AdminHubSocialPage from "./pages/admin/AdminHubSocialPage";
 import AdminHubZaloPage from "./pages/admin/AdminHubZaloPage";
 import ToastProvider from "./components/admin/ui/ToastProvider";
+import ConfirmProvider from "./components/admin/ui/ConfirmProvider";
 import ProtectedAdminRoute from "./components/admin/ProtectedAdminRoute";
 import CareersPage from "./pages/CareersPage";
 import CareerDetailPage from "./pages/CareerDetailPage";
@@ -166,7 +167,9 @@ export default function App() {
         <HomeIntroOverlay />
         {/* Thông báo dạng toast cho CMS; giữ qua các lần chuyển trang */}
         <ToastProvider>
-          <AnimatedRoutes />
+          <ConfirmProvider>
+            <AnimatedRoutes />
+          </ConfirmProvider>
         </ToastProvider>
       </LanguageProvider>
     </BrowserRouter>

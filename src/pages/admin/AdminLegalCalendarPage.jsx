@@ -19,6 +19,7 @@ import {
 } from "lucide-react";
 import { Link } from "react-router-dom";
 import AdminLayout from "../../components/admin/AdminLayout";
+import { useConfirm } from "../../components/admin/ui/confirmContext";
 import { useToastSetter } from "../../components/admin/ui/toastContext";
 import { SkeletonRows } from "../../components/admin/ui/Skeleton";
 import {
@@ -49,6 +50,7 @@ function chunks(items, size = BULK_UPDATE_SIZE) {
 }
 
 export default function AdminLegalCalendarPage() {
+  const askConfirm = useConfirm();
   const [events, setEvents] = useState([]);
   const [loading, setLoading] = useState(true);
   const [query, setQuery] = useState("");
@@ -165,7 +167,7 @@ export default function AdminLegalCalendarPage() {
 
   const updateOne = async (event, action) => {
     const labels = { verify: "xác minh", publish: "xuất bản", hide: "ẩn khỏi website", restore: "đưa về bản nháp" };
-    if ((action === "hide" || action === "restore") && !window.confirm(`${action === "hide" ? "Ẩn" : "Khôi phục"} mốc “${event.title_vi || event.title_en}”?`)) return;
+    if ((action === "hide" || action === "restore") && !(await askConfirm(`${action === "hide" ? "Ẩn" : "Khôi phục"} mốc “${event.title_vi || event.title_en}”?`))) return;
     if (action === "publish" && !canPublish(event)) {
       setError("Mốc này chưa đủ căn cứ pháp lý hoặc URL nguồn chính thức để xuất bản.");
       return;
@@ -192,7 +194,7 @@ export default function AdminLegalCalendarPage() {
   };
 
   const deleteOne = async (event) => {
-    if (!window.confirm(`Xóa vĩnh viễn mốc “${event.title_vi || event.title_en}”?\n\nThao tác này không thể hoàn tác. Nếu chỉ muốn gỡ khỏi website, hãy dùng “Ẩn khỏi web”.`)) return;
+    if (!(await askConfirm(`Xóa vĩnh viễn mốc “${event.title_vi || event.title_en}”?\n\nThao tác này không thể hoàn tác. Nếu chỉ muốn gỡ khỏi website, hãy dùng “Ẩn khỏi web”.`))) return;
     setWorking(event.id);
     resetMessages();
     const { error: deleteError } = await supabase.from("legal_calendar_events").delete().eq("id", event.id);
@@ -216,7 +218,7 @@ export default function AdminLegalCalendarPage() {
     }
     const skipped = selectedEvents.length - targets.length;
     const warning = action === "delete" ? "\n\nThao tác xóa không thể hoàn tác. Có thể dùng “Ẩn khỏi web” nếu muốn giữ dữ liệu." : "";
-    if (!window.confirm(`${actionLabels[action][0].toUpperCase()}${actionLabels[action].slice(1)} ${targets.length} mốc đã chọn?${skipped ? `\n\n${skipped} mốc chưa đủ điều kiện sẽ được giữ nguyên.` : ""}${warning}`)) return;
+    if (!(await askConfirm(`${actionLabels[action][0].toUpperCase()}${actionLabels[action].slice(1)} ${targets.length} mốc đã chọn?${skipped ? `\n\n${skipped} mốc chưa đủ điều kiện sẽ được giữ nguyên.` : ""}${warning}`))) return;
 
     setWorking(`bulk-${action}`);
     resetMessages();
@@ -273,7 +275,7 @@ export default function AdminLegalCalendarPage() {
         </div>
         <div className="flex flex-wrap gap-3">
           <Link to="/legal-calendar" target="_blank" className="inline-flex items-center gap-2 rounded-2xl border border-white/10 px-5 py-3 font-semibold text-slate-200 transition hover:border-cyan-200/30 hover:text-white"><CalendarRange size={18} /> Xem lịch công khai</Link>
-          <Link to="/admin/legal-calendar/new" className="inline-flex items-center gap-2 rounded-2xl bg-cyan-300 px-5 py-3 font-bold text-[#071421] transition hover:-translate-y-0.5 hover:bg-cyan-200"><FilePlus2 size={18} /> Thêm mốc mới</Link>
+          <Link to="/admin/legal-calendar/new" className="inline-flex items-center gap-2 rounded-2xl bg-brand px-5 py-3 font-bold text-white transition hover:-translate-y-0.5 hover:bg-brand-hover"><FilePlus2 size={18} /> Thêm mốc mới</Link>
         </div>
       </div>
 
@@ -286,25 +288,25 @@ export default function AdminLegalCalendarPage() {
           [CalendarRange, "Sắp đến hạn", counts.upcoming, "text-cyan-300", "bg-cyan-300/[0.06] border-cyan-300/15"],
           [Archive, "Mốc thuộc năm cũ", counts.archivedYears, "text-violet-300", "bg-violet-300/[0.06] border-violet-300/15"],
         ].map(([Icon, label, value, iconClass, cardClass]) => (
-          <div key={label} className={`rounded-[24px] border p-5 ${cardClass}`}><Icon size={20} className={iconClass} /><div className="mt-5 text-3xl font-bold">{value}</div><div className="mt-1 text-sm text-slate-400">{label}</div></div>
+          <div key={label} className={`rounded-[20px] border p-5 ${cardClass}`}><Icon size={20} className={iconClass} /><div className="mt-5 text-3xl font-bold">{value}</div><div className="mt-1 text-sm text-slate-400">{label}</div></div>
         ))}
       </div>
 
-      <div className="mt-7 inline-flex rounded-2xl border border-white/10 bg-[#081321]/70 p-1">
-        <button type="button" onClick={() => { changeFilter(setCollection, "active"); setYear("all"); }} className={`rounded-xl px-4 py-2.5 text-sm font-semibold transition ${collection === "active" ? "bg-cyan-300 text-[#071421]" : "text-slate-400 hover:text-white"}`}>Đang vận hành ({events.filter((event) => event.event_date?.slice(0, 4) >= currentYear).length})</button>
+      <div className="mt-7 inline-flex rounded-2xl border border-white/10 bg-cms-2 p-1">
+        <button type="button" onClick={() => { changeFilter(setCollection, "active"); setYear("all"); }} className={`rounded-xl px-4 py-2.5 text-sm font-semibold transition ${collection === "active" ? "bg-cyan-300/[0.12] text-cyan-100" : "text-slate-400 hover:text-white"}`}>Đang vận hành ({events.filter((event) => event.event_date?.slice(0, 4) >= currentYear).length})</button>
         <button type="button" onClick={() => { changeFilter(setCollection, "archive"); setYear("all"); }} className={`rounded-xl px-4 py-2.5 text-sm font-semibold transition ${collection === "archive" ? "bg-violet-300 text-[#071421]" : "text-slate-400 hover:text-white"}`}>Kho năm cũ ({counts.archivedYears})</button>
       </div>
 
-      <div className="mt-4 grid gap-3 rounded-[26px] border border-white/10 bg-white/[0.035] p-4 lg:grid-cols-[minmax(240px,1fr)_150px_140px_190px_180px]">
-        <label className="flex items-center rounded-2xl border border-white/10 bg-[#081321]/60 px-4 focus-within:border-cyan-300/35"><Search size={17} className="text-slate-500" /><input value={query} onChange={(event) => changeFilter(setQuery, event.target.value)} placeholder="Tìm tiêu đề, đối tượng hoặc căn cứ..." className="min-w-0 flex-1 bg-transparent px-3 py-3 text-sm text-white outline-none placeholder:text-slate-600" /></label>
-        <select value={year} onChange={(event) => changeFilter(setYear, event.target.value)} className="rounded-2xl border border-white/10 bg-[#081321] px-4 py-3 text-sm text-white outline-none"><option value="all">Tất cả năm</option>{years.map((item) => <option key={item} value={item}>Năm {item}</option>)}</select>
-        <select value={month} onChange={(event) => changeFilter(setMonth, event.target.value)} className="rounded-2xl border border-white/10 bg-[#081321] px-4 py-3 text-sm text-white outline-none"><option value="all">Tất cả tháng</option>{Array.from({ length: 12 }, (_, index) => String(index + 1).padStart(2, "0")).map((item) => <option key={item} value={item}>Tháng {Number(item)}</option>)}</select>
-        <select value={category} onChange={(event) => changeFilter(setCategory, event.target.value)} className="rounded-2xl border border-white/10 bg-[#081321] px-4 py-3 text-sm text-white outline-none"><option value="all">Tất cả lĩnh vực</option>{legalCalendarCategories.map((item) => <option key={item.value} value={item.value}>{item.vi}</option>)}</select>
-        <select value={status} onChange={(event) => changeFilter(setStatus, event.target.value)} className="rounded-2xl border border-white/10 bg-[#081321] px-4 py-3 text-sm text-white outline-none"><option value="all">Tất cả trạng thái</option>{eventPublicationStates.map((item) => <option key={item.value} value={item.value}>{item.vi}</option>)}</select>
+      <div className="mt-4 grid gap-3 rounded-[20px] border border-white/10 bg-cms-1 p-4 lg:grid-cols-[minmax(240px,1fr)_150px_140px_190px_180px]">
+        <label className="flex items-center rounded-2xl border border-white/10 bg-cms-2 px-4 focus-within:border-cyan-300/35"><Search size={17} className="text-ink-3" /><input value={query} onChange={(event) => changeFilter(setQuery, event.target.value)} placeholder="Tìm tiêu đề, đối tượng hoặc căn cứ..." className="min-w-0 flex-1 bg-transparent px-3 py-3 text-sm text-white outline-none placeholder:text-[#5f6f86]" /></label>
+        <select value={year} onChange={(event) => changeFilter(setYear, event.target.value)} className="rounded-2xl border border-white/10 bg-cms-2 px-4 py-3 text-sm text-white outline-none"><option value="all">Tất cả năm</option>{years.map((item) => <option key={item} value={item}>Năm {item}</option>)}</select>
+        <select value={month} onChange={(event) => changeFilter(setMonth, event.target.value)} className="rounded-2xl border border-white/10 bg-cms-2 px-4 py-3 text-sm text-white outline-none"><option value="all">Tất cả tháng</option>{Array.from({ length: 12 }, (_, index) => String(index + 1).padStart(2, "0")).map((item) => <option key={item} value={item}>Tháng {Number(item)}</option>)}</select>
+        <select value={category} onChange={(event) => changeFilter(setCategory, event.target.value)} className="rounded-2xl border border-white/10 bg-cms-2 px-4 py-3 text-sm text-white outline-none"><option value="all">Tất cả lĩnh vực</option>{legalCalendarCategories.map((item) => <option key={item.value} value={item.value}>{item.vi}</option>)}</select>
+        <select value={status} onChange={(event) => changeFilter(setStatus, event.target.value)} className="rounded-2xl border border-white/10 bg-cms-2 px-4 py-3 text-sm text-white outline-none"><option value="all">Tất cả trạng thái</option>{eventPublicationStates.map((item) => <option key={item.value} value={item.value}>{item.vi}</option>)}</select>
       </div>
 
       {!loading && visibleEvents.length > 0 && (
-        <div className="sticky top-3 z-20 mt-4 rounded-[24px] border border-cyan-300/20 bg-[#0a1928]/95 p-4 shadow-2xl shadow-black/25 backdrop-blur-xl">
+        <div className="sticky top-3 z-20 mt-4 rounded-[20px] border border-cyan-300/20 bg-[#0a1928]/95 p-4 shadow-2xl shadow-black/25 backdrop-blur-xl">
           <div className="flex flex-col gap-4 xl:flex-row xl:items-center xl:justify-between">
             <label className="flex cursor-pointer items-center gap-3 text-sm font-semibold text-cyan-100"><input type="checkbox" checked={allFilteredSelected} onChange={toggleAllFiltered} className="h-5 w-5 rounded border-white/20 accent-cyan-300" /><span>{allFilteredSelected ? "Bỏ chọn toàn bộ kết quả lọc" : `Chọn toàn bộ ${visibleEvents.length} kết quả lọc`}</span></label>
             <div className="text-sm text-slate-400">Đã chọn <strong className="text-white">{selectedEvents.length}</strong> mốc{selectedEvents.length > 0 && selectedPublishable.length !== selectedEvents.length ? ` · ${selectedPublishable.length} đủ điều kiện xuất bản` : ""}</div>
@@ -312,7 +314,7 @@ export default function AdminLegalCalendarPage() {
           {selectedEvents.length > 0 && (
             <div className="mt-4 flex flex-wrap gap-2 border-t border-white/10 pt-4">
               <button type="button" disabled={Boolean(working)} onClick={() => runBulk("verify")} className="inline-flex items-center gap-2 rounded-xl border border-cyan-200/20 px-3.5 py-2 text-sm font-semibold text-cyan-100 hover:bg-cyan-300/10 disabled:opacity-40"><ShieldCheck size={16} /> Xác minh ({selectedEvents.length})</button>
-              <button type="button" disabled={Boolean(working) || selectedPublishable.length === 0} onClick={() => runBulk("publish")} className="inline-flex items-center gap-2 rounded-xl bg-cyan-300 px-3.5 py-2 text-sm font-bold text-[#071421] hover:bg-cyan-200 disabled:opacity-40"><Rocket size={16} /> Xuất bản ({selectedPublishable.length})</button>
+              <button type="button" disabled={Boolean(working) || selectedPublishable.length === 0} onClick={() => runBulk("publish")} className="inline-flex items-center gap-2 rounded-xl bg-brand px-3.5 py-2 text-sm font-bold text-white hover:bg-brand-hover disabled:opacity-40"><Rocket size={16} /> Xuất bản ({selectedPublishable.length})</button>
               <button type="button" disabled={Boolean(working)} onClick={() => runBulk("hide")} className="inline-flex items-center gap-2 rounded-xl border border-amber-200/20 px-3.5 py-2 text-sm font-semibold text-amber-100 hover:bg-amber-300/10 disabled:opacity-40"><EyeOff size={16} /> Ẩn khỏi web ({selectedEvents.length})</button>
               <button type="button" disabled={Boolean(working)} onClick={() => runBulk("restore")} className="inline-flex items-center gap-2 rounded-xl border border-emerald-200/20 px-3.5 py-2 text-sm font-semibold text-emerald-100 hover:bg-emerald-300/10 disabled:opacity-40"><Eye size={16} /> Về bản nháp ({selectedEvents.length})</button>
               <button type="button" disabled={Boolean(working)} onClick={() => runBulk("delete")} className="inline-flex items-center gap-2 rounded-xl border border-red-300/20 px-3.5 py-2 text-sm font-semibold text-red-200 hover:bg-red-400/10 disabled:opacity-40"><Trash2 size={16} /> Xóa ({selectedEvents.length})</button>
@@ -325,7 +327,7 @@ export default function AdminLegalCalendarPage() {
       {loading ? (
         <div className="mt-7"><SkeletonRows rows={6} /></div>
       ) : visibleEvents.length === 0 ? (
-        <div className="mt-7 rounded-[28px] border border-white/10 bg-white/[0.035] px-6 py-20 text-center"><CalendarRange size={34} className="mx-auto text-slate-600" /><div className="mt-4 text-xl font-semibold">Chưa có mốc phù hợp</div><p className="mt-2 text-sm text-slate-500">Thử thay đổi bộ lọc hoặc chuyển giữa danh sách đang vận hành và kho năm cũ.</p></div>
+        <div className="mt-7 rounded-[20px] border border-white/10 bg-cms-1 px-6 py-20 text-center"><CalendarRange size={34} className="mx-auto text-ink-3" /><div className="mt-4 text-xl font-semibold">Chưa có mốc phù hợp</div><p className="mt-2 text-sm text-ink-3">Thử thay đổi bộ lọc hoặc chuyển giữa danh sách đang vận hành và kho năm cũ.</p></div>
       ) : (
         <>
           <div className="mt-7 space-y-4">
@@ -333,10 +335,10 @@ export default function AdminLegalCalendarPage() {
               const eventCategory = getCategory(event.category);
               const selected = selectedIds.has(event.id);
               return (
-                <article key={event.id} className={`rounded-[26px] border p-5 transition md:p-6 ${selected ? "border-cyan-300/40 bg-cyan-300/[0.07]" : "border-white/10 bg-white/[0.035] hover:border-cyan-200/20"}`}>
+                <article key={event.id} className={`rounded-[20px] border p-5 transition md:p-6 ${selected ? "border-cyan-300/40 bg-cyan-300/[0.07]" : "border-white/10 bg-cms-1 hover:border-cyan-200/20"}`}>
                   <div className="flex flex-col gap-5 xl:flex-row xl:items-center">
                     <label className="flex cursor-pointer items-center self-start pt-1 xl:self-center"><input type="checkbox" checked={selected} onChange={() => toggleOne(event.id)} aria-label={`Chọn ${event.title_vi || event.title_en}`} className="h-5 w-5 rounded border-white/20 accent-cyan-300" /></label>
-                    <div className="flex h-16 w-16 shrink-0 flex-col items-center justify-center rounded-2xl border border-cyan-200/15 bg-[#081321]/70"><span className="text-xl font-black text-cyan-200">{event.event_date?.slice(-2)}</span><span className="text-[10px] font-bold uppercase text-slate-500">{event.event_date?.slice(5, 7)}/{event.event_date?.slice(0, 4)}</span></div>
+                    <div className="flex h-16 w-16 shrink-0 flex-col items-center justify-center rounded-2xl border border-cyan-200/15 bg-cms-2"><span className="text-xl font-black text-cyan-200">{event.event_date?.slice(-2)}</span><span className="text-[10px] font-bold uppercase text-ink-3">{event.event_date?.slice(5, 7)}/{event.event_date?.slice(0, 4)}</span></div>
                     <div className="min-w-0 flex-1">
                       <div className="flex flex-wrap items-center gap-2">
                         <span className="rounded-full border px-3 py-1 text-xs font-bold" style={{ color: eventCategory.color, borderColor: `${eventCategory.color}45`, backgroundColor: `${eventCategory.color}10` }}>{eventCategory.vi}</span>
@@ -345,7 +347,7 @@ export default function AdminLegalCalendarPage() {
                         {event.preparation_status && <span className={`rounded-full border px-3 py-1 text-xs font-semibold ${event.preparation_status === "ready" ? "border-violet-300/15 bg-violet-300/[0.06] text-violet-200" : "border-amber-300/15 bg-amber-300/[0.06] text-amber-200"}`}>{event.preparation_status === "ready" ? "Đã soạn đủ VI–EN" : event.preparation_status === "ai_unavailable" ? "Chưa biên soạn AI" : "Cần bổ sung dữ liệu"}</span>}
                       </div>
                       <h2 className="mt-3 text-xl font-semibold leading-snug">{event.title_vi || event.title_en}</h2>
-                      <div className="mt-2 text-sm text-slate-500">{formatLegalDate(event.event_date, "vi", { longMonth: true })}{event.source_name ? ` · ${event.source_name} (${event.source_tier || "P2"})` : ""}</div>
+                      <div className="mt-2 text-sm text-ink-3">{formatLegalDate(event.event_date, "vi", { longMonth: true })}{event.source_name ? ` · ${event.source_name} (${event.source_tier || "P2"})` : ""}</div>
                     </div>
                     <div className="flex shrink-0 flex-wrap gap-2">
                       {event.verification_status !== "verified" && <button type="button" disabled={working === event.id} onClick={() => updateOne(event, "verify")} className="flex h-11 w-11 items-center justify-center rounded-xl border border-white/10 text-slate-400 transition hover:border-cyan-200/30 hover:text-cyan-200 disabled:opacity-50" title="Xác minh"><ShieldCheck size={17} /></button>}
@@ -360,7 +362,7 @@ export default function AdminLegalCalendarPage() {
               );
             })}
           </div>
-          {totalPages > 1 && <div className="mt-6 flex flex-wrap items-center justify-between gap-3 rounded-2xl border border-white/10 bg-white/[0.03] px-4 py-3"><span className="text-sm text-slate-400">Trang {page}/{totalPages} · {visibleEvents.length} kết quả · 25 mốc/trang</span><div className="flex gap-2"><button type="button" disabled={page === 1} onClick={() => setPage((value) => Math.max(1, value - 1))} className="inline-flex items-center gap-1 rounded-xl border border-white/10 px-3 py-2 text-sm text-slate-300 disabled:opacity-30"><ChevronLeft size={16} /> Trước</button><button type="button" disabled={page === totalPages} onClick={() => setPage((value) => Math.min(totalPages, value + 1))} className="inline-flex items-center gap-1 rounded-xl border border-white/10 px-3 py-2 text-sm text-slate-300 disabled:opacity-30">Sau <ChevronRight size={16} /></button></div></div>}
+          {totalPages > 1 && <div className="mt-6 flex flex-wrap items-center justify-between gap-3 rounded-2xl border border-white/10 bg-cms-1 px-4 py-3"><span className="text-sm text-slate-400">Trang {page}/{totalPages} · {visibleEvents.length} kết quả · 25 mốc/trang</span><div className="flex gap-2"><button type="button" disabled={page === 1} onClick={() => setPage((value) => Math.max(1, value - 1))} className="inline-flex items-center gap-1 rounded-xl border border-white/10 px-3 py-2 text-sm text-slate-300 disabled:opacity-30"><ChevronLeft size={16} /> Trước</button><button type="button" disabled={page === totalPages} onClick={() => setPage((value) => Math.min(totalPages, value + 1))} className="inline-flex items-center gap-1 rounded-xl border border-white/10 px-3 py-2 text-sm text-slate-300 disabled:opacity-30">Sau <ChevronRight size={16} /></button></div></div>}
         </>
       )}
     </AdminLayout>

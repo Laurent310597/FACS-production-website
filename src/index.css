@@ -1,5 +1,20 @@
 @import "tailwindcss";
 
+/* Bảng màu & font của CMS quản trị (Đợt 2). Chỉ tạo thêm tiện ích mới, không đổi màu website công khai. */
+@theme {
+  --color-cms-0: #0B1220; /* nền trang */
+  --color-cms-1: #111A2B; /* thẻ */
+  --color-cms-2: #16223A; /* ô nhập, bảng, khối bên trong */
+  --color-cms-3: #1C2A45; /* hộp thoại, bảng nổi */
+  --color-ink-1: #E6EDF7; /* chữ chính */
+  --color-ink-2: #A3B1C6; /* chữ thứ cấp */
+  --color-ink-3: #8796AD; /* chữ phụ (tương phản ≥ 5:1) */
+  --color-brand: #2563EB; /* nút chính – xanh FACS */
+  --color-brand-hover: #3B82F6;
+  --color-brand-press: #1D4ED8;
+  --font-cms: "Helvetica Neue", Helvetica, Arial, system-ui, sans-serif;
+}
+
 html {
   scroll-behavior: smooth;
 }
@@ -169,4 +184,23 @@ img {
 }
 @media (prefers-reduced-motion: reduce) {
   .facs-skeleton { animation: none; }
+}
+
+/* CMS: font không chân cho nội dung, tiêu đề trang giữ chữ có chân của thương hiệu; số thẳng cột */
+.facs-cms {
+  font-family: var(--font-cms);
+  color: var(--color-ink-1);
+  -webkit-font-smoothing: antialiased;
+}
+.facs-cms h1 {
+  font-family: Cambria, Georgia, serif;
+  letter-spacing: -0.01em;
+}
+.facs-cms table,
+.facs-cms .tabular-nums {
+  font-variant-numeric: tabular-nums;
+}
+.facs-cms :focus-visible {
+  outline: 2px solid rgba(103, 232, 249, 0.7);
+  outline-offset: 2px;
 }

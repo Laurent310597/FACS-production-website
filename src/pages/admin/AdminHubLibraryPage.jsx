@@ -2,6 +2,7 @@ import { useCallback, useEffect, useMemo, useState } from "react";
 import { Link } from "react-router-dom";
 import { BadgeCheck, BookOpen, FileUp, FolderOpen, ImagePlus, Inbox, Loader2, Pencil, Plus, Save, Sparkles, Trash2, X } from "lucide-react";
 import AdminLayout from "../../components/admin/AdminLayout";
+import { useConfirm } from "../../components/admin/ui/confirmContext";
 import { useToastSetter } from "../../components/admin/ui/toastContext";
 import { SkeletonRows } from "../../components/admin/ui/Skeleton";
 import {
@@ -18,12 +19,13 @@ import {
   signedInputUrls,
   uploadHubGuidelineImage,
 } from "../../lib/hub";
+import * as ui from "../../components/admin/ui/styles";
 
-const inputClass = "w-full rounded-2xl border border-white/10 bg-[#0d1726]/70 px-4 py-3 text-sm text-white outline-none transition placeholder:text-slate-600 focus:border-cyan-300/50";
-const cardClass = "rounded-[26px] border border-white/10 bg-white/[0.035] p-5 lg:p-6";
-const labelClass = "mb-2 block text-sm font-semibold text-slate-200";
-const ghostButton = "inline-flex items-center gap-2 rounded-xl border border-white/10 px-4 py-2 text-sm text-slate-200 transition hover:border-cyan-200/30 hover:text-white disabled:opacity-50";
-const primaryButton = "inline-flex items-center gap-2 rounded-xl bg-cyan-300 px-5 py-2.5 text-sm font-bold text-[#071421] transition hover:bg-cyan-200 disabled:cursor-not-allowed disabled:opacity-50";
+const inputClass = ui.input;
+const cardClass = ui.card;
+const labelClass = ui.label;
+const ghostButton = ui.btnSecondary;
+const primaryButton = ui.btnPrimary;
 
 const channelLabel = Object.fromEntries(hubOutputOptions.map((o) => [o.value, o.label]));
 const kindLabel = Object.fromEntries(guidelineKinds.map((k) => [k.value, k.label]));
@@ -38,6 +40,7 @@ const folders = [
 
 // ───────────────────────── Thư mục 1 ─────────────────────────
 function GuidelinesFolder({ rows, reload, setError, setNotice }) {
+  const askConfirm = useConfirm();
   const [form, setForm] = useState(null);
   const [saving, setSaving] = useState(false);
   const [uploading, setUploading] = useState(false);
@@ -113,7 +116,7 @@ function GuidelinesFolder({ rows, reload, setError, setNotice }) {
   };
 
   const remove = async (row) => {
-    if (!window.confirm(`Xóa hướng dẫn "${row.title}"?`)) return;
+    if (!(await askConfirm(`Xóa hướng dẫn "${row.title}"?`))) return;
     try {
       await deleteGuideline(row.id);
       await reload();
@@ -186,7 +189,7 @@ function GuidelinesFolder({ rows, reload, setError, setNotice }) {
                 </label>
               )}
             </div>
-            <p className="mt-2 text-xs text-slate-500">AI xem ảnh mẫu khi tạo infographic để học cách chọn ý, độ dài chữ và giọng điệu. Ảnh chỉ được gửi cho AI khi hướng dẫn này đang áp dụng và anh/chị chọn tạo Infographic.</p>
+            <p className="mt-2 text-xs text-ink-3">AI xem ảnh mẫu khi tạo infographic để học cách chọn ý, độ dài chữ và giọng điệu. Ảnh chỉ được gửi cho AI khi hướng dẫn này đang áp dụng và anh/chị chọn tạo Infographic.</p>
           </div>
           <div className="mt-4 flex flex-wrap items-center gap-3">
             <button type="button" className={primaryButton} onClick={submit} disabled={saving || uploading}>
@@ -205,7 +208,7 @@ function GuidelinesFolder({ rows, reload, setError, setNotice }) {
       )}
 
       {rows.length === 0 ? (
-        <p className="text-sm text-slate-500">Chưa có hướng dẫn nào. AI đang dùng hướng dẫn mặc định của Hub.</p>
+        <p className="text-sm text-ink-3">Chưa có hướng dẫn nào. AI đang dùng hướng dẫn mặc định của Hub.</p>
       ) : (
         <ul className="divide-y divide-white/10">
           {rows.map((row) => (
@@ -214,9 +217,9 @@ function GuidelinesFolder({ rows, reload, setError, setNotice }) {
                 <div className="flex flex-wrap items-center gap-2">
                   <span className="font-semibold text-white">{row.title}</span>
                   <span className="rounded-full bg-white/10 px-2 py-0.5 text-xs text-slate-300">{kindLabel[row.kind] || row.kind}</span>
-                  <span className={`rounded-full px-2 py-0.5 text-xs ${row.is_active ? "bg-emerald-300/15 text-emerald-200" : "bg-white/5 text-slate-500"}`}>{row.is_active ? "Đang áp dụng" : "Tạm tắt"}</span>
+                  <span className={`rounded-full px-2 py-0.5 text-xs ${row.is_active ? "bg-emerald-300/15 text-emerald-200" : "bg-white/5 text-ink-3"}`}>{row.is_active ? "Đang áp dụng" : "Tạm tắt"}</span>
                 </div>
-                <div className="mt-1 text-xs text-slate-500">
+                <div className="mt-1 text-xs text-ink-3">
                   {row.applies_to?.length ? row.applies_to.map((c) => channelLabel[c] || c).join(", ") : "Mọi kênh"} · cập nhật {fmt(row.updated_at)}{row.images?.length ? ` · ${row.images.length} ảnh mẫu` : ""}
                 </div>
                 <p className="mt-2 line-clamp-2 whitespace-pre-line text-sm text-slate-400">{row.content}</p>
@@ -246,7 +249,7 @@ function InputsFolder({ rows }) {
     };
   }, [rows]);
 
-  if (!rows.length) return <p className="text-sm text-slate-500">Chưa có đầu vào nào. Mỗi lần tạo nội dung, đầu vào được lưu tự động vào đây.</p>;
+  if (!rows.length) return <p className="text-sm text-ink-3">Chưa có đầu vào nào. Mỗi lần tạo nội dung, đầu vào được lưu tự động vào đây.</p>;
   return (
     <ul className="divide-y divide-white/10">
       {rows.map((row) => {
@@ -256,14 +259,14 @@ function InputsFolder({ rows }) {
             <div className="flex flex-wrap items-start justify-between gap-3">
               <div className="min-w-0 flex-1">
                 <div className="font-semibold text-white">{row.title || "Nội dung chưa đặt tên"}</div>
-                <div className="mt-1 text-xs text-slate-500">
+                <div className="mt-1 text-xs text-ink-3">
                   {fmt(row.created_at)} · {(row.requested_outputs || []).map((c) => channelLabel[c] || c).join(", ")}
                   {row.status === "approved" ? " · đã duyệt" : row.status === "archived" ? " · đã lưu trữ" : ""}
                 </div>
               </div>
               <Link to={`/admin/hub/content?item=${row.id}`} className={ghostButton}><FolderOpen size={15} /> Mở</Link>
             </div>
-            {row.brief && <p className="mt-2 text-sm text-slate-300"><span className="text-slate-500">Yêu cầu: </span>{row.brief}</p>}
+            {row.brief && <p className="mt-2 text-sm text-slate-300"><span className="text-ink-3">Yêu cầu: </span>{row.brief}</p>}
             {row.source_urls?.length > 0 && (
               <ul className="mt-2 space-y-1 text-sm">
                 {row.source_urls.map((url) => (
@@ -281,7 +284,7 @@ function InputsFolder({ rows }) {
               <div className="mt-3 flex flex-wrap gap-2">
                 {files.map((file) => (
                   <a key={file.path} href={images[file.path]} target="_blank" rel="noreferrer noopener" className="block h-20 w-20 overflow-hidden rounded-lg border border-white/10 bg-white/5">
-                    {images[file.path] ? <img src={images[file.path]} alt={file.name} className="h-full w-full object-cover" /> : <span className="p-1 text-[10px] text-slate-500">{file.name}</span>}
+                    {images[file.path] ? <img src={images[file.path]} alt={file.name} className="h-full w-full object-cover" /> : <span className="p-1 text-[10px] text-ink-3">{file.name}</span>}
                   </a>
                 ))}
               </div>
@@ -300,7 +303,7 @@ function ExamplePreview({ row }) {
     return (
       <div>
         <div className="font-semibold text-slate-800">{c.title_vi}</div>
-        <p className="mt-1 text-slate-600">{c.excerpt_vi}</p>
+        <p className="mt-1 text-ink-3">{c.excerpt_vi}</p>
         <div className="mt-3 max-h-72 overflow-auto [&_h2]:mt-3 [&_h2]:font-bold [&_h3]:font-semibold [&_li]:ml-5 [&_p]:mb-2 [&_ul]:list-disc" dangerouslySetInnerHTML={{ __html: sanitizeArticleHtml(c.content_vi) }} />
       </div>
     );
@@ -309,7 +312,7 @@ function ExamplePreview({ row }) {
     return (
       <div>
         <div className="font-semibold text-slate-800">{c.title}</div>
-        <p className="text-slate-600">{c.subtitle}</p>
+        <p className="text-ink-3">{c.subtitle}</p>
         <ul className="mt-2 list-disc pl-5">{(c.points || []).map((p, i) => <li key={i}><strong>{p.heading}:</strong> {p.detail}</li>)}</ul>
       </div>
     );
@@ -318,6 +321,7 @@ function ExamplePreview({ row }) {
 }
 
 function ApprovedFolder({ rows, reload, setError }) {
+  const askConfirm = useConfirm();
   const [channel, setChannel] = useState("all");
   const [openId, setOpenId] = useState(null);
   const filtered = useMemo(() => (channel === "all" ? rows : rows.filter((r) => r.channel === channel)), [rows, channel]);
@@ -331,7 +335,7 @@ function ApprovedFolder({ rows, reload, setError }) {
     }
   };
   const remove = async (row) => {
-    if (!window.confirm(`Xóa "${row.title}" khỏi thư mục Kết quả đã duyệt? AI sẽ không tham khảo bài này nữa.`)) return;
+    if (!(await askConfirm(`Xóa "${row.title}" khỏi thư mục Kết quả đã duyệt? AI sẽ không tham khảo bài này nữa.`))) return;
     try {
       await deleteApprovedExample(row.id);
       await reload();
@@ -347,13 +351,13 @@ function ApprovedFolder({ rows, reload, setError }) {
       </p>
       <div className="flex flex-wrap gap-2">
         {[{ value: "all", label: "Tất cả" }, ...hubOutputOptions].map((option) => (
-          <button key={option.value} type="button" onClick={() => setChannel(option.value)} className={`rounded-xl px-3 py-1.5 text-sm font-semibold ${channel === option.value ? "bg-cyan-300 text-[#071421]" : "text-slate-300 hover:bg-white/[0.07]"}`}>
+          <button key={option.value} type="button" onClick={() => setChannel(option.value)} className={`rounded-xl px-3 py-1.5 text-sm font-semibold ${channel === option.value ? "bg-cyan-300/[0.12] text-cyan-100" : "text-slate-300 hover:bg-white/[0.07]"}`}>
             {option.label} {option.value === "all" ? `(${rows.length})` : `(${rows.filter((r) => r.channel === option.value).length})`}
           </button>
         ))}
       </div>
       {filtered.length === 0 ? (
-        <p className="text-sm text-slate-500">Chưa có kết quả nào được duyệt. Trong trang Tạo nội dung, bấm "Duyệt & lưu vào thư viện" khi bài đã đạt.</p>
+        <p className="text-sm text-ink-3">Chưa có kết quả nào được duyệt. Trong trang Tạo nội dung, bấm "Duyệt & lưu vào thư viện" khi bài đã đạt.</p>
       ) : (
         <ul className="divide-y divide-white/10">
           {filtered.map((row) => (
@@ -361,7 +365,7 @@ function ApprovedFolder({ rows, reload, setError }) {
               <div className="flex flex-wrap items-start justify-between gap-3">
                 <button type="button" onClick={() => setOpenId(openId === row.id ? null : row.id)} className="min-w-0 flex-1 text-left">
                   <div className="font-semibold text-white hover:text-cyan-200">{row.title || "(không tiêu đề)"}</div>
-                  <div className="mt-1 text-xs text-slate-500">{channelLabel[row.channel] || row.channel} · duyệt lúc {fmt(row.approved_at)}</div>
+                  <div className="mt-1 text-xs text-ink-3">{channelLabel[row.channel] || row.channel} · duyệt lúc {fmt(row.approved_at)}</div>
                 </button>
                 <div className="flex flex-wrap items-center gap-2">
                   <label className="flex items-center gap-2 text-sm text-slate-300">
@@ -436,7 +440,7 @@ export default function AdminHubLibraryPage() {
             const Icon = folder.icon;
             const isActive = active === folder.key;
             return (
-              <button key={folder.key} type="button" onClick={() => { setActive(folder.key); setNotice(""); }} aria-pressed={isActive} className={`rounded-[22px] border p-5 text-left transition ${isActive ? "border-cyan-300 bg-cyan-300/10" : "border-white/10 bg-white/[0.035] hover:border-cyan-200/30"}`}>
+              <button key={folder.key} type="button" onClick={() => { setActive(folder.key); setNotice(""); }} aria-pressed={isActive} className={`rounded-[20px] border p-5 text-left transition ${isActive ? "border-cyan-300 bg-cyan-300/10" : "border-white/10 bg-cms-1 hover:border-cyan-200/30"}`}>
                 <div className="flex items-center gap-3">
                   <Icon size={22} className={isActive ? "text-cyan-300" : "text-slate-400"} />
                   <span className="font-bold text-white">{folder.title}</span>

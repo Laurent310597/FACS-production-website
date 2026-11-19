@@ -17,10 +17,11 @@ import {
   postStatusLabel,
   startSocialConnect,
 } from "../../lib/hubSocial";
+import * as ui from "../../components/admin/ui/styles";
 
-const cardClass = "rounded-[26px] border border-white/10 bg-white/[0.035] p-5 lg:p-6";
-const ghostButton = "inline-flex items-center gap-2 rounded-xl border border-white/10 px-4 py-2 text-sm text-slate-200 transition hover:border-cyan-200/30 hover:text-white disabled:opacity-50";
-const primaryButton = "inline-flex items-center gap-2 rounded-xl bg-cyan-300 px-5 py-2.5 text-sm font-bold text-[#071421] transition hover:bg-cyan-200 disabled:cursor-not-allowed disabled:opacity-50";
+const cardClass = ui.card;
+const ghostButton = ui.btnSecondary;
+const primaryButton = ui.btnPrimary;
 
 const fmt = (value) => (value ? new Date(value).toLocaleString("vi-VN", { timeZone: "Asia/Ho_Chi_Minh", hour12: false }) : "—");
 const statusStyle = {
@@ -169,15 +170,15 @@ export default function AdminHubSocialPage() {
         )}
 
         <div className="mt-5 space-y-3">
-          {!activeAccounts.length && !loading && <p className="text-sm text-slate-500">Chưa có tài khoản nào được kết nối.</p>}
+          {!activeAccounts.length && !loading && <p className="text-sm text-ink-3">Chưa có tài khoản nào được kết nối.</p>}
           {activeAccounts.map((account) => {
             const left = daysLeft(account.token_expires_at);
             const soon = left !== null && left <= 10;
             return (
-              <div key={account.id} className="flex flex-wrap items-center gap-3 rounded-2xl border border-white/10 bg-[#0d1726]/50 px-4 py-3">
+              <div key={account.id} className="flex flex-wrap items-center gap-3 rounded-2xl border border-white/10 bg-cms-2 px-4 py-3">
                 <div className="min-w-0 flex-1">
                   <div className="font-semibold text-white">{platformName[account.platform]} · {account.display_name}</div>
-                  <div className="mt-0.5 text-xs text-slate-500">
+                  <div className="mt-0.5 text-xs text-ink-3">
                     {account.status === "connected" ? <span className="inline-flex items-center gap-1 text-emerald-300"><CheckCircle2 size={12} /> {accountStatusLabel.connected}</span> : <span className="inline-flex items-center gap-1 text-rose-300"><XCircle size={12} /> {accountStatusLabel[account.status]}</span>}
                     {account.token_expires_at && <span className={soon ? "ml-3 text-amber-300" : "ml-3"}>Hết hạn {fmt(account.token_expires_at)}{left !== null && left >= 0 ? ` (còn ${left} ngày)` : ""}</span>}
                     {account.last_error && <span className="ml-3 text-rose-300">{account.last_error}</span>}
@@ -198,7 +199,7 @@ export default function AdminHubSocialPage() {
             );
           })}
         </div>
-        <p className="mt-4 text-xs leading-5 text-slate-500">LinkedIn cấp mã có hiệu lực khoảng 60 ngày; hết hạn cần bấm “Kết nối lại”. Mã kết nối được lưu ở bảng chỉ máy chủ đọc được, trình duyệt không thấy.</p>
+        <p className="mt-4 text-xs leading-5 text-ink-3">LinkedIn cấp mã có hiệu lực khoảng 60 ngày; hết hạn cần bấm “Kết nối lại”. Mã kết nối được lưu ở bảng chỉ máy chủ đọc được, trình duyệt không thấy.</p>
       </section>
 
       <section className={`${cardClass} mt-6`}>
@@ -206,14 +207,14 @@ export default function AdminHubSocialPage() {
         <p className="mt-1 text-sm text-slate-400">Hệ thống kiểm tra giờ hẹn mỗi phút. Bài lỗi sẽ không tự đăng lại, để tránh đăng trùng.</p>
         <div className="mt-4 space-y-3">
           {loading && !posts.length && <SkeletonRows rows={3} />}
-          {!posts.length && !loading && <p className="text-sm text-slate-500">Chưa có bài đăng nào.</p>}
+          {!posts.length && !loading && <p className="text-sm text-ink-3">Chưa có bài đăng nào.</p>}
           <AnimatePresence initial={false}>
           {posts.map((post) => (
-            <motion.div key={post.id} layout {...listItem} className="rounded-2xl border border-white/10 bg-[#0d1726]/50 p-4">
+            <motion.div key={post.id} layout {...listItem} className="rounded-2xl border border-white/10 bg-cms-2 p-4">
               <div className="flex flex-wrap items-center gap-3">
                 <span className={`rounded-full px-3 py-1 text-xs font-bold ${statusStyle[post.status]}`}>{postStatusLabel[post.status]}</span>
                 <span className="text-sm font-semibold text-white">{accountName(post.account_id)}</span>
-                <span className="text-xs text-slate-500">
+                <span className="text-xs text-ink-3">
                   {post.status === "published" ? `Đăng lúc ${fmt(post.published_at)}` : post.scheduled_at ? `Hẹn ${fmt(post.scheduled_at)}` : `Tạo ${fmt(post.created_at)}`}
                 </span>
                 <span className="ml-auto flex items-center gap-2">
@@ -225,7 +226,7 @@ export default function AdminHubSocialPage() {
                 </span>
               </div>
               <p className="mt-3 line-clamp-3 whitespace-pre-wrap text-sm leading-6 text-slate-300">{post.caption}</p>
-              {post.image_path && <div className="mt-1 text-xs text-slate-500">Kèm 1 ảnh</div>}
+              {post.image_path && <div className="mt-1 text-xs text-ink-3">Kèm 1 ảnh</div>}
               {post.error && <div className="mt-2 rounded-xl bg-rose-400/10 px-3 py-2 text-sm text-rose-200">{post.error}</div>}
             </motion.div>
           ))}

@@ -21,6 +21,7 @@ import {
   XCircle,
 } from "lucide-react";
 import AdminLayout from "../../components/admin/AdminLayout";
+import { useConfirm } from "../../components/admin/ui/confirmContext";
 import { useToast } from "../../components/admin/ui/toastContext";
 import { SkeletonForm, SkeletonRows } from "../../components/admin/ui/Skeleton";
 import { tableRow } from "../../components/admin/ui/motionPresets";
@@ -37,12 +38,13 @@ import {
   toPayload,
   validateReminder,
 } from "../../lib/ar";
+import * as ui from "../../components/admin/ui/styles";
 
-const card = "rounded-[28px] border border-white/10 bg-white/[0.035] p-6 md:p-7";
-const input = "w-full rounded-xl border border-white/10 bg-[#081321] px-3 py-2.5 text-sm text-white outline-none transition placeholder:text-slate-600 focus:border-cyan-300/40";
-const label = "mb-1.5 block text-xs font-semibold text-slate-300";
-const ghost = "inline-flex items-center gap-2 rounded-xl border border-white/10 px-4 py-2.5 text-sm font-semibold text-slate-200 transition hover:border-cyan-200/30 hover:text-white disabled:opacity-40";
-const primary = "inline-flex items-center gap-2 rounded-xl bg-cyan-300 px-5 py-2.5 text-sm font-bold text-[#071421] transition hover:bg-cyan-200 disabled:cursor-not-allowed disabled:opacity-40";
+const card = ui.card;
+const input = ui.input;
+const label = ui.label;
+const ghost = ui.btnSecondary;
+const primary = ui.btnPrimary;
 const statusStyle = {
   draft: "bg-slate-400/15 text-slate-200",
   sending: "bg-amber-300/15 text-amber-200",
@@ -231,11 +233,11 @@ function AddReminders({ onSaved, onError, onPreview }) {
       <div className="flex flex-col gap-4 md:flex-row md:items-end md:justify-between">
         <div>
           <h2 className="text-xl font-semibold">Thêm khách hàng cần nhắc nợ</h2>
-          <p className="mt-1 text-sm text-slate-500">Ít khách: nhập trực tiếp. Nhiều khách: tải file Excel theo mẫu. Các dòng được lưu ở trạng thái “Chưa gửi”.</p>
+          <p className="mt-1 text-sm text-ink-3">Ít khách: nhập trực tiếp. Nhiều khách: tải file Excel theo mẫu. Các dòng được lưu ở trạng thái “Chưa gửi”.</p>
         </div>
         <div className="flex gap-2">
-          <button type="button" onClick={() => setMode("manual")} className={`rounded-xl px-4 py-2 text-sm font-semibold ${mode === "manual" ? "bg-cyan-300 text-[#071421]" : "border border-white/10 text-slate-300"}`}>Nhập trực tiếp</button>
-          <button type="button" onClick={() => setMode("file")} className={`rounded-xl px-4 py-2 text-sm font-semibold ${mode === "file" ? "bg-cyan-300 text-[#071421]" : "border border-white/10 text-slate-300"}`}>Tải file Excel</button>
+          <button type="button" onClick={() => setMode("manual")} className={`rounded-xl px-4 py-2 text-sm font-semibold ${mode === "manual" ? "bg-cyan-300/[0.12] text-cyan-100" : "border border-white/10 text-slate-300"}`}>Nhập trực tiếp</button>
+          <button type="button" onClick={() => setMode("file")} className={`rounded-xl px-4 py-2 text-sm font-semibold ${mode === "file" ? "bg-cyan-300/[0.12] text-cyan-100" : "border border-white/10 text-slate-300"}`}>Tải file Excel</button>
         </div>
       </div>
 
@@ -247,12 +249,12 @@ function AddReminders({ onSaved, onError, onPreview }) {
       {mode === "manual" ? (
         <div className="mt-5 space-y-4">
           {manual.map((row, index) => (
-            <div key={index} className="rounded-2xl border border-white/10 bg-[#081321]/50 p-4">
+            <div key={index} className="rounded-2xl border border-white/10 bg-cms-2 p-4">
               <div className="mb-3 flex items-center justify-between text-sm font-semibold text-slate-300">
                 <span>Khách hàng {index + 1}</span>
                 <div className="flex gap-3">
                   <button type="button" className="inline-flex items-center gap-1 text-xs text-cyan-300 hover:text-cyan-100" onClick={() => onPreview(row)}><Eye size={14} /> Xem trước email</button>
-                  {manual.length > 1 && <button type="button" className="text-slate-500 hover:text-rose-200" onClick={() => setManual((list) => list.filter((_, i) => i !== index))} aria-label="Xóa dòng"><Trash2 size={15} /></button>}
+                  {manual.length > 1 && <button type="button" className="text-ink-3 hover:text-rose-200" onClick={() => setManual((list) => list.filter((_, i) => i !== index))} aria-label="Xóa dòng"><Trash2 size={15} /></button>}
                 </div>
               </div>
               <div className="grid gap-3 md:grid-cols-2 xl:grid-cols-4">
@@ -264,7 +266,7 @@ function AddReminders({ onSaved, onError, onPreview }) {
                 ))}
                 <label className="block md:col-span-2 xl:col-span-4">
                   <span className={label}>Ghi chú (hiện trong email gửi khách này)</span>
-                  <textarea className={`${input} min-h-[64px]`} value={row.note} onChange={(e) => setCell(index, "note", e.target.value)} placeholder="Ví dụ: Phí dịch vụ kế toán tháng 7–9/2026, hóa đơn số 123" />
+                  <textarea className={`${input} min-h-[64px]!`} value={row.note} onChange={(e) => setCell(index, "note", e.target.value)} placeholder="Ví dụ: Phí dịch vụ kế toán tháng 7–9/2026, hóa đơn số 123" />
                 </label>
               </div>
             </div>
@@ -284,7 +286,7 @@ function AddReminders({ onSaved, onError, onPreview }) {
             </label>
             {fileName && <span className="inline-flex items-center gap-2 text-sm text-slate-400"><FileSpreadsheet size={15} /> {fileName}</span>}
           </div>
-          <p className="text-xs text-slate-500">Cột cần có: Người nhận, Email người nhận, Email CC, Tên công ty khách hàng, MST, Số tiền nợ, Giai đoạn nợ, Ghi chú. Nhiều email trong một ô thì ngăn bằng dấu chấm phẩy. Tối đa 500 dòng.</p>
+          <p className="text-xs text-ink-3">Cột cần có: Người nhận, Email người nhận, Email CC, Tên công ty khách hàng, MST, Số tiền nợ, Giai đoạn nợ, Ghi chú. Nhiều email trong một ô thì ngăn bằng dấu chấm phẩy. Tối đa 500 dòng.</p>
           {fileErrors.length > 0 && <div className="rounded-xl border border-rose-300/25 bg-rose-400/10 p-3 text-sm text-rose-100">{fileErrors.join(" ")}</div>}
           {fileRows.length > 0 && (
             <>
@@ -294,16 +296,16 @@ function AddReminders({ onSaved, onError, onPreview }) {
               </div>
               <div className="max-h-[420px] overflow-auto rounded-2xl border border-white/10">
                 <table className="w-full min-w-[900px] text-left text-sm">
-                  <thead className="sticky top-0 bg-[#0d1726] text-xs text-slate-400">
+                  <thead className="sticky top-0 bg-cms-3 text-xs text-slate-400">
                     <tr><th className="p-3">Dòng</th><th>Người nhận</th><th>Email</th><th>Công ty / MST</th><th className="text-right">Số tiền</th><th className="pl-4">Giai đoạn</th><th>Ghi chú</th><th /></tr>
                   </thead>
                   <tbody>
                     {fileRows.map((r) => (
                       <tr key={r._line} className={`border-t border-white/5 align-top ${r._errors.length ? "bg-rose-500/10" : ""}`}>
-                        <td className="p-3 text-slate-500">{r._line}</td>
+                        <td className="p-3 text-ink-3">{r._line}</td>
                         <td className="py-3 pr-3">{r.recipient_name}</td>
-                        <td className="py-3 pr-3 text-xs text-slate-300">{r.recipient_emails}{r.cc_emails && <div className="text-slate-500">CC: {r.cc_emails}</div>}</td>
-                        <td className="py-3 pr-3">{r.company_name}<div className="text-xs text-slate-500">{r.tax_code}</div></td>
+                        <td className="py-3 pr-3 text-xs text-slate-300">{r.recipient_emails}{r.cc_emails && <div className="text-ink-3">CC: {r.cc_emails}</div>}</td>
+                        <td className="py-3 pr-3">{r.company_name}<div className="text-xs text-ink-3">{r.tax_code}</div></td>
                         <td className="py-3 text-right font-semibold">{Number.isFinite(toAmount(r.amount)) ? formatVnd(toAmount(r.amount)) : r.amount}</td>
                         <td className="py-3 pl-4 pr-3">{r.period}</td>
                         <td className="max-w-[220px] py-3 pr-3 text-xs text-slate-400">{r.note}{r._errors.length > 0 && <div className="mt-1 font-semibold text-rose-200">{r._errors.join(", ")}</div>}</td>
@@ -325,6 +327,7 @@ function AddReminders({ onSaved, onError, onPreview }) {
 }
 
 function ReminderList({ rows, loading, status, onReload, onNotify, onError, onPreview, onEdit }) {
+  const askConfirm = useConfirm();
   const [filter, setFilter] = useState("unsent");
   const [query, setQuery] = useState("");
   const [selected, setSelected] = useState(new Set());
@@ -396,7 +399,7 @@ function ReminderList({ rows, loading, status, onReload, onNotify, onError, onPr
   };
 
   const remove = async () => {
-    if (!chosen.length || !window.confirm(`Xóa ${chosen.length} dòng chưa gửi?`)) return;
+    if (!chosen.length || !(await askConfirm(`Xóa ${chosen.length} dòng chưa gửi?`))) return;
     setBusy("delete");
     try {
       await deleteReminders(chosen.map((r) => r.id));
@@ -416,7 +419,7 @@ function ReminderList({ rows, loading, status, onReload, onNotify, onError, onPr
       <div className="flex flex-col gap-4 lg:flex-row lg:items-end lg:justify-between">
         <div>
           <h2 className="text-xl font-semibold">Danh sách nhắc nợ</h2>
-          <p className="mt-1 text-sm text-slate-500">Chưa gửi: {counts.draft || 0} · Lỗi: {counts.failed || 0} · Đã gửi: {counts.sent || 0}</p>
+          <p className="mt-1 text-sm text-ink-3">Chưa gửi: {counts.draft || 0} · Lỗi: {counts.failed || 0} · Đã gửi: {counts.sent || 0}</p>
         </div>
         <div className="flex flex-wrap gap-2">
           <select className={`${input} w-auto`} value={filter} onChange={(e) => { setFilter(e.target.value); setSelected(new Set()); }}>
@@ -425,7 +428,7 @@ function ReminderList({ rows, loading, status, onReload, onNotify, onError, onPr
             <option value="all">Tất cả</option>
           </select>
           <div className="relative">
-            <Search size={15} className="absolute left-3 top-1/2 -translate-y-1/2 text-slate-500" />
+            <Search size={15} className="absolute left-3 top-1/2 -translate-y-1/2 text-ink-3" />
             <input className={`${input} w-64 pl-9`} value={query} onChange={(e) => setQuery(e.target.value)} placeholder="Tìm công ty, MST, email, đợt…" />
           </div>
         </div>
@@ -434,11 +437,11 @@ function ReminderList({ rows, loading, status, onReload, onNotify, onError, onPr
       {loading && !rows.length ? (
         <div className="mt-6"><SkeletonRows rows={4} /></div>
       ) : !visible.length ? (
-        <div className="mt-6 rounded-2xl border border-dashed border-white/10 p-8 text-center text-sm text-slate-500">Chưa có dòng nào{filter === "unsent" ? " cần gửi" : ""}.</div>
+        <div className="mt-6 rounded-2xl border border-dashed border-white/10 p-8 text-center text-sm text-ink-3">Chưa có dòng nào{filter === "unsent" ? " cần gửi" : ""}.</div>
       ) : (
         <div className="mt-5 overflow-x-auto rounded-2xl border border-white/10">
           <table className="w-full min-w-[980px] text-left text-sm">
-            <thead className="bg-white/[0.03] text-xs text-slate-400">
+            <thead className="bg-cms-1 text-xs text-slate-400">
               <tr>
                 <th className="w-10 p-3">{selectable.length > 0 && <input type="checkbox" className="accent-cyan-300" checked={selectable.every((r) => selected.has(r.id))} onChange={toggleAll} aria-label="Chọn tất cả" />}</th>
                 <th>Công ty / MST</th>
@@ -458,19 +461,19 @@ function ReminderList({ rows, loading, status, onReload, onNotify, onError, onPr
                     <td className="p-3">{editable && <input type="checkbox" className="accent-cyan-300" checked={selected.has(r.id)} onChange={() => toggle(r.id)} aria-label="Chọn" />}</td>
                     <td className="py-3 pr-3">
                       <div className="font-semibold">{r.company_name}</div>
-                      <div className="text-xs text-slate-500">{[r.tax_code && `MST ${r.tax_code}`, r.batch_label].filter(Boolean).join(" · ")}</div>
+                      <div className="text-xs text-ink-3">{[r.tax_code && `MST ${r.tax_code}`, r.batch_label].filter(Boolean).join(" · ")}</div>
                       {r.note && <div className="mt-1 max-w-[280px] text-xs text-slate-400">{r.note}</div>}
                     </td>
                     <td className="py-3 pr-3">
                       <div>{r.recipient_name}</div>
                       <div className="text-xs text-slate-400">{(r.recipient_emails || []).join("; ")}</div>
-                      {r.cc_emails?.length > 0 && <div className="text-xs text-slate-500">CC: {r.cc_emails.join("; ")}</div>}
+                      {r.cc_emails?.length > 0 && <div className="text-xs text-ink-3">CC: {r.cc_emails.join("; ")}</div>}
                     </td>
                     <td className="py-3 text-right font-semibold">{formatVnd(r.amount)}</td>
                     <td className="py-3 pl-4 pr-3">{r.period}</td>
                     <td className="py-3 pr-3">
                       <span className={`rounded-full px-2.5 py-1 text-[11px] font-bold ${statusStyle[r.status]}`}>{statusLabel[r.status]}</span>
-                      {r.sent_at && <div className="mt-1 text-xs text-slate-500">{formatDateTime(r.sent_at)}</div>}
+                      {r.sent_at && <div className="mt-1 text-xs text-ink-3">{formatDateTime(r.sent_at)}</div>}
                       {r.last_error && <div className="mt-1 max-w-[220px] text-xs text-rose-200">{r.last_error}</div>}
                     </td>
                     <td className="py-3 pr-3">
@@ -502,7 +505,7 @@ function ReminderList({ rows, loading, status, onReload, onNotify, onError, onPr
 
       {confirm && (
         <div className="fixed inset-0 z-[100] flex items-center justify-center bg-[#020812]/80 p-4 backdrop-blur-md" role="dialog" aria-modal="true">
-          <div className="w-full max-w-lg rounded-[28px] border border-cyan-200/20 bg-[#0d1726] p-6">
+          <div className="w-full max-w-lg rounded-[20px] border border-cyan-200/20 bg-cms-3 p-6">
             <h3 className="text-xl font-bold">{confirm.resend ? "Gửi lại email nhắc nợ?" : `Gửi ${confirm.ids.length} email nhắc nợ?`}</h3>
             <p className="mt-3 text-sm leading-relaxed text-slate-300">
               Email sẽ được gửi từ <strong className="text-cyan-200">accounting@facs.vn</strong> đến khách hàng thật, tổng công nợ {formatVnd(confirm.rows.reduce((s, r) => s + Number(r.amount || 0), 0))}. Không thể thu hồi sau khi gửi.
@@ -523,6 +526,7 @@ function ReminderList({ rows, loading, status, onReload, onNotify, onError, onPr
 }
 
 function SettingsModal({ onClose, onSaved }) {
+  const askConfirm = useConfirm();
   const [settings, setSettings] = useState(null);
   const [defaults, setDefaults] = useState(null);
   const [error, setError] = useState("");
@@ -572,7 +576,7 @@ function SettingsModal({ onClose, onSaved }) {
 
   return (
     <div className="fixed inset-0 z-[100] flex items-center justify-center bg-[#020812]/80 p-4 backdrop-blur-md" role="dialog" aria-modal="true">
-      <div className="max-h-[94vh] w-full max-w-6xl overflow-y-auto rounded-[30px] border border-cyan-200/20 bg-[#0d1726] p-5 md:p-7">
+      <div className="max-h-[94vh] w-full max-w-6xl overflow-y-auto rounded-[20px] border border-cyan-200/20 bg-cms-3 p-5 md:p-7">
         <div className="flex items-start justify-between gap-4">
           <div>
             <div className="text-xs font-bold uppercase tracking-[.18em] text-cyan-300">accounting@facs.vn</div>
@@ -586,7 +590,7 @@ function SettingsModal({ onClose, onSaved }) {
         ) : (
           <div className="mt-5 grid gap-6 xl:grid-cols-2">
             <div className="space-y-4">
-              <div className="rounded-2xl border border-white/10 bg-[#081321]/50 p-4">
+              <div className="rounded-2xl border border-white/10 bg-cms-2 p-4">
                 <div className="mb-3 flex items-center gap-2 font-semibold"><Landmark size={17} className="text-cyan-300" /> Tài khoản nhận thanh toán</div>
                 <div className="grid gap-3 md:grid-cols-2">
                   {bankFields.map(([key, text, placeholder]) => (
@@ -607,13 +611,13 @@ function SettingsModal({ onClose, onSaved }) {
               </label>
               <label className="block">
                 <span className={label}>Nội dung tiếng Việt</span>
-                <textarea className={`${input} min-h-[200px] leading-relaxed`} value={settings.body_vi} onChange={(e) => set("body_vi", e.target.value)} />
+                <textarea className={`${input} min-h-[200px]! leading-relaxed`} value={settings.body_vi} onChange={(e) => set("body_vi", e.target.value)} />
               </label>
               <label className="block">
                 <span className={label}>English content</span>
-                <textarea className={`${input} min-h-[200px] leading-relaxed`} value={settings.body_en} onChange={(e) => set("body_en", e.target.value)} />
+                <textarea className={`${input} min-h-[200px]! leading-relaxed`} value={settings.body_en} onChange={(e) => set("body_en", e.target.value)} />
               </label>
-              <p className="text-xs leading-relaxed text-slate-500">
+              <p className="text-xs leading-relaxed text-ink-3">
                 Biến dùng được: <code>{"{{recipient_name}}"}</code> <code>{"{{company_name}}"}</code> <code>{"{{tax_code}}"}</code> <code>{"{{amount}}"}</code> <code>{"{{period}}"}</code> <code>{"{{note}}"}</code>. Bảng “Chi tiết công nợ”, bảng “Thông tin chuyển khoản” (song ngữ, hiện một lần) được hệ thống tự thêm cuối phần tiếng Việt, trước chữ ký; mỗi phần có chữ ký Phòng Kế toán riêng.
               </p>
             </div>
@@ -622,12 +626,12 @@ function SettingsModal({ onClose, onSaved }) {
                 <span className="text-sm font-semibold text-slate-300">Xem trước (dữ liệu minh họa)</span>
                 <button type="button" className={ghost} onClick={doPreview} disabled={busy === "preview"}>{busy === "preview" ? <Loader2 size={16} className="animate-spin" /> : <Eye size={16} />} Cập nhật xem trước</button>
               </div>
-              {previewHtml ? <iframe title="Xem trước email" sandbox="" srcDoc={previewHtml} className="h-[70vh] w-full rounded-2xl border border-white/10 bg-white" /> : <div className="flex h-[300px] items-center justify-center rounded-2xl border border-dashed border-white/10 text-sm text-slate-500">Bấm “Cập nhật xem trước”.</div>}
+              {previewHtml ? <iframe title="Xem trước email" sandbox="" srcDoc={previewHtml} className="h-[70vh] w-full rounded-2xl border border-white/10 bg-white" /> : <div className="flex h-[300px] items-center justify-center rounded-2xl border border-dashed border-white/10 text-sm text-ink-3">Bấm “Cập nhật xem trước”.</div>}
             </div>
           </div>
         )}
         <div className="mt-6 flex flex-wrap justify-between gap-3 border-t border-white/10 pt-5">
-          <button type="button" className={ghost} disabled={!defaults} onClick={() => window.confirm("Khôi phục tiêu đề và nội dung mặc định? (Thông tin ngân hàng giữ nguyên)") && setSettings((s) => ({ ...s, subject: defaults.subject, body_vi: defaults.body_vi, body_en: defaults.body_en, transfer_note: defaults.transfer_note }))}>
+          <button type="button" className={ghost} disabled={!defaults} onClick={async () => (await askConfirm("Khôi phục tiêu đề và nội dung mặc định?\nThông tin ngân hàng giữ nguyên.")) && setSettings((s) => ({ ...s, subject: defaults.subject, body_vi: defaults.body_vi, body_en: defaults.body_en, transfer_note: defaults.transfer_note }))}>
             <RotateCcw size={16} /> Nội dung mặc định
           </button>
           <div className="flex gap-3">
@@ -665,14 +669,14 @@ function EditModal({ row, onClose, onSaved }) {
 
   return (
     <div className="fixed inset-0 z-[100] flex items-center justify-center bg-[#020812]/80 p-4 backdrop-blur-md" role="dialog" aria-modal="true">
-      <div className="w-full max-w-3xl rounded-[28px] border border-cyan-200/20 bg-[#0d1726] p-6">
+      <div className="w-full max-w-3xl rounded-[20px] border border-cyan-200/20 bg-cms-3 p-6">
         <div className="flex items-center justify-between"><h3 className="text-xl font-bold">Sửa dòng nhắc nợ</h3><button type="button" onClick={onClose} className="text-slate-400"><X size={19} /></button></div>
         {error && <div className="mt-3 rounded-xl border border-rose-300/25 bg-rose-400/10 p-3 text-sm text-rose-100">{error}</div>}
         <div className="mt-4 grid gap-3 md:grid-cols-2">
           {fields.map(([key, text]) => (
             <label key={key} className="block"><span className={label}>{text}</span><input className={input} value={form[key]} onChange={(e) => setForm((f) => ({ ...f, [key]: e.target.value }))} /></label>
           ))}
-          <label className="block md:col-span-2"><span className={label}>Ghi chú</span><textarea className={`${input} min-h-[70px]`} value={form.note} onChange={(e) => setForm((f) => ({ ...f, note: e.target.value }))} /></label>
+          <label className="block md:col-span-2"><span className={label}>Ghi chú</span><textarea className={`${input} min-h-[70px]!`} value={form.note} onChange={(e) => setForm((f) => ({ ...f, note: e.target.value }))} /></label>
         </div>
         <div className="mt-5 flex justify-end gap-3">
           <button type="button" className={ghost} onClick={onClose}>Hủy</button>
@@ -686,11 +690,11 @@ function EditModal({ row, onClose, onSaved }) {
 function PreviewModal({ preview, onClose }) {
   return (
     <div className="fixed inset-0 z-[110] flex items-center justify-center bg-[#020812]/80 p-4 backdrop-blur-md" role="dialog" aria-modal="true">
-      <div className="flex max-h-[94vh] w-full max-w-3xl flex-col rounded-[28px] border border-cyan-200/20 bg-[#0d1726] p-5">
+      <div className="flex max-h-[94vh] w-full max-w-3xl flex-col rounded-[20px] border border-cyan-200/20 bg-cms-3 p-5">
         <div className="flex items-start justify-between gap-3">
           <div>
             <h3 className="text-lg font-bold">{preview.title}</h3>
-            {preview.subject && <div className="mt-1 text-sm text-slate-300"><span className="text-slate-500">Tiêu đề:</span> {preview.subject}</div>}
+            {preview.subject && <div className="mt-1 text-sm text-slate-300"><span className="text-ink-3">Tiêu đề:</span> {preview.subject}</div>}
             {preview.bank_warning && <div className="mt-1 text-xs text-amber-200">{preview.bank_warning}</div>}
           </div>
           <button type="button" onClick={onClose} className="text-slate-400"><X size={19} /></button>
