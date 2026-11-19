@@ -131,7 +131,7 @@ export default function AdminHubSocialPage() {
     <AdminLayout>
       <div className="mb-8 flex flex-wrap items-start justify-between gap-4">
         <div>
-          <div className="text-[11px] font-bold uppercase tracking-[0.22em] text-cyan-300">FACS Hub</div>
+          <div className="text-[11px] font-bold uppercase tracking-[0.22em] text-sunset">FACS Hub</div>
           <h1 className="mt-2 font-serif text-3xl font-bold text-white">Đăng & lịch đăng mạng xã hội</h1>
           <p className="mt-2 max-w-2xl text-sm leading-6 text-slate-400">
             Kết nối Facebook Fanpage, Instagram và LinkedIn cá nhân bằng quyền chính thức. Bài chỉ được đăng khi anh/chị bấm “Duyệt & hẹn giờ” hoặc “Đăng ngay” trong trang Tạo nội dung; không có gì tự đăng.
@@ -210,7 +210,7 @@ export default function AdminHubSocialPage() {
           {!posts.length && !loading && <p className="text-sm text-ink-3">Chưa có bài đăng nào.</p>}
           <AnimatePresence initial={false}>
           {posts.map((post) => (
-            <motion.div key={post.id} layout {...listItem} className="rounded-2xl border border-white/10 bg-cms-2 p-4">
+            <motion.div key={post.id} layout {...listItem} className="facs-card facs-tile rounded-2xl border border-cyan-300/[0.14] bg-cms-2 p-4">
               <div className="flex flex-wrap items-center gap-3">
                 <span className={`rounded-full px-3 py-1 text-xs font-bold ${statusStyle[post.status]}`}>{postStatusLabel[post.status]}</span>
                 <span className="text-sm font-semibold text-white">{accountName(post.account_id)}</span>

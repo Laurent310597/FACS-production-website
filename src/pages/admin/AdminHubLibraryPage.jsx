@@ -426,7 +426,7 @@ export default function AdminHubLibraryPage() {
       <div className="space-y-6">
         <div className="flex flex-wrap items-end justify-between gap-4">
           <div>
-            <div className="text-xs font-bold uppercase tracking-[0.18em] text-cyan-300">FACS Hub</div>
+            <div className="text-xs font-bold uppercase tracking-[0.18em] text-sunset">FACS Hub</div>
             <h1 className="mt-1 text-3xl font-bold tracking-[-0.02em]">Thư viện</h1>
             <p className="mt-2 max-w-3xl text-sm text-slate-400">Nơi AI học cách làm việc theo cách của FACS: đọc hướng dẫn ở thư mục 1 và các bài đã duyệt ở thư mục 3 trước mỗi lần tạo nội dung.</p>
           </div>
@@ -440,7 +440,7 @@ export default function AdminHubLibraryPage() {
             const Icon = folder.icon;
             const isActive = active === folder.key;
             return (
-              <button key={folder.key} type="button" onClick={() => { setActive(folder.key); setNotice(""); }} aria-pressed={isActive} className={`rounded-[20px] border p-5 text-left transition ${isActive ? "border-cyan-300 bg-cyan-300/10" : "border-white/10 bg-cms-1 hover:border-cyan-200/30"}`}>
+              <button key={folder.key} type="button" onClick={() => { setActive(folder.key); setNotice(""); }} aria-pressed={isActive} className={`facs-card rounded-[20px] border p-5 text-left transition ${isActive ? "border-cyan-300 bg-cyan-300/10" : "border-cyan-300/[0.14] bg-cms-1 hover:border-cyan-200/30"}`}>
                 <div className="flex items-center gap-3">
                   <Icon size={22} className={isActive ? "text-cyan-300" : "text-slate-400"} />
                   <span className="font-bold text-white">{folder.title}</span>

@@ -205,7 +205,7 @@ export default function AdminLegalSourcesPage() {
     <AdminLayout>
       <div className="flex flex-col gap-5 xl:flex-row xl:items-end xl:justify-between">
         <div>
-          <div className="text-xs font-bold uppercase tracking-[0.18em] text-cyan-300/80">Source Governance</div>
+          <div className="text-xs font-bold uppercase tracking-[0.18em] text-sunset/80">Source Governance</div>
           <h1 className="mt-3 text-3xl font-bold md:text-4xl">Nguồn & nhập lịch pháp lý</h1>
           <p className="mt-2 max-w-3xl text-sm leading-relaxed text-slate-400">Quét theo khoảng ngày hoặc nhập Excel/CSV. Kết quả hợp lệ được tự phân loại và tạo sẵn thẻ nội dung Việt–Anh trong CMS.</p>
         </div>
@@ -313,7 +313,7 @@ export default function AdminLegalSourcesPage() {
           [Radar, "Nguồn quét tự động", counts.syncing, "text-cyan-300"],
           [Rss, "Kết quả chưa đủ dữ liệu", counts.queue, "text-amber-300"],
         ].map(([Icon, label, value, iconClass]) => (
-          <div key={label} className="rounded-[20px] border border-white/10 bg-cms-1 p-5">
+          <div key={label} className="facs-card facs-tile rounded-[20px] border border-cyan-300/[0.14] bg-cms-1 p-5">
             <Icon size={20} className={iconClass} />
             <div className="mt-5 text-3xl font-bold">{value}</div>
             <div className="mt-1 text-sm text-slate-400">{label}</div>
@@ -321,7 +321,7 @@ export default function AdminLegalSourcesPage() {
         ))}
       </div>
 
-      <section className="mt-7 rounded-[20px] border border-white/10 bg-cms-1 p-5 md:p-7">
+      <section className="mt-7 facs-card rounded-[20px] border border-cyan-300/[0.14] bg-cms-1 p-5 md:p-7">
         <h2 className="text-xl font-semibold">Thêm nguồn theo dõi</h2>
         <p className="mt-2 text-sm leading-relaxed text-ink-3">Chỉ thêm trang công khai cho phép truy cập. Hệ thống không vượt đăng nhập, paywall hoặc cơ chế chống truy cập.</p>
         <form onSubmit={addSource} className="mt-6 grid gap-4 md:grid-cols-2 xl:grid-cols-4">
@@ -381,7 +381,7 @@ export default function AdminLegalSourcesPage() {
         </div>
         <div className="mt-5 grid gap-4 xl:grid-cols-2">
           {loading ? <SkeletonCards count={4} className="contents" /> : sources.map((source) => (
-            <article key={source.id} className="rounded-[20px] border border-white/10 bg-cms-1 p-5">
+            <article key={source.id} className="facs-card facs-tile rounded-[20px] border border-cyan-300/[0.14] bg-cms-1 p-5">
               <div className="flex gap-4">
                 <div className={`flex h-11 w-11 shrink-0 items-center justify-center rounded-2xl ${source.source_tier === "P1" ? "bg-emerald-300/10 text-emerald-300" : source.source_tier === "P2" ? "bg-cyan-300/10 text-cyan-300" : "bg-amber-300/10 text-amber-300"}`}>
                   <ShieldCheck size={20} />
@@ -420,14 +420,14 @@ export default function AdminLegalSourcesPage() {
           <p className="mt-1 text-sm text-ink-3">Chỉ hiển thị các mục mà hệ thống chưa xác định được ngày hoặc nội dung cần thiết. Các mục đã biên soạn nằm trực tiếp tại “Mốc pháp lý”; phần này không bắt buộc phải xử lý từng dòng.</p>
         </div>
         {candidates.length === 0 ? (
-          <div className="mt-5 rounded-[20px] border border-white/10 bg-cms-1 px-6 py-14 text-center">
+          <div className="mt-5 facs-card rounded-[20px] border border-cyan-300/[0.14] bg-cms-1 px-6 py-14 text-center">
             <CheckCircle2 size={30} className="mx-auto text-emerald-300" />
             <div className="mt-3 font-semibold">Không có cập nhật đang chờ</div>
           </div>
         ) : (
           <div className="mt-5 space-y-4">
             {candidates.map((candidate) => (
-              <article key={candidate.id} className="rounded-[20px] border border-white/10 bg-cms-1 p-5">
+              <article key={candidate.id} className="facs-card facs-tile rounded-[20px] border border-cyan-300/[0.14] bg-cms-1 p-5">
                 <div className="flex flex-col gap-5 xl:flex-row xl:items-center">
                   <div className="min-w-0 flex-1">
                     <div className="flex flex-wrap items-center gap-2 text-xs">

@@ -179,7 +179,7 @@ export default function AdminNavWheel({ open, onClose }) {
                   >
                     <motion.span
                       className={`flex h-full w-full flex-col items-center justify-center gap-1 rounded-full border text-center transition-colors ${
-                        isSelected ? "border-cyan-200 bg-cyan-300 text-[#071421] shadow-[0_0_40px_rgba(34,211,238,0.45)]" : "border-white/10 bg-cms-3 text-slate-300 hover:border-cyan-200/40 hover:text-white"
+                        isSelected ? "border-[#FFB08F] bg-gradient-to-br from-sunset to-[#FF8F5E] text-[#160800] shadow-[0_0_44px_rgba(255,107,53,0.5)]" : "border-white/10 bg-cms-3 text-slate-300 hover:border-cyan-200/40 hover:text-white"
                       }`}
                       style={{ rotate: counter }}
                       animate={{ scale: isSelected ? 1.12 : 1 }}
@@ -222,7 +222,7 @@ export default function AdminNavWheel({ open, onClose }) {
               const Icon = item.icon;
               const active = item.to && item.to === currentPath;
               const className = `flex items-center gap-3 rounded-2xl px-4 py-3.5 text-sm font-semibold transition ${
-                active ? "bg-cyan-300/[0.12] text-cyan-100 shadow-[inset_3px_0_0_#67E8F9]" : "border border-white/10 text-slate-200 hover:border-cyan-200/40 hover:bg-white/[0.05] hover:text-white"
+                active ? "bg-cyan-300/[0.12] text-cyan-100 shadow-[inset_3px_0_0_#FF6B35]" : "border border-white/10 text-slate-200 hover:border-cyan-200/40 hover:bg-white/[0.05] hover:text-white"
               }`;
               return (
                 <motion.li key={item.to || item.href} variants={{ hidden: { opacity: 0, x: 16 }, show: { opacity: 1, x: 0 } }}>

@@ -114,7 +114,7 @@ export default function AdminARPage() {
   return (
     <AdminLayout>
       <div>
-        <div className="text-xs font-bold uppercase tracking-[.18em] text-cyan-300">Finance · AR</div>
+        <div className="text-xs font-bold uppercase tracking-[.18em] text-sunset">Finance · AR</div>
         <h1 className="mt-2 text-3xl font-bold md:text-4xl">Email nhắc công nợ</h1>
         <p className="mt-2 max-w-3xl text-sm leading-relaxed text-slate-400">
           Nhập công nợ từng khách (trực tiếp hoặc bằng file Excel), xem trước rồi gửi email song ngữ từ <span className="text-cyan-200">accounting@facs.vn</span>, kèm thông tin tài khoản ngân hàng của FACS. Không có email nào được gửi khi anh/chị chưa bấm gửi và xác nhận.
@@ -579,7 +579,7 @@ function SettingsModal({ onClose, onSaved }) {
       <div className="max-h-[94vh] w-full max-w-6xl overflow-y-auto rounded-[20px] border border-cyan-200/20 bg-cms-3 p-5 md:p-7">
         <div className="flex items-start justify-between gap-4">
           <div>
-            <div className="text-xs font-bold uppercase tracking-[.18em] text-cyan-300">accounting@facs.vn</div>
+            <div className="text-xs font-bold uppercase tracking-[.18em] text-sunset">accounting@facs.vn</div>
             <h2 className="mt-2 text-2xl font-bold">Mẫu email nhắc nợ & tài khoản ngân hàng</h2>
           </div>
           <button type="button" onClick={onClose} className="flex h-10 w-10 items-center justify-center rounded-xl border border-white/10 text-slate-300"><X size={19} /></button>

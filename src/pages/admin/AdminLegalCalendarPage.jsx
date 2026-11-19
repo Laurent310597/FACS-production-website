@@ -269,7 +269,7 @@ export default function AdminLegalCalendarPage() {
     <AdminLayout>
       <div className="flex flex-col gap-5 xl:flex-row xl:items-end xl:justify-between">
         <div>
-          <div className="text-xs font-bold uppercase tracking-[0.18em] text-cyan-300/80">Legal Calendar CMS</div>
+          <div className="text-xs font-bold uppercase tracking-[0.18em] text-sunset/80">Legal Calendar CMS</div>
           <h1 className="mt-3 text-3xl font-bold md:text-4xl">Quản lý lịch pháp lý</h1>
           <p className="mt-2 max-w-3xl text-sm leading-relaxed text-slate-400">Chỉ mốc có trạng thái “Đã xác minh” và “Đã xuất bản” mới được hiển thị công khai.</p>
         </div>
@@ -297,8 +297,8 @@ export default function AdminLegalCalendarPage() {
         <button type="button" onClick={() => { changeFilter(setCollection, "archive"); setYear("all"); }} className={`rounded-xl px-4 py-2.5 text-sm font-semibold transition ${collection === "archive" ? "bg-violet-300 text-[#071421]" : "text-slate-400 hover:text-white"}`}>Kho năm cũ ({counts.archivedYears})</button>
       </div>
 
-      <div className="mt-4 grid gap-3 rounded-[20px] border border-white/10 bg-cms-1 p-4 lg:grid-cols-[minmax(240px,1fr)_150px_140px_190px_180px]">
-        <label className="flex items-center rounded-2xl border border-white/10 bg-cms-2 px-4 focus-within:border-cyan-300/35"><Search size={17} className="text-ink-3" /><input value={query} onChange={(event) => changeFilter(setQuery, event.target.value)} placeholder="Tìm tiêu đề, đối tượng hoặc căn cứ..." className="min-w-0 flex-1 bg-transparent px-3 py-3 text-sm text-white outline-none placeholder:text-[#5f6f86]" /></label>
+      <div className="mt-4 grid gap-3 facs-card rounded-[20px] border border-cyan-300/[0.14] bg-cms-1 p-4 lg:grid-cols-[minmax(240px,1fr)_150px_140px_190px_180px]">
+        <label className="flex items-center rounded-2xl border border-white/10 bg-cms-2 px-4 focus-within:border-cyan-300/35"><Search size={17} className="text-ink-3" /><input value={query} onChange={(event) => changeFilter(setQuery, event.target.value)} placeholder="Tìm tiêu đề, đối tượng hoặc căn cứ..." className="min-w-0 flex-1 bg-transparent px-3 py-3 text-sm text-white outline-none placeholder:text-[#6A7BA3]" /></label>
         <select value={year} onChange={(event) => changeFilter(setYear, event.target.value)} className="rounded-2xl border border-white/10 bg-cms-2 px-4 py-3 text-sm text-white outline-none"><option value="all">Tất cả năm</option>{years.map((item) => <option key={item} value={item}>Năm {item}</option>)}</select>
         <select value={month} onChange={(event) => changeFilter(setMonth, event.target.value)} className="rounded-2xl border border-white/10 bg-cms-2 px-4 py-3 text-sm text-white outline-none"><option value="all">Tất cả tháng</option>{Array.from({ length: 12 }, (_, index) => String(index + 1).padStart(2, "0")).map((item) => <option key={item} value={item}>Tháng {Number(item)}</option>)}</select>
         <select value={category} onChange={(event) => changeFilter(setCategory, event.target.value)} className="rounded-2xl border border-white/10 bg-cms-2 px-4 py-3 text-sm text-white outline-none"><option value="all">Tất cả lĩnh vực</option>{legalCalendarCategories.map((item) => <option key={item.value} value={item.value}>{item.vi}</option>)}</select>
@@ -327,7 +327,7 @@ export default function AdminLegalCalendarPage() {
       {loading ? (
         <div className="mt-7"><SkeletonRows rows={6} /></div>
       ) : visibleEvents.length === 0 ? (
-        <div className="mt-7 rounded-[20px] border border-white/10 bg-cms-1 px-6 py-20 text-center"><CalendarRange size={34} className="mx-auto text-ink-3" /><div className="mt-4 text-xl font-semibold">Chưa có mốc phù hợp</div><p className="mt-2 text-sm text-ink-3">Thử thay đổi bộ lọc hoặc chuyển giữa danh sách đang vận hành và kho năm cũ.</p></div>
+        <div className="mt-7 facs-card rounded-[20px] border border-cyan-300/[0.14] bg-cms-1 px-6 py-20 text-center"><CalendarRange size={34} className="mx-auto text-ink-3" /><div className="mt-4 text-xl font-semibold">Chưa có mốc phù hợp</div><p className="mt-2 text-sm text-ink-3">Thử thay đổi bộ lọc hoặc chuyển giữa danh sách đang vận hành và kho năm cũ.</p></div>
       ) : (
         <>
           <div className="mt-7 space-y-4">
@@ -335,7 +335,7 @@ export default function AdminLegalCalendarPage() {
               const eventCategory = getCategory(event.category);
               const selected = selectedIds.has(event.id);
               return (
-                <article key={event.id} className={`rounded-[20px] border p-5 transition md:p-6 ${selected ? "border-cyan-300/40 bg-cyan-300/[0.07]" : "border-white/10 bg-cms-1 hover:border-cyan-200/20"}`}>
+                <article key={event.id} className={`facs-card rounded-[20px] border p-5 transition md:p-6 ${selected ? "border-cyan-300/40 bg-cyan-300/[0.07]" : "border-cyan-300/[0.14] bg-cms-1 hover:border-cyan-200/20"}`}>
                   <div className="flex flex-col gap-5 xl:flex-row xl:items-center">
                     <label className="flex cursor-pointer items-center self-start pt-1 xl:self-center"><input type="checkbox" checked={selected} onChange={() => toggleOne(event.id)} aria-label={`Chọn ${event.title_vi || event.title_en}`} className="h-5 w-5 rounded border-white/20 accent-cyan-300" /></label>
                     <div className="flex h-16 w-16 shrink-0 flex-col items-center justify-center rounded-2xl border border-cyan-200/15 bg-cms-2"><span className="text-xl font-black text-cyan-200">{event.event_date?.slice(-2)}</span><span className="text-[10px] font-bold uppercase text-ink-3">{event.event_date?.slice(5, 7)}/{event.event_date?.slice(0, 4)}</span></div>

@@ -13,6 +13,7 @@ import {
 } from "lucide-react";
 import { Link } from "react-router-dom";
 import AdminLayout from "../../components/admin/AdminLayout";
+import CountUp from "../../components/admin/ui/CountUp";
 import { formatLegalDate, getCategory, legalCalendarCategories } from "../../lib/legalCalendar";
 import { supabase } from "../../lib/supabaseClient";
 
@@ -40,8 +41,8 @@ function StatCard({ icon: Icon, label, value, note, tone = "cyan" }) {
     red: "border-red-300/15 bg-red-300/[0.055] text-red-300",
   };
   return (
-    <div className={`rounded-[20px] border p-5 ${tones[tone]}`}>
-      <div className="flex items-start justify-between gap-4"><Icon size={21} /><span className="text-3xl font-black text-white">{value}</span></div>
+    <div className={`facs-card facs-tile rounded-[20px] border p-5 ${tones[tone]}`}>
+      <div className="flex items-start justify-between gap-4"><Icon size={21} /><CountUp value={value} className="text-3xl font-black text-white" /></div>
       <div className="mt-5 text-sm font-semibold text-slate-200">{label}</div>
       <div className="mt-1 text-xs leading-relaxed text-ink-3">{note}</div>
     </div>
@@ -114,7 +115,7 @@ export default function AdminLegalDashboardPage() {
     <AdminLayout>
       <div className="flex flex-col gap-5 xl:flex-row xl:items-end xl:justify-between">
         <div>
-          <div className="text-xs font-bold uppercase tracking-[0.18em] text-cyan-300/80">Legal Calendar CMS</div>
+          <div className="text-xs font-bold uppercase tracking-[0.18em] text-sunset/80">Legal Calendar CMS</div>
           <h1 className="mt-3 text-3xl font-bold md:text-4xl">Dashboard vận hành</h1>
           <p className="mt-2 max-w-3xl text-sm leading-relaxed text-slate-400">Theo dõi tiến độ rà soát, chất lượng dữ liệu và các mốc cần ưu tiên xử lý.</p>
         </div>
@@ -125,7 +126,7 @@ export default function AdminLegalDashboardPage() {
       </div>
 
       {error && <div className="mt-6 rounded-2xl border border-red-300/20 bg-red-400/8 px-5 py-4 text-sm text-red-200">{error}</div>}
-      {loading ? <div className="mt-7 flex items-center justify-center gap-3 rounded-[20px] border border-white/10 bg-cms-1 px-6 py-24 text-ink-3"><Loader2 className="animate-spin" size={20} /> Đang tổng hợp dữ liệu...</div> : (
+      {loading ? <div className="mt-7 flex items-center justify-center gap-3 facs-card rounded-[20px] border border-cyan-300/[0.14] bg-cms-1 px-6 py-24 text-ink-3"><Loader2 className="animate-spin" size={20} /> Đang tổng hợp dữ liệu...</div> : (
         <>
           <div className="mt-7 grid gap-4 sm:grid-cols-2 xl:grid-cols-4">
             <StatCard icon={CheckCircle2} label="Đang công khai" value={metrics.published.length} note={`${events.length} mốc đang được quản lý`} tone="emerald" />
@@ -142,7 +143,7 @@ export default function AdminLegalDashboardPage() {
           </div>
 
           <div className="mt-7 grid gap-6 xl:grid-cols-[1.1fr_0.9fr]">
-            <section className="rounded-[20px] border border-white/10 bg-cms-1 p-5 md:p-6">
+            <section className="facs-card rounded-[20px] border border-cyan-300/[0.14] bg-cms-1 p-5 md:p-6">
               <div className="flex items-center justify-between gap-4"><div><h2 className="text-xl font-bold">Theo lĩnh vực</h2><p className="mt-1 text-sm text-ink-3">Tổng số mốc và số chưa xác minh</p></div><Link to="/admin/legal-calendar" className="text-sm font-semibold text-cyan-300 hover:text-cyan-200">Mở danh sách</Link></div>
               <div className="mt-6 space-y-4">
                 {byCategory.map((item) => <div key={item.value}>
@@ -152,7 +153,7 @@ export default function AdminLegalDashboardPage() {
               </div>
             </section>
 
-            <section className="rounded-[20px] border border-white/10 bg-cms-1 p-5 md:p-6">
+            <section className="facs-card rounded-[20px] border border-cyan-300/[0.14] bg-cms-1 p-5 md:p-6">
               <h2 className="text-xl font-bold">Phân bổ theo tháng {dashboardYear}</h2>
               <p className="mt-1 text-sm text-ink-3">Nhận diện tháng cao điểm để bố trí nguồn lực</p>
               <div className="mt-7 flex h-56 items-end gap-2 sm:gap-3">
@@ -165,7 +166,7 @@ export default function AdminLegalDashboardPage() {
             </section>
           </div>
 
-          <section className="mt-6 rounded-[20px] border border-white/10 bg-cms-1 p-5 md:p-6">
+          <section className="mt-6 facs-card rounded-[20px] border border-cyan-300/[0.14] bg-cms-1 p-5 md:p-6">
             <div className="flex flex-col gap-3 sm:flex-row sm:items-end sm:justify-between"><div><h2 className="text-xl font-bold">Danh sách cần ưu tiên</h2><p className="mt-1 text-sm text-ink-3">Mốc sắp đến hạn hoặc chưa được rà soát, xếp theo ngày gần nhất</p></div><span className="text-xs text-ink-3">Tối đa 8 mốc</span></div>
             {attention.length === 0 ? <div className="mt-6 rounded-2xl border border-emerald-300/10 bg-emerald-300/[0.04] px-5 py-8 text-center text-sm text-emerald-200">Không có mốc cần ưu tiên trong phạm vi hiện tại.</div> : <div className="mt-5 divide-y divide-white/8">
               {attention.map((item) => { const itemCategory = getCategory(item.category); return <div key={item.id} className="flex flex-col gap-3 py-4 md:flex-row md:items-center">

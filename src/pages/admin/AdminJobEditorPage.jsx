@@ -210,7 +210,7 @@ export default function AdminJobEditorPage() {
 
       <div className={`mt-7 grid gap-6 ${previewOpen ? "2xl:grid-cols-[minmax(0,1fr)_500px]" : ""}`}>
         <div className="space-y-6">
-          <section className="rounded-[20px] border border-white/10 bg-cms-1 p-5 md:p-7">
+          <section className="facs-card rounded-[20px] border border-cyan-300/[0.14] bg-cms-1 p-5 md:p-7">
             <div className="flex flex-wrap items-center justify-between gap-4 border-b border-white/10 pb-5">
               <div>
                 <h2 className="text-xl font-semibold">Nội dung tuyển dụng</h2>
@@ -226,23 +226,23 @@ export default function AdminJobEditorPage() {
             <div className="mt-6 space-y-5">
               <label className="block">
                 <span className="mb-2 block text-sm font-semibold text-slate-200">Chức danh {activeLanguage === "vi" ? "tiếng Việt" : "tiếng Anh"}</span>
-                <input value={form[`title_${activeLanguage}`]} onChange={(event) => handleTitleChange(event.target.value)} className="w-full rounded-2xl border border-white/10 bg-cms-2 px-4 py-3.5 text-white outline-none placeholder:text-[#5f6f86] focus:border-cyan-300/35" placeholder={activeLanguage === "vi" ? "Ví dụ: Chuyên viên tư vấn thuế..." : "Example: Tax Consultant..."} />
+                <input value={form[`title_${activeLanguage}`]} onChange={(event) => handleTitleChange(event.target.value)} className="w-full rounded-2xl border border-white/10 bg-cms-2 px-4 py-3.5 text-white outline-none placeholder:text-[#6A7BA3] focus:border-cyan-300/35" placeholder={activeLanguage === "vi" ? "Ví dụ: Chuyên viên tư vấn thuế..." : "Example: Tax Consultant..."} />
               </label>
 
               <div className="grid gap-5 md:grid-cols-2">
                 <label className="block">
                   <span className="mb-2 block text-sm font-semibold text-slate-200">Phòng ban / Bộ phận</span>
-                  <input value={form[`department_${activeLanguage}`]} onChange={(event) => updateField(`department_${activeLanguage}`, event.target.value)} className="w-full rounded-2xl border border-white/10 bg-cms-2 px-4 py-3.5 text-white outline-none placeholder:text-[#5f6f86] focus:border-cyan-300/35" placeholder={activeLanguage === "vi" ? "Tư vấn Thuế" : "Tax Advisory"} />
+                  <input value={form[`department_${activeLanguage}`]} onChange={(event) => updateField(`department_${activeLanguage}`, event.target.value)} className="w-full rounded-2xl border border-white/10 bg-cms-2 px-4 py-3.5 text-white outline-none placeholder:text-[#6A7BA3] focus:border-cyan-300/35" placeholder={activeLanguage === "vi" ? "Tư vấn Thuế" : "Tax Advisory"} />
                 </label>
                 <label className="block">
                   <span className="mb-2 block text-sm font-semibold text-slate-200">Địa điểm làm việc</span>
-                  <input value={form[`location_${activeLanguage}`]} onChange={(event) => updateField(`location_${activeLanguage}`, event.target.value)} className="w-full rounded-2xl border border-white/10 bg-cms-2 px-4 py-3.5 text-white outline-none placeholder:text-[#5f6f86] focus:border-cyan-300/35" placeholder={activeLanguage === "vi" ? "Thành phố Hồ Chí Minh" : "Ho Chi Minh City"} />
+                  <input value={form[`location_${activeLanguage}`]} onChange={(event) => updateField(`location_${activeLanguage}`, event.target.value)} className="w-full rounded-2xl border border-white/10 bg-cms-2 px-4 py-3.5 text-white outline-none placeholder:text-[#6A7BA3] focus:border-cyan-300/35" placeholder={activeLanguage === "vi" ? "Thành phố Hồ Chí Minh" : "Ho Chi Minh City"} />
                 </label>
               </div>
 
               <label className="block">
                 <span className="mb-2 block text-sm font-semibold text-slate-200">Mô tả ngắn</span>
-                <textarea value={form[`summary_${activeLanguage}`]} onChange={(event) => updateField(`summary_${activeLanguage}`, event.target.value)} rows={3} maxLength={360} className="w-full resize-y rounded-2xl border border-white/10 bg-cms-2 px-4 py-3.5 leading-relaxed text-white outline-none placeholder:text-[#5f6f86] focus:border-cyan-300/35" placeholder={activeLanguage === "vi" ? "Tóm tắt vai trò và cơ hội nghề nghiệp..." : "Summarize the role and career opportunity..."} />
+                <textarea value={form[`summary_${activeLanguage}`]} onChange={(event) => updateField(`summary_${activeLanguage}`, event.target.value)} rows={3} maxLength={360} className="w-full resize-y rounded-2xl border border-white/10 bg-cms-2 px-4 py-3.5 leading-relaxed text-white outline-none placeholder:text-[#6A7BA3] focus:border-cyan-300/35" placeholder={activeLanguage === "vi" ? "Tóm tắt vai trò và cơ hội nghề nghiệp..." : "Summarize the role and career opportunity..."} />
                 <span className="mt-1 block text-right text-xs text-ink-3">{form[`summary_${activeLanguage}`].length}/360</span>
               </label>
 
@@ -258,7 +258,7 @@ export default function AdminJobEditorPage() {
             </div>
           </section>
 
-          <section className="rounded-[20px] border border-white/10 bg-cms-1 p-5 md:p-7">
+          <section className="facs-card rounded-[20px] border border-cyan-300/[0.14] bg-cms-1 p-5 md:p-7">
             <h2 className="text-xl font-semibold">Thiết lập vị trí tuyển dụng</h2>
             <div className="mt-6 grid gap-5 md:grid-cols-2">
               <label className="block md:col-span-2">
@@ -320,7 +320,7 @@ export default function AdminJobEditorPage() {
         {previewOpen && (
           <aside className="h-fit overflow-hidden rounded-[20px] border border-cyan-200/15 bg-cms-2 2xl:sticky 2xl:top-28">
             <div className="p-7">
-              <div className="text-xs font-bold uppercase tracking-[0.18em] text-cyan-300">Bản xem trước · {activeLanguage.toUpperCase()}</div>
+              <div className="text-xs font-bold uppercase tracking-[0.18em] text-sunset">Bản xem trước · {activeLanguage.toUpperCase()}</div>
               {activeDepartment && <div className="mt-5 text-sm font-semibold uppercase tracking-[0.14em] text-cyan-200">{activeDepartment}</div>}
               <h2 className="mt-3 text-3xl font-bold leading-tight">{activeTitle}</h2>
               <div className="mt-4 text-sm text-ink-3">

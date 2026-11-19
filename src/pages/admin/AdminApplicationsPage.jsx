@@ -93,17 +93,17 @@ export default function AdminApplicationsPage() {
   return (
     <AdminLayout>
       <div className="flex flex-col gap-4 sm:flex-row sm:items-end sm:justify-between">
-        <div><div className="text-xs font-bold uppercase tracking-[0.18em] text-cyan-300">Careers</div><h1 className="mt-2 text-3xl font-bold md:text-4xl">Hồ sơ ứng tuyển</h1><p className="mt-2 text-sm text-slate-400">Lưu hồ sơ, tải CV và theo dõi trạng thái email tự động.</p></div>
+        <div><div className="text-xs font-bold uppercase tracking-[0.18em] text-sunset">Careers</div><h1 className="mt-2 text-3xl font-bold md:text-4xl">Hồ sơ ứng tuyển</h1><p className="mt-2 text-sm text-slate-400">Lưu hồ sơ, tải CV và theo dõi trạng thái email tự động.</p></div>
         <button onClick={load} className="inline-flex items-center gap-2 rounded-2xl border border-white/10 px-4 py-3 text-sm font-semibold text-slate-300"><RefreshCw size={17} /> Làm mới</button>
       </div>
       {error && <div className="mt-6 rounded-2xl border border-red-300/20 bg-red-400/8 px-5 py-4 text-sm text-red-200">{error}</div>}
-      <div className="mt-7 grid gap-3 rounded-[20px] border border-white/10 bg-cms-1 p-4 md:grid-cols-[1fr_auto]">
+      <div className="mt-7 grid gap-3 facs-card rounded-[20px] border border-cyan-300/[0.14] bg-cms-1 p-4 md:grid-cols-[1fr_auto]">
         <label className="flex items-center rounded-2xl border border-white/10 bg-cms-2 px-4"><Search size={18} className="text-ink-3" /><input value={query} onChange={(event) => setQuery(event.target.value)} placeholder="Tìm tên, email, điện thoại hoặc vị trí..." className="w-full bg-transparent px-3 py-3 text-sm outline-none" /></label>
         <select value={status} onChange={(event) => setStatus(event.target.value)} className="rounded-2xl border border-white/10 bg-cms-2 px-4 py-3 text-sm"><option value="all">Tất cả trạng thái</option>{Object.entries(statusLabels).map(([value, label]) => <option key={value} value={value}>{label}</option>)}</select>
       </div>
       <div className="mt-6 space-y-4">
-        {loading ? <SkeletonRows rows={5} /> : filtered.length === 0 ? <div className="rounded-[20px] border border-white/10 bg-cms-1 px-6 py-16 text-center text-ink-3"><UserRoundSearch className="mx-auto mb-4" /> Chưa có hồ sơ phù hợp.</div> : filtered.map((row) => (
-          <details key={row.id} className="group rounded-[20px] border border-white/10 bg-cms-1 open:border-cyan-200/20">
+        {loading ? <SkeletonRows rows={5} /> : filtered.length === 0 ? <div className="facs-card rounded-[20px] border border-cyan-300/[0.14] bg-cms-1 px-6 py-16 text-center text-ink-3"><UserRoundSearch className="mx-auto mb-4" /> Chưa có hồ sơ phù hợp.</div> : filtered.map((row) => (
+          <details key={row.id} className="group facs-card rounded-[20px] border border-cyan-300/[0.14] bg-cms-1 open:border-cyan-200/20">
             <summary className="grid cursor-pointer list-none gap-4 p-5 md:grid-cols-[minmax(0,1.2fr)_minmax(0,.8fr)_auto] md:items-center">
               <div><div className="font-semibold text-white">{row.full_name}</div><div className="mt-1 text-sm text-ink-3">{row.email} · {row.phone}</div></div>
               <div><div className="text-sm text-slate-300">{row.position || "Ứng tuyển chung"}</div><div className="mt-1 text-xs text-ink-3">{new Date(row.submitted_at).toLocaleString("vi-VN")}</div></div>

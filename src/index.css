@@ -1,17 +1,25 @@
 @import "tailwindcss";
 
-/* Bảng màu & font của CMS quản trị (Đợt 2). Chỉ tạo thêm tiện ích mới, không đổi màu website công khai. */
+/* Bảng màu & font của CMS quản trị (Đợt 2b): Midnight Black 50% · Electric Dark Blue 40% · Sunset Orange 10%.
+   Chỉ tạo thêm tiện ích mới, không đổi màu website công khai. */
 @theme {
-  --color-cms-0: #0B1220; /* nền trang */
-  --color-cms-1: #111A2B; /* thẻ */
-  --color-cms-2: #16223A; /* ô nhập, bảng, khối bên trong */
-  --color-cms-3: #1C2A45; /* hộp thoại, bảng nổi */
-  --color-ink-1: #E6EDF7; /* chữ chính */
-  --color-ink-2: #A3B1C6; /* chữ thứ cấp */
-  --color-ink-3: #8796AD; /* chữ phụ (tương phản ≥ 5:1) */
-  --color-brand: #2563EB; /* nút chính – xanh FACS */
-  --color-brand-hover: #3B82F6;
-  --color-brand-press: #1D4ED8;
+  --color-cms-0: #05070D; /* Midnight Black – nền trang */
+  --color-midnight: #05070D;
+  --color-midnight-2: #0A0D17; /* thanh đầu trang, menu trái */
+  --color-cms-1: #0A1536; /* Electric Dark Blue – thẻ */
+  --color-cms-2: #0E1B45; /* ô nhập, khối bên trong */
+  --color-cms-3: #132254; /* hộp thoại, bảng nổi */
+  --color-electric: #2B5BFF; /* xanh điện – trạng thái chọn, liên kết */
+  --color-electric-soft: #8EA9FF;
+  --color-sunset: #FF6B35; /* Sunset Orange – điểm nhấn 10% */
+  --color-sunset-hover: #FF8557;
+  --color-sunset-press: #E9541F;
+  --color-ink-1: #EEF2FB; /* chữ chính */
+  --color-ink-2: #AAB7D6; /* chữ thứ cấp */
+  --color-ink-3: #8A9AC0; /* chữ phụ (tương phản ≥ 5:1 trên nền thẻ) */
+  --color-brand: #FF6B35; /* nút chính – Sunset Orange, chữ tối */
+  --color-brand-hover: #FF8557;
+  --color-brand-press: #E9541F;
   --font-cms: "Helvetica Neue", Helvetica, Arial, system-ui, sans-serif;
 }
 
@@ -187,10 +195,24 @@ img {
 }
 
 /* CMS: font không chân cho nội dung, tiêu đề trang giữ chữ có chân của thương hiệu; số thẳng cột */
+/* ───────────── CMS quản trị: bảng màu Midnight / Electric / Sunset + chuyển động ───────────── */
 .facs-cms {
   font-family: var(--font-cms);
   color: var(--color-ink-1);
   -webkit-font-smoothing: antialiased;
+  /* Toàn bộ sắc cyan cũ trong CMS chuyển sang thang Electric Blue (website công khai không bị ảnh hưởng). */
+  --color-cyan-50: #EEF3FF;
+  --color-cyan-100: #DDE6FF;
+  --color-cyan-200: #BACBFF;
+  --color-cyan-300: #8EA9FF;
+  --color-cyan-400: #5F85FF;
+  --color-cyan-500: #3A66FF;
+  --color-cyan-600: #2B53E6;
+  --color-cyan-700: #2242B8;
+  --color-cyan-800: #1D368F;
+  --color-cyan-900: #1A2F6E;
+  --color-cyan-950: #0F1A45;
+  accent-color: var(--color-electric);
 }
 .facs-cms h1 {
   font-family: Cambria, Georgia, serif;
@@ -201,6 +223,148 @@ img {
   font-variant-numeric: tabular-nums;
 }
 .facs-cms :focus-visible {
-  outline: 2px solid rgba(103, 232, 249, 0.7);
+  outline: 2px solid rgb(142 169 255 / 0.8);
   outline-offset: 2px;
+}
+.facs-cms ::selection {
+  background: rgb(255 107 53 / 0.35);
+  color: #fff;
+}
+
+@layer components {
+/* Nền: Midnight Black với quầng sáng Electric Blue và chút Sunset trôi rất chậm. */
+.facs-aurora {
+  position: relative;
+  isolation: isolate;
+  background-color: var(--color-midnight);
+}
+.facs-aurora::before {
+  content: "";
+  position: fixed;
+  inset: -15%;
+  z-index: -1;
+  pointer-events: none;
+  background:
+    radial-gradient(48rem 34rem at 82% 4%, rgb(43 91 255 / 0.22), transparent 62%),
+    radial-gradient(40rem 30rem at 8% 96%, rgb(255 107 53 / 0.085), transparent 62%),
+    radial-gradient(36rem 28rem at 46% 58%, rgb(20 44 140 / 0.16), transparent 70%);
+  animation: facs-drift 38s ease-in-out infinite alternate;
+}
+@keyframes facs-drift {
+  0% { transform: translate3d(0, 0, 0) scale(1); }
+  50% { transform: translate3d(-3%, 2%, 0) scale(1.05); }
+  100% { transform: translate3d(2%, -2%, 0) scale(1.02); }
+}
+
+/* Thẻ: ánh sáng theo con trỏ + viền chuyển màu Sunset → Electric khi rê chuột, hiện dần khi tải trang. */
+.facs-card {
+  position: relative;
+  isolation: isolate;
+  background-image: linear-gradient(180deg, rgb(142 169 255 / 0.05), transparent 38%);
+  box-shadow: 0 1px 0 rgb(255 255 255 / 0.04) inset, 0 18px 40px -28px rgb(0 0 0 / 0.9);
+  transition: border-color 0.35s, box-shadow 0.35s, translate 0.35s cubic-bezier(0.2, 0.8, 0.2, 1);
+  animation: facs-rise 0.55s cubic-bezier(0.2, 0.8, 0.2, 1) backwards;
+}
+.facs-card::before,
+.facs-card::after {
+  content: "";
+  position: absolute;
+  inset: 0;
+  border-radius: inherit;
+  pointer-events: none;
+  opacity: 0;
+  transition: opacity 0.35s;
+}
+.facs-card::before {
+  z-index: -1;
+  background: radial-gradient(420px circle at var(--mx, 50%) var(--my, 0%), rgb(43 91 255 / 0.13), transparent 65%);
+}
+.facs-card::after {
+  padding: 1px;
+  background: radial-gradient(280px circle at var(--mx, 50%) var(--my, 0%), rgb(255 107 53 / 0.75), rgb(43 91 255 / 0.45) 45%, transparent 75%);
+  -webkit-mask: linear-gradient(#000 0 0) content-box, linear-gradient(#000 0 0);
+  -webkit-mask-composite: xor;
+  mask: linear-gradient(#000 0 0) content-box exclude, linear-gradient(#000 0 0);
+}
+.facs-card:hover::before,
+.facs-card:hover::after {
+  opacity: 1;
+}
+.facs-card:hover {
+  box-shadow: 0 1px 0 rgb(255 255 255 / 0.05) inset, 0 24px 50px -26px rgb(43 91 255 / 0.45);
+}
+/* Thẻ nhỏ trong danh sách: nhấc lên nhẹ. */
+.facs-tile:hover {
+  translate: 0 -3px;
+}
+.facs-card:nth-child(2) { animation-delay: 50ms; }
+.facs-card:nth-child(3) { animation-delay: 100ms; }
+.facs-card:nth-child(4) { animation-delay: 150ms; }
+.facs-card:nth-child(5) { animation-delay: 200ms; }
+.facs-card:nth-child(n + 6) { animation-delay: 250ms; }
+@keyframes facs-rise {
+  from { opacity: 0; translate: 0 14px; }
+  to { opacity: 1; translate: 0 0; }
+}
+
+}
+
+/* Nút chính Sunset: chữ tối cho đủ tương phản, ánh sáng lướt qua, nổi lên khi rê, nhún khi bấm. */
+.facs-cms :is(button, a).bg-brand:not(:disabled) {
+  position: relative;
+  overflow: hidden;
+  isolation: isolate;
+  color: #160800;
+  box-shadow: 0 8px 22px -10px rgb(255 107 53 / 0.75);
+  transition: background-color 0.2s, box-shadow 0.25s, translate 0.2s, scale 0.12s;
+}
+.facs-cms :is(button, a).bg-brand:not(:disabled)::after {
+  content: "";
+  position: absolute;
+  inset: 0;
+  z-index: -1;
+  pointer-events: none;
+  background: linear-gradient(110deg, transparent 30%, rgb(255 255 255 / 0.5) 50%, transparent 70%);
+  translate: -120% 0;
+  transition: translate 0.7s ease;
+}
+.facs-cms :is(button, a).bg-brand:not(:disabled):hover {
+  translate: 0 -1px;
+  box-shadow: 0 14px 30px -10px rgb(255 107 53 / 0.85);
+}
+.facs-cms :is(button, a).bg-brand:not(:disabled):hover::after {
+  translate: 120% 0;
+}
+.facs-cms :is(button, a).bg-brand:not(:disabled):active {
+  translate: 0 0;
+  scale: 0.97;
+}
+
+/* Bảng: dòng sáng nhẹ khi rê chuột, có vạch Sunset ở cạnh trái. */
+.facs-cms tbody tr {
+  transition: background-color 0.2s, box-shadow 0.2s;
+}
+.facs-cms tbody tr:hover {
+  background-color: rgb(43 91 255 / 0.07);
+  box-shadow: inset 3px 0 0 var(--color-sunset);
+}
+
+/* Biểu tượng trong nút/liên kết nhích nhẹ khi rê. */
+.facs-cms :is(button, a):not(:disabled):hover > svg:first-child {
+  transition: translate 0.25s cubic-bezier(0.2, 0.8, 0.2, 1);
+  translate: 0 -1px;
+}
+
+/* Thanh cuộn mảnh trong các khung cuộn của CMS. */
+.facs-cms * {
+  scrollbar-width: thin;
+  scrollbar-color: rgb(142 169 255 / 0.25) transparent;
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .facs-aurora::before,
+  .facs-card { animation: none; }
+  .facs-tile:hover,
+  .facs-cms :is(button, a).bg-brand:not(:disabled):hover { translate: none; }
+  .facs-cms :is(button, a).bg-brand:not(:disabled)::after { display: none; }
 }

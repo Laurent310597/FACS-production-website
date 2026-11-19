@@ -132,7 +132,7 @@ export default function AdminJobsPage() {
     <AdminLayout>
       <div className="flex flex-col gap-5 sm:flex-row sm:items-end sm:justify-between">
         <div>
-          <div className="text-xs font-bold uppercase tracking-[0.18em] text-cyan-300">Quản lý tuyển dụng</div>
+          <div className="text-xs font-bold uppercase tracking-[0.18em] text-sunset">Quản lý tuyển dụng</div>
           <h1 className="mt-2 text-3xl font-bold md:text-4xl">Danh sách vị trí tuyển dụng</h1>
           <p className="mt-2 text-sm text-slate-400">Tạo, lưu nháp, hẹn giờ hoặc đăng ngay JD trên trang Careers.</p>
         </div>
@@ -141,10 +141,10 @@ export default function AdminJobsPage() {
         </Link>
       </div>
 
-      <div className="mt-7 grid gap-3 rounded-[20px] border border-white/10 bg-cms-1 p-4 md:grid-cols-[1fr_auto]">
+      <div className="mt-7 grid gap-3 facs-card rounded-[20px] border border-cyan-300/[0.14] bg-cms-1 p-4 md:grid-cols-[1fr_auto]">
         <label className="flex items-center rounded-2xl border border-white/10 bg-cms-2 px-4 focus-within:border-cyan-300/35">
           <Search size={18} className="text-ink-3" />
-          <input value={query} onChange={(event) => setQuery(event.target.value)} placeholder="Tìm theo chức danh, phòng ban hoặc đường dẫn..." className="w-full bg-transparent px-3 py-3 text-sm text-white outline-none placeholder:text-[#5f6f86]" />
+          <input value={query} onChange={(event) => setQuery(event.target.value)} placeholder="Tìm theo chức danh, phòng ban hoặc đường dẫn..." className="w-full bg-transparent px-3 py-3 text-sm text-white outline-none placeholder:text-[#6A7BA3]" />
         </label>
         <select value={status} onChange={(event) => setStatus(event.target.value)} className="rounded-2xl border border-white/10 bg-cms-2 px-4 py-3 text-sm text-white outline-none">
           <option value="all">Tất cả trạng thái</option>
@@ -154,7 +154,7 @@ export default function AdminJobsPage() {
         </select>
       </div>
 
-      <div className="mt-6 overflow-hidden rounded-[20px] border border-white/10 bg-cms-1">
+      <div className="mt-6 overflow-hidden facs-card rounded-[20px] border border-cyan-300/[0.14] bg-cms-1">
         {loading ? (
           <div className="p-5"><SkeletonRows rows={5} /></div>
         ) : error ? (

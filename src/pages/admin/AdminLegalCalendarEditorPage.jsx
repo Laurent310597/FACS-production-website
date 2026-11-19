@@ -231,7 +231,7 @@ export default function AdminLegalCalendarEditorPage() {
 
       <div className="mt-7 grid gap-6 2xl:grid-cols-[minmax(0,1fr)_420px]">
         <div className="space-y-6">
-          <section className="rounded-[20px] border border-white/10 bg-cms-1 p-5 md:p-7">
+          <section className="facs-card rounded-[20px] border border-cyan-300/[0.14] bg-cms-1 p-5 md:p-7">
             <div className="flex flex-wrap items-center justify-between gap-4 border-b border-white/10 pb-5">
               <div>
                 <h2 className="text-xl font-semibold">Nội dung nghĩa vụ</h2>
@@ -258,28 +258,28 @@ export default function AdminLegalCalendarEditorPage() {
 
               <label className="block md:col-span-2">
                 <span className="mb-2 block text-sm font-semibold text-slate-200">Tên nghĩa vụ ({activeLanguage.toUpperCase()}) *</span>
-                <input value={form[`title_${activeLanguage}`]} onChange={(event) => updateField(`title_${activeLanguage}`, event.target.value)} className="w-full rounded-2xl border border-white/10 bg-cms-2 px-4 py-3.5 text-white outline-none placeholder:text-[#5f6f86] focus:border-cyan-300/35" placeholder={activeLanguage === "vi" ? "Ví dụ: Nộp hồ sơ khai thuế GTGT theo quý..." : "Example: Quarterly VAT return filing..."} />
+                <input value={form[`title_${activeLanguage}`]} onChange={(event) => updateField(`title_${activeLanguage}`, event.target.value)} className="w-full rounded-2xl border border-white/10 bg-cms-2 px-4 py-3.5 text-white outline-none placeholder:text-[#6A7BA3] focus:border-cyan-300/35" placeholder={activeLanguage === "vi" ? "Ví dụ: Nộp hồ sơ khai thuế GTGT theo quý..." : "Example: Quarterly VAT return filing..."} />
               </label>
               <label className="block">
                 <span className="mb-2 block text-sm font-semibold text-slate-200">Kỳ báo cáo ({activeLanguage.toUpperCase()})</span>
-                <input value={form[`period_label_${activeLanguage}`]} onChange={(event) => updateField(`period_label_${activeLanguage}`, event.target.value)} className="w-full rounded-2xl border border-white/10 bg-cms-2 px-4 py-3.5 text-white outline-none placeholder:text-[#5f6f86] focus:border-cyan-300/35" placeholder={activeLanguage === "vi" ? "Quý 2/2026" : "Q2 2026"} />
+                <input value={form[`period_label_${activeLanguage}`]} onChange={(event) => updateField(`period_label_${activeLanguage}`, event.target.value)} className="w-full rounded-2xl border border-white/10 bg-cms-2 px-4 py-3.5 text-white outline-none placeholder:text-[#6A7BA3] focus:border-cyan-300/35" placeholder={activeLanguage === "vi" ? "Quý 2/2026" : "Q2 2026"} />
               </label>
               <label className="block">
                 <span className="mb-2 block text-sm font-semibold text-slate-200">Đối tượng ({activeLanguage.toUpperCase()})</span>
-                <input value={form[`target_audience_${activeLanguage}`]} onChange={(event) => updateField(`target_audience_${activeLanguage}`, event.target.value)} className="w-full rounded-2xl border border-white/10 bg-cms-2 px-4 py-3.5 text-white outline-none placeholder:text-[#5f6f86] focus:border-cyan-300/35" placeholder={activeLanguage === "vi" ? "Doanh nghiệp khai thuế theo quý" : "Quarterly tax filers"} />
+                <input value={form[`target_audience_${activeLanguage}`]} onChange={(event) => updateField(`target_audience_${activeLanguage}`, event.target.value)} className="w-full rounded-2xl border border-white/10 bg-cms-2 px-4 py-3.5 text-white outline-none placeholder:text-[#6A7BA3] focus:border-cyan-300/35" placeholder={activeLanguage === "vi" ? "Doanh nghiệp khai thuế theo quý" : "Quarterly tax filers"} />
               </label>
               <label className="block md:col-span-2">
                 <span className="mb-2 block text-sm font-semibold text-slate-200">Mô tả và lưu ý áp dụng ({activeLanguage.toUpperCase()})</span>
-                <textarea value={form[`summary_${activeLanguage}`]} onChange={(event) => updateField(`summary_${activeLanguage}`, event.target.value)} rows={4} className="w-full resize-y rounded-2xl border border-white/10 bg-cms-2 px-4 py-3.5 leading-relaxed text-white outline-none placeholder:text-[#5f6f86] focus:border-cyan-300/35" />
+                <textarea value={form[`summary_${activeLanguage}`]} onChange={(event) => updateField(`summary_${activeLanguage}`, event.target.value)} rows={4} className="w-full resize-y rounded-2xl border border-white/10 bg-cms-2 px-4 py-3.5 leading-relaxed text-white outline-none placeholder:text-[#6A7BA3] focus:border-cyan-300/35" />
               </label>
               <label className="block md:col-span-2">
                 <span className="mb-2 block text-sm font-semibold text-slate-200">Căn cứ pháp lý ({activeLanguage.toUpperCase()}) *</span>
-                <textarea value={form[`legal_basis_${activeLanguage}`]} onChange={(event) => updateField(`legal_basis_${activeLanguage}`, event.target.value)} rows={4} className="w-full resize-y rounded-2xl border border-white/10 bg-cms-2 px-4 py-3.5 leading-relaxed text-white outline-none placeholder:text-[#5f6f86] focus:border-cyan-300/35" placeholder={activeLanguage === "vi" ? "Điều, khoản, tên và số hiệu văn bản..." : "Article, clause, title and instrument number..."} />
+                <textarea value={form[`legal_basis_${activeLanguage}`]} onChange={(event) => updateField(`legal_basis_${activeLanguage}`, event.target.value)} rows={4} className="w-full resize-y rounded-2xl border border-white/10 bg-cms-2 px-4 py-3.5 leading-relaxed text-white outline-none placeholder:text-[#6A7BA3] focus:border-cyan-300/35" placeholder={activeLanguage === "vi" ? "Điều, khoản, tên và số hiệu văn bản..." : "Article, clause, title and instrument number..."} />
               </label>
             </div>
           </section>
 
-          <section className="rounded-[20px] border border-white/10 bg-cms-1 p-5 md:p-7">
+          <section className="facs-card rounded-[20px] border border-cyan-300/[0.14] bg-cms-1 p-5 md:p-7">
             <div className="flex items-center gap-3">
               <ShieldCheck className="text-cyan-300" size={22} />
               <div>
@@ -293,7 +293,7 @@ export default function AdminLegalCalendarEditorPage() {
                 <span className="mb-2 block text-sm font-semibold text-emerald-100">Đường dẫn nguồn chính thức P1 *</span>
                 <div className="flex items-center rounded-2xl border border-emerald-200/15 bg-emerald-300/[0.035] px-4 focus-within:border-emerald-200/35">
                   <ExternalLink size={16} className="text-emerald-300" />
-                  <input type="url" value={form.official_source_url || ""} onChange={(event) => updateField("official_source_url", event.target.value)} className="min-w-0 flex-1 bg-transparent px-3 py-3.5 text-white outline-none placeholder:text-[#5f6f86]" placeholder="https://vbpl.vn/... hoặc cổng thông tin cơ quan ban hành" />
+                  <input type="url" value={form.official_source_url || ""} onChange={(event) => updateField("official_source_url", event.target.value)} className="min-w-0 flex-1 bg-transparent px-3 py-3.5 text-white outline-none placeholder:text-[#6A7BA3]" placeholder="https://vbpl.vn/... hoặc cổng thông tin cơ quan ban hành" />
                 </div>
               </label>
               <label className="block">
@@ -329,7 +329,7 @@ export default function AdminLegalCalendarEditorPage() {
         </div>
 
         <aside className="h-fit rounded-[20px] border border-cyan-200/15 bg-cms-2 p-6 2xl:sticky 2xl:top-28">
-          <div className="text-xs font-bold uppercase tracking-[0.18em] text-cyan-300">Xem trước · {activeLanguage.toUpperCase()}</div>
+          <div className="text-xs font-bold uppercase tracking-[0.18em] text-sunset">Xem trước · {activeLanguage.toUpperCase()}</div>
           <div className="mt-6 flex h-16 w-16 flex-col items-center justify-center rounded-2xl border border-cyan-200/15 bg-cyan-300/[0.06]">
             <CalendarDays size={22} className="text-cyan-300" />
             <span className="mt-1 text-xs font-semibold text-slate-400">{form.event_date || "YYYY-MM-DD"}</span>

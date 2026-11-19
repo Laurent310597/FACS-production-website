@@ -380,7 +380,7 @@ export default function AdminHubContentPage() {
       <div className="space-y-6">
         <div className="flex flex-wrap items-end justify-between gap-4">
           <div>
-            <div className="text-xs font-bold uppercase tracking-[0.18em] text-cyan-300">FACS Hub</div>
+            <div className="text-xs font-bold uppercase tracking-[0.18em] text-sunset">FACS Hub</div>
             <h1 className="mt-1 text-3xl font-bold tracking-[-0.02em]">Tạo nội dung</h1>
             <p className="mt-2 max-w-3xl text-sm text-slate-400">
               Gửi link bài báo, văn bản hoặc ghi chú. Trợ lý soạn bài website song ngữ, bài mạng xã hội và infographic để anh/chị rà soát. Không có gì được đăng hay gửi email tự động từ trang này.

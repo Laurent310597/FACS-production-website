@@ -46,7 +46,7 @@ export default function ToastProvider({ children }) {
     <ToastContext.Provider value={api}>
       {children}
       <MotionConfig reducedMotion="user">
-      <div className="pointer-events-none fixed bottom-5 right-5 z-[130] flex w-[min(92vw,380px)] flex-col gap-3" aria-live="polite" role="status">
+      <div className="facs-cms pointer-events-none fixed bottom-5 right-5 z-[130] flex w-[min(92vw,380px)] flex-col gap-3" aria-live="polite" role="status">
         <AnimatePresence initial={false}>
           {toasts.map((t) => (
             <motion.div
@@ -58,7 +58,7 @@ export default function ToastProvider({ children }) {
               transition={{ type: "spring", stiffness: 380, damping: 30 }}
               onMouseEnter={() => clearTimeout(timers.current.get(t.id))}
               onMouseLeave={() => schedule(t.id, 2500)}
-              className={`pointer-events-auto relative overflow-hidden rounded-2xl border bg-[#0d1726]/95 p-4 pr-10 text-sm shadow-[0_18px_50px_rgba(0,0,0,0.45)] backdrop-blur-xl ${
+              className={`pointer-events-auto relative overflow-hidden rounded-2xl border bg-cms-3/95 p-4 pr-10 text-sm shadow-[0_18px_50px_rgba(0,0,0,0.45)] backdrop-blur-xl ${
                 t.kind === "error" ? "border-rose-300/30 text-rose-100" : t.kind === "info" ? "border-cyan-200/25 text-slate-100" : "border-emerald-300/30 text-emerald-50"
               }`}
             >

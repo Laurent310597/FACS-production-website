@@ -1,4 +1,4 @@
-import { useState } from "react";
+import { useEffect, useState } from "react";
 import { AnimatePresence, MotionConfig, motion } from "framer-motion";
 import { Link, NavLink, useLocation, useNavigate } from "react-router-dom";
 import { ChevronDown, ExternalLink, LogOut, Orbit, PanelLeftClose, PanelLeftOpen } from "lucide-react";
@@ -8,7 +8,7 @@ import { ADMIN_NAV, activeGroupId, activeItemPath, loadNavMode, loadOpenGroups, 
 
 const itemClass = (active) =>
   `flex items-center gap-3 rounded-xl px-4 py-2.5 text-sm font-semibold transition-colors ${
-    active ? "bg-cyan-300/[0.1] text-cyan-100 shadow-[inset_3px_0_0_#67E8F9]" : "text-ink-2 hover:bg-white/[0.06] hover:text-ink-1"
+    active ? "bg-cyan-300/[0.1] text-cyan-100 shadow-[inset_3px_0_0_#FF6B35]" : "text-ink-2 hover:bg-white/[0.06] hover:text-ink-1"
   }`;
 const iconButton = "flex h-10 w-10 items-center justify-center rounded-xl border border-white/[0.1] text-ink-2 transition hover:border-cyan-200/40 hover:bg-white/[0.05] hover:text-ink-1";
 const iconButtonSm = "flex h-8 w-8 items-center justify-center rounded-lg border border-white/[0.1] text-ink-2 transition hover:border-cyan-200/40 hover:bg-white/[0.05] hover:text-ink-1";
@@ -107,7 +107,36 @@ function CollapsedNav({ currentPath, activeId }) {
   );
 }
 
+// Ánh sáng theo con trỏ cho mọi thẻ .facs-card (một bộ lắng nghe chung, cập nhật theo khung hình).
+function useCardSpotlight() {
+  useEffect(() => {
+    let frame = 0;
+    let last = null;
+    const apply = () => {
+      frame = 0;
+      let el = last?.target instanceof Element ? last.target.closest(".facs-card") : null;
+      while (el) {
+        const r = el.getBoundingClientRect();
+        el.style.setProperty("--mx", `${last.clientX - r.left}px`);
+        el.style.setProperty("--my", `${last.clientY - r.top}px`);
+        el = el.parentElement?.closest(".facs-card") || null;
+      }
+    };
+    const onMove = (e) => {
+      if (e.pointerType === "touch") return;
+      last = e;
+      if (!frame) frame = requestAnimationFrame(apply);
+    };
+    window.addEventListener("pointermove", onMove, { passive: true });
+    return () => {
+      window.removeEventListener("pointermove", onMove);
+      cancelAnimationFrame(frame);
+    };
+  }, []);
+}
+
 export default function AdminLayout({ children }) {
+  useCardSpotlight();
   const navigate = useNavigate();
   const location = useLocation();
   const currentPath = activeItemPath(location.pathname);
@@ -136,8 +165,8 @@ export default function AdminLayout({ children }) {
 
   return (
     <MotionConfig reducedMotion="user">
-    <div data-no-translate className="facs-cms min-h-screen bg-cms-0 bg-[radial-gradient(ellipse_at_top_right,rgba(37,99,235,0.08),transparent_45%)] text-ink-1">
-      <header className="sticky top-0 z-40 border-b border-white/[0.07] bg-cms-0/85 backdrop-blur-xl">
+    <div data-no-translate className="facs-cms facs-aurora min-h-screen text-ink-1">
+      <header className="sticky top-0 z-40 border-b border-white/[0.06] bg-midnight-2/80 backdrop-blur-xl">
         <div className="mx-auto flex min-h-20 max-w-[1500px] items-center justify-between gap-4 px-5 py-3 lg:px-8">
           <div className="flex items-center gap-3">
             <button type="button" onClick={() => setWheelOpen(true)} className={iconButton} title="Menu vòng xoay" aria-label="Mở menu vòng xoay">
@@ -169,7 +198,7 @@ export default function AdminLayout({ children }) {
         {mode !== "wheel" && (
           <aside className="h-fit lg:sticky lg:top-28">
             {/* Màn hình nhỏ luôn dùng thanh mở rộng; màn hình lớn theo lựa chọn */}
-            <div className={`rounded-[20px] border border-white/10 bg-cms-1 p-3 lg:max-h-[calc(100vh-8.5rem)] lg:overflow-y-auto ${mode === "collapsed" ? "lg:hidden" : ""}`}>
+            <div className={`rounded-[20px] border border-white/[0.07] bg-midnight-2/90 p-3 lg:max-h-[calc(100vh-8.5rem)] lg:overflow-y-auto ${mode === "collapsed" ? "lg:hidden" : ""}`}>
               <div className="mb-1 flex items-center justify-between px-2 pb-2">
                 <span className="text-[11px] font-bold uppercase tracking-[0.18em] text-ink-3">Menu</span>
                 <div className="flex gap-1.5">
@@ -185,7 +214,7 @@ export default function AdminLayout({ children }) {
             </div>
 
             {mode === "collapsed" && (
-              <div className="hidden flex-col items-center gap-3 rounded-[20px] border border-white/10 bg-cms-1 px-2 py-3 lg:flex">
+              <div className="hidden flex-col items-center gap-3 rounded-[20px] border border-white/[0.07] bg-midnight-2/90 px-2 py-3 lg:flex">
                 <button type="button" onClick={() => changeMode("expanded")} className={iconButton} title="Mở rộng thanh bên" aria-label="Mở rộng thanh bên">
                   <PanelLeftOpen size={18} />
                 </button>
@@ -217,7 +246,7 @@ export default function AdminLayout({ children }) {
           <button
             type="button"
             onClick={() => setWheelOpen(true)}
-            className="flex h-14 w-14 items-center justify-center rounded-full bg-brand text-white shadow-[0_12px_32px_rgba(37,99,235,0.45)] hover:bg-brand-hover transition hover:scale-105"
+            className="flex h-14 w-14 items-center justify-center rounded-full bg-brand text-[#160800] shadow-[0_12px_32px_rgba(255,107,53,0.45)] hover:bg-brand-hover transition hover:scale-105"
             title="Mở menu vòng xoay"
             aria-label="Mở menu vòng xoay"
           >
