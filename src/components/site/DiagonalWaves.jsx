@@ -1,5 +1,6 @@
 // Các mảng sóng chéo (từ góc phải trên xuống góc trái dưới) chồng lên nhau, trôi chậm và nhấp nhô nhịp nhàng.
-// Dùng cho nền danh sách Insights và chân trang (soft = nhạt hơn).
+// Dùng cho nền danh sách Insights, chân trang (soft = nhạt hơn) và nền CMS (truyền bands + className riêng).
+import { useId } from "react";
 
 const SPAN = 3200;
 const H = 260;
@@ -20,6 +21,8 @@ function ribbon(phase, amp, thick) {
   return { crest, area };
 }
 
+export { ribbon };
+
 const BANDS = [
   { id: "d1", color: "#22D3EE", alpha: 0.13, line: 0.34, ...ribbon(0.2, 30, 120), dur: "120s", bob: "11s", offset: "4%" },
   { id: "d2", color: "#3B82F6", alpha: 0.16, line: 0.28, ...ribbon(1.7, 26, 140), dur: "95s", bob: "13s", offset: "19%", dir: "reverse" },
@@ -29,19 +32,21 @@ const BANDS = [
   { id: "d6", color: "#3B82F6", alpha: 0.14, line: 0.26, ...ribbon(0.9, 28, 140), dur: "110s", bob: "10s", offset: "82%", dir: "reverse" },
 ];
 
-export default function DiagonalWaves({ soft = false }) {
+export default function DiagonalWaves({ soft = false, bands = BANDS, className = "" }) {
+  // id gradient riêng cho mỗi lần dùng (trang Insights có cả nền danh sách lẫn chân trang).
+  const uid = useId().replace(/:/g, "");
   return (
-    <div className={`ib-diag${soft ? " ib-diag--soft" : ""}`} aria-hidden="true">
-      {BANDS.map((b) => (
+    <div className={`ib-diag${soft ? " ib-diag--soft" : ""}${className ? ` ${className}` : ""}`} aria-hidden="true">
+      {bands.map((b) => (
         <div key={b.id} className="ib-diag__band" style={{ top: b.offset, "--bob": b.bob }}>
           <svg className="ib-diag__wave" style={{ "--dur": b.dur, "--dir": b.dir || "normal" }} viewBox={`0 0 ${SPAN} ${H}`} preserveAspectRatio="none">
             <defs>
-              <linearGradient id={`ib-${b.id}`} x1="0" x2="0" y1="0" y2="1">
+              <linearGradient id={`ib-${uid}-${b.id}`} x1="0" x2="0" y1="0" y2="1">
                 <stop offset="0" stopColor={b.color} stopOpacity={b.alpha * 1.6} />
                 <stop offset="1" stopColor={b.color} stopOpacity={b.alpha * 0.2} />
               </linearGradient>
             </defs>
-            <path d={b.area} fill={`url(#ib-${b.id})`} />
+            <path d={b.area} fill={`url(#ib-${uid}-${b.id})`} />
             <path d={b.crest} fill="none" stroke={b.color} strokeOpacity={b.line} strokeWidth="1.2" vectorEffect="non-scaling-stroke" />
           </svg>
         </div>

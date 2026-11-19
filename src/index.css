@@ -325,6 +325,12 @@ img {
   from { transform: translate3d(0, 0, 0); }
   to { transform: translate3d(-50%, 0, 0); }
 }
+/* Mảng sóng chéo của CMS: đậm hơn ở nửa phải (vùng nội dung), mờ dần về thanh bên trái và mép dưới. */
+.facs-backdrop__diag {
+  opacity: 0.85;
+  -webkit-mask-image: radial-gradient(ellipse 62% 58% at 58% 42%, #000 35%, transparent 100%);
+  mask-image: radial-gradient(ellipse 62% 58% at 58% 42%, #000 35%, transparent 100%);
+}
 .facs-backdrop__grain {
   position: absolute;
   inset: 0;
@@ -1137,6 +1143,11 @@ html:not(:has(.facs-cms)) {
   height: 100%;
   animation: facs-wave-drift var(--dur, 120s) linear infinite;
   animation-direction: var(--dir, normal);
+}
+/* Màn hình dọc/hẹp: khung xoay rất cao nên dải sóng bị kéo giãn; giảm chiều cao dải cho đường sóng thoải như trên desktop. */
+@media (max-width: 767px) {
+  .ib-diag__band { height: 12%; }
+  .facs-backdrop__diag { opacity: 0.6; }
 }
 @keyframes ib-bob {
   from { translate: 0 -14px; }
