@@ -1,4 +1,5 @@
 import { useCallback, useEffect, useMemo, useState } from "react";
+import { AnimatePresence, motion } from "framer-motion";
 import {
   AlertTriangle,
   CheckCircle2,
@@ -20,6 +21,9 @@ import {
   XCircle,
 } from "lucide-react";
 import AdminLayout from "../../components/admin/AdminLayout";
+import { useToast } from "../../components/admin/ui/toastContext";
+import { SkeletonForm, SkeletonRows } from "../../components/admin/ui/Skeleton";
+import { tableRow } from "../../components/admin/ui/motionPresets";
 import {
   AR_TEMPLATE_URL,
   deleteReminders,
@@ -65,7 +69,7 @@ export default function AdminARPage() {
   const [loading, setLoading] = useState(true);
   const [setupMissing, setSetupMissing] = useState(false);
   const [error, setError] = useState("");
-  const [message, setMessage] = useState("");
+  const toast = useToast();
   const [settingsOpen, setSettingsOpen] = useState(false);
   const [preview, setPreview] = useState(null);
   const [editing, setEditing] = useState(null);
@@ -90,12 +94,9 @@ export default function AdminARPage() {
 
   const notify = (text) => {
     setError("");
-    setMessage(text);
+    toast.success(text);
   };
-  const fail = (text) => {
-    setMessage("");
-    setError(text);
-  };
+  const fail = (text) => setError(text);
 
   const showPreview = async (payload, title) => {
     setPreview({ loading: true, title });
@@ -118,12 +119,19 @@ export default function AdminARPage() {
         </p>
       </div>
 
-      {(message || error) && (
-        <div className={`mt-6 flex items-start justify-between gap-3 rounded-2xl border px-5 py-4 text-sm ${error ? "border-red-300/20 bg-red-400/10 text-red-100" : "border-emerald-300/20 bg-emerald-300/10 text-emerald-100"}`}>
-          <span className="whitespace-pre-line">{error || message}</span>
-          <button type="button" onClick={() => { setError(""); setMessage(""); }} className="text-slate-400 hover:text-white"><X size={16} /></button>
-        </div>
-      )}
+      <AnimatePresence>
+        {error && (
+          <motion.div
+            initial={{ opacity: 0, y: -8, height: 0 }} animate={{ opacity: 1, y: 0, height: "auto" }} exit={{ opacity: 0, height: 0 }}
+            className="overflow-hidden"
+          >
+            <div className="mt-6 flex items-start justify-between gap-3 rounded-2xl border border-red-300/20 bg-red-400/10 px-5 py-4 text-sm text-red-100">
+              <span className="whitespace-pre-line">{error}</span>
+              <button type="button" onClick={() => setError("")} className="text-slate-400 hover:text-white" aria-label="Đóng"><X size={16} /></button>
+            </div>
+          </motion.div>
+        )}
+      </AnimatePresence>
       {setupMissing && <div className="mt-6 rounded-2xl border border-amber-300/25 bg-amber-300/10 p-4 text-sm text-amber-100">Chưa có bảng ar_reminders trên Supabase. Cần chạy migration 20261118010000_facs_ar_reminders.sql.</div>}
 
       <StatusBar status={status} onEdit={() => setSettingsOpen(true)} onRefresh={load} loading={loading} />
@@ -424,7 +432,7 @@ function ReminderList({ rows, loading, status, onReload, onNotify, onError, onPr
       </div>
 
       {loading && !rows.length ? (
-        <div className="mt-6 flex items-center gap-2 text-sm text-slate-400"><Loader2 size={16} className="animate-spin" /> Đang tải…</div>
+        <div className="mt-6"><SkeletonRows rows={4} /></div>
       ) : !visible.length ? (
         <div className="mt-6 rounded-2xl border border-dashed border-white/10 p-8 text-center text-sm text-slate-500">Chưa có dòng nào{filter === "unsent" ? " cần gửi" : ""}.</div>
       ) : (
@@ -442,10 +450,11 @@ function ReminderList({ rows, loading, status, onReload, onNotify, onError, onPr
               </tr>
             </thead>
             <tbody>
+              <AnimatePresence initial={false}>
               {visible.map((r) => {
                 const editable = ["draft", "failed"].includes(r.status);
                 return (
-                  <tr key={r.id} className="border-t border-white/5 align-top">
+                  <motion.tr key={r.id} {...tableRow} className="border-t border-white/5 align-top">
                     <td className="p-3">{editable && <input type="checkbox" className="accent-cyan-300" checked={selected.has(r.id)} onChange={() => toggle(r.id)} aria-label="Chọn" />}</td>
                     <td className="py-3 pr-3">
                       <div className="font-semibold">{r.company_name}</div>
@@ -471,9 +480,10 @@ function ReminderList({ rows, loading, status, onReload, onNotify, onError, onPr
                         {r.status === "sent" && <button type="button" className="hover:text-amber-200" onClick={() => setConfirm({ ids: [r.id], resend: true, rows: [r] })} disabled={!canSend} title="Gửi lại"><RotateCcw size={16} /></button>}
                       </div>
                     </td>
-                  </tr>
+                  </motion.tr>
                 );
               })}
+              </AnimatePresence>
             </tbody>
           </table>
         </div>
@@ -572,7 +582,7 @@ function SettingsModal({ onClose, onSaved }) {
         </div>
         {error && <div className="mt-4 rounded-xl border border-rose-300/25 bg-rose-400/10 p-3 text-sm text-rose-100">{error}</div>}
         {!settings ? (
-          <div className="mt-6 flex items-center gap-2 text-sm text-slate-400"><Loader2 size={16} className="animate-spin" /> Đang tải…</div>
+          <div className="mt-6 grid gap-6 xl:grid-cols-2"><SkeletonForm fields={6} /><SkeletonForm fields={2} /></div>
         ) : (
           <div className="mt-5 grid gap-6 xl:grid-cols-2">
             <div className="space-y-4">

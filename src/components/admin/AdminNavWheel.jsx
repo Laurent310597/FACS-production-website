@@ -1,4 +1,5 @@
 import { useCallback, useEffect, useRef, useState } from "react";
+import { motion, useMotionValue, useReducedMotion, useSpring, useTransform } from "framer-motion";
 import { Link, useLocation } from "react-router-dom";
 import { ChevronLeft, ChevronRight, ExternalLink, X } from "lucide-react";
 import { ADMIN_NAV, activeGroupId, activeItemPath } from "./adminNav";
@@ -23,6 +24,25 @@ export default function AdminNavWheel({ open, onClose }) {
   const lastWheel = useRef(0);
   const firstLink = useRef(null);
   const justDragged = useRef(false);
+
+  const reduce = useReducedMotion();
+  // Vòng quay theo lò xo: có quán tính, hơi vượt rồi dừng đúng nhóm.
+  const spring = useSpring(rotation, { stiffness: 150, damping: 19, mass: 0.9 });
+  const counter = useTransform(spring, (v) => -v);
+  useEffect(() => {
+    if (dragging || reduce) spring.jump(rotation);
+    else spring.set(rotation);
+  }, [rotation, dragging, reduce, spring]);
+  // Vòng nghiêng nhẹ theo vị trí chuột (hiệu ứng 3D).
+  const mx = useMotionValue(0);
+  const my = useMotionValue(0);
+  const rotateX = useSpring(useTransform(my, [-1, 1], [9, -9]), { stiffness: 120, damping: 18 });
+  const rotateY = useSpring(useTransform(mx, [-1, 1], [-11, 11]), { stiffness: 120, damping: 18 });
+  const onTilt = (event) => {
+    if (reduce) return;
+    mx.set(Math.max(-1, Math.min(1, (event.clientX / window.innerWidth - 0.5) * 2)));
+    my.set(Math.max(-1, Math.min(1, (event.clientY / window.innerHeight - 0.5) * 2)));
+  };
 
   const selected = mod(Math.round(-rotation / STEP), ADMIN_NAV.length);
   const group = ADMIN_NAV[selected];
@@ -101,17 +121,28 @@ export default function AdminNavWheel({ open, onClose }) {
   };
 
   if (!open) return null;
-  const transition = dragging ? "none" : "transform 520ms cubic-bezier(.2,.8,.2,1)";
   const GroupIcon = group.icon;
 
   return (
-    <div className="fixed inset-0 z-[120] flex items-center justify-center bg-[#020812]/85 p-4 backdrop-blur-xl" role="dialog" aria-modal="true" aria-label="Menu vòng xoay" onClick={onClose}>
+    <motion.div
+      className="fixed inset-0 z-[120] flex items-center justify-center bg-[#020812]/85 p-4 backdrop-blur-xl"
+      role="dialog" aria-modal="true" aria-label="Menu vòng xoay"
+      onClick={onClose}
+      onPointerMove={onTilt}
+      initial={{ opacity: 0 }} animate={{ opacity: 1 }} transition={{ duration: 0.2 }}
+    >
       <button type="button" onClick={onClose} className="absolute right-5 top-5 flex h-11 w-11 items-center justify-center rounded-2xl border border-white/10 text-slate-300 hover:text-white" aria-label="Đóng menu">
         <X size={20} />
       </button>
 
       <div className="flex w-full max-w-5xl flex-col items-center gap-8 lg:flex-row lg:items-center lg:justify-center lg:gap-14" onClick={(e) => e.stopPropagation()}>
-        <div className="flex flex-col items-center">
+        <motion.div
+          className="flex flex-col items-center"
+          initial={{ scale: 0.82, opacity: 0 }}
+          animate={{ scale: 1, opacity: 1 }}
+          transition={{ type: "spring", stiffness: 260, damping: 22 }}
+          style={{ rotateX, rotateY, transformPerspective: 1000 }}
+        >
           <div
             ref={wheelRef}
             tabIndex={0}
@@ -129,7 +160,7 @@ export default function AdminNavWheel({ open, onClose }) {
             <div className="absolute inset-[78px] rounded-full border border-dashed border-white/10" />
             <div className="absolute left-1/2 top-0 h-0 w-0 -translate-x-1/2 border-x-[9px] border-t-[12px] border-x-transparent border-t-cyan-300" />
 
-            <div className="absolute inset-0" style={{ transform: `rotate(${rotation}deg)`, transition }}>
+            <motion.div className="absolute inset-0" style={{ rotate: spring }}>
               {ADMIN_NAV.map((g, i) => {
                 const angle = (i * STEP * Math.PI) / 180;
                 const x = SIZE / 2 + RADIUS * Math.sin(angle);
@@ -146,23 +177,28 @@ export default function AdminNavWheel({ open, onClose }) {
                     style={{ left: `${(x / SIZE) * 100}%`, top: `${(y / SIZE) * 100}%` }}
                     aria-label={g.label}
                   >
-                    <span
+                    <motion.span
                       className={`flex h-full w-full flex-col items-center justify-center gap-1 rounded-full border text-center transition-colors ${
                         isSelected ? "border-cyan-200 bg-cyan-300 text-[#071421] shadow-[0_0_40px_rgba(34,211,238,0.45)]" : "border-white/10 bg-[#0d1726] text-slate-300 hover:border-cyan-200/40 hover:text-white"
                       }`}
-                      style={{ transform: `rotate(${-rotation}deg) scale(${isSelected ? 1.12 : 1})`, transition }}
+                      style={{ rotate: counter }}
+                      animate={{ scale: isSelected ? 1.12 : 1 }}
+                      whileHover={{ scale: isSelected ? 1.16 : 1.08 }}
+                      transition={{ type: "spring", stiffness: 300, damping: 20 }}
                     >
                       <Icon size={22} />
                       <span className="px-1 text-[9.5px] font-bold uppercase leading-tight tracking-wide">{g.label}</span>
-                    </span>
+                    </motion.span>
                   </button>
                 );
               })}
-            </div>
+            </motion.div>
 
             {/* Tâm vòng */}
             <div className="pointer-events-none absolute left-1/2 top-1/2 flex h-[150px] w-[150px] -translate-x-1/2 -translate-y-1/2 flex-col items-center justify-center rounded-full border border-cyan-200/20 bg-[#0b1423] text-center">
-              <GroupIcon size={28} className="text-cyan-300" />
+              <motion.span key={group.id} initial={{ scale: 0.6, opacity: 0 }} animate={{ scale: 1, opacity: 1 }} transition={{ type: "spring", stiffness: 320, damping: 18 }}>
+                <GroupIcon size={28} className="text-cyan-300" />
+              </motion.span>
               <div className="mt-2 px-3 text-sm font-bold">{group.label}</div>
               <div className="text-xs text-slate-500">{group.items.length} chức năng</div>
             </div>
@@ -177,11 +213,11 @@ export default function AdminNavWheel({ open, onClose }) {
               <ChevronRight size={17} />
             </button>
           </div>
-        </div>
+        </motion.div>
 
         <div key={group.id} className="w-full max-w-sm rounded-[28px] border border-cyan-200/15 bg-[#0d1726]/95 p-5">
           <div className="text-xs font-bold uppercase tracking-[.18em] text-cyan-300">{group.label}</div>
-          <ul className="mt-4 space-y-2">
+          <motion.ul className="mt-4 space-y-2" initial="hidden" animate="show" variants={{ show: { transition: { staggerChildren: 0.05 } } }}>
             {group.items.map((item, index) => {
               const Icon = item.icon;
               const active = item.to && item.to === currentPath;
@@ -189,7 +225,7 @@ export default function AdminNavWheel({ open, onClose }) {
                 active ? "bg-cyan-300 text-[#071421]" : "border border-white/10 text-slate-200 hover:border-cyan-200/40 hover:bg-white/[0.05] hover:text-white"
               }`;
               return (
-                <li key={item.to || item.href}>
+                <motion.li key={item.to || item.href} variants={{ hidden: { opacity: 0, x: 16 }, show: { opacity: 1, x: 0 } }}>
                   {item.external ? (
                     <a ref={index === 0 ? firstLink : undefined} href={item.href} target="_blank" rel="noreferrer noopener" className={className} onClick={onClose}>
                       <Icon size={18} /> {item.label} <ExternalLink size={14} className="ml-auto opacity-60" />
@@ -199,12 +235,12 @@ export default function AdminNavWheel({ open, onClose }) {
                       <Icon size={18} /> {item.label}
                     </Link>
                   )}
-                </li>
+                </motion.li>
               );
             })}
-          </ul>
+          </motion.ul>
         </div>
       </div>
-    </div>
+    </motion.div>
   );
 }

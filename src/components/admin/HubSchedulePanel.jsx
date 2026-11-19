@@ -1,6 +1,7 @@
 import { useEffect, useRef, useState } from "react";
 import { Link } from "react-router-dom";
-import { CalendarClock, CheckCircle2, ImagePlus, Loader2, Save, Send, X } from "lucide-react";
+import { CalendarClock, ImagePlus, Loader2, Save, Send, X } from "lucide-react";
+import { useToastSetter } from "./ui/toastContext";
 import {
   captionLimits,
   defaultScheduleValue,
@@ -45,7 +46,7 @@ export default function HubSchedulePanel({ channel, caption, infographic, itemId
   const [busy, setBusy] = useState("");
   const [confirmNow, setConfirmNow] = useState(false);
   const [error, setError] = useState("");
-  const [notice, setNotice] = useState("");
+  const setNotice = useToastSetter("success");
   const [loaded, setLoaded] = useState(false);
   const imageCache = useRef({ key: "", path: "" });
 
@@ -247,7 +248,6 @@ export default function HubSchedulePanel({ channel, caption, infographic, itemId
       )}
 
       {error && <div className="mt-4 rounded-xl border border-rose-300/25 bg-rose-400/10 p-3 text-sm text-rose-100">{error}</div>}
-      {notice && <div className="mt-4 flex items-start gap-2 rounded-xl border border-emerald-300/25 bg-emerald-400/10 p-3 text-sm text-emerald-100"><CheckCircle2 size={16} className="mt-0.5 shrink-0" /> {notice}</div>}
 
       {recent.length > 0 && (
         <div className="mt-4 space-y-1 text-xs text-slate-400">

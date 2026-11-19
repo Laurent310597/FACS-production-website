@@ -19,6 +19,8 @@ import {
 } from "lucide-react";
 import { Link } from "react-router-dom";
 import AdminLayout from "../../components/admin/AdminLayout";
+import { useToastSetter } from "../../components/admin/ui/toastContext";
+import { SkeletonRows } from "../../components/admin/ui/Skeleton";
 import {
   eventPublicationStates,
   formatLegalDate,
@@ -58,7 +60,7 @@ export default function AdminLegalCalendarPage() {
   const [selectedIds, setSelectedIds] = useState(() => new Set());
   const [page, setPage] = useState(1);
   const [error, setError] = useState("");
-  const [notice, setNotice] = useState("");
+  const setNotice = useToastSetter("success");
   const [working, setWorking] = useState("");
 
   const load = useCallback(async () => {
@@ -276,7 +278,6 @@ export default function AdminLegalCalendarPage() {
       </div>
 
       {error && <div className="mt-6 rounded-2xl border border-red-300/20 bg-red-400/8 px-5 py-4 text-sm text-red-200">{error}</div>}
-      {notice && <div className="mt-6 rounded-2xl border border-emerald-300/20 bg-emerald-400/8 px-5 py-4 text-sm text-emerald-200">{notice}</div>}
 
       <div className="mt-7 grid gap-4 md:grid-cols-4">
         {[
@@ -322,7 +323,7 @@ export default function AdminLegalCalendarPage() {
       )}
 
       {loading ? (
-        <div className="mt-7 rounded-[28px] border border-white/10 bg-white/[0.035] px-6 py-20 text-center text-slate-500">Đang tải lịch pháp lý...</div>
+        <div className="mt-7"><SkeletonRows rows={6} /></div>
       ) : visibleEvents.length === 0 ? (
         <div className="mt-7 rounded-[28px] border border-white/10 bg-white/[0.035] px-6 py-20 text-center"><CalendarRange size={34} className="mx-auto text-slate-600" /><div className="mt-4 text-xl font-semibold">Chưa có mốc phù hợp</div><p className="mt-2 text-sm text-slate-500">Thử thay đổi bộ lọc hoặc chuyển giữa danh sách đang vận hành và kho năm cũ.</p></div>
       ) : (

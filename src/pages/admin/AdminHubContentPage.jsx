@@ -2,6 +2,7 @@ import { useCallback, useEffect, useMemo, useRef, useState } from "react";
 import { Link, useSearchParams } from "react-router-dom";
 import { AlertTriangle, Archive, BadgeCheck, Check, Copy, Download, FileText, ImagePlus, Library, Loader2, RefreshCw, Save, Sparkles, X } from "lucide-react";
 import AdminLayout from "../../components/admin/AdminLayout";
+import { useToastSetter } from "../../components/admin/ui/toastContext";
 import { insightCategories, slugify } from "../../lib/insights";
 import {
   approveHubItem,
@@ -96,7 +97,7 @@ export default function AdminHubContentPage() {
   const [saving, setSaving] = useState(false);
   const [creatingPost, setCreatingPost] = useState(false);
   const [error, setError] = useState("");
-  const [notice, setNotice] = useState("");
+  const setNotice = useToastSetter("success");
   const [warnings, setWarnings] = useState([]);
   const [items, setItems] = useState([]);
   const [setupMissing, setSetupMissing] = useState(false);
@@ -398,7 +399,6 @@ export default function AdminHubContentPage() {
           </div>
         )}
         {error && <div className="rounded-2xl border border-red-300/30 bg-red-300/10 p-4 text-sm text-red-100">{error}</div>}
-        {notice && !error && <div className="rounded-2xl border border-emerald-300/30 bg-emerald-300/10 p-4 text-sm text-emerald-100">{notice}</div>}
         {warnings.length > 0 && (
           <div className="rounded-2xl border border-amber-300/30 bg-amber-300/10 p-4 text-sm text-amber-100">
             <div className="font-semibold">Một số nguồn không đọc được:</div>

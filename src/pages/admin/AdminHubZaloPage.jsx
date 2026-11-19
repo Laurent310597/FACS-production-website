@@ -1,6 +1,10 @@
 import { useCallback, useEffect, useMemo, useState } from "react";
 import { AlertTriangle, CheckCircle2, Copy, Loader2, Plus, RefreshCw, Save, ShieldAlert, Trash2, Wifi, WifiOff } from "lucide-react";
 import AdminLayout from "../../components/admin/AdminLayout";
+import { AnimatePresence, motion } from "framer-motion";
+import { useToastSetter } from "../../components/admin/ui/toastContext";
+import { SkeletonRows } from "../../components/admin/ui/Skeleton";
+import { listItem } from "../../components/admin/ui/motionPresets";
 import {
   commandLabel,
   commandStatusLabel,
@@ -37,7 +41,7 @@ export default function AdminHubZaloPage() {
   const [tab, setTab] = useState("overview");
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState("");
-  const [notice, setNotice] = useState("");
+  const setNotice = useToastSetter("success");
   const [setupMissing, setSetupMissing] = useState(false);
   const [newKey, setNewKey] = useState("");
   const [newName, setNewName] = useState("Laptop văn phòng");
@@ -106,7 +110,6 @@ export default function AdminHubZaloPage() {
         </div>
 
         {error && <div className="rounded-2xl border border-rose-400/30 bg-rose-400/10 p-4 text-sm text-rose-100">{error}</div>}
-        {notice && <div className="rounded-2xl border border-emerald-400/30 bg-emerald-400/10 p-4 text-sm text-emerald-100">{notice}</div>}
         {setupMissing && <div className="rounded-2xl border border-amber-400/30 bg-amber-400/10 p-4 text-sm text-amber-100">Bảng AI Zalo chưa có trên Supabase. Cần chạy migration 20261117040000_facs_hub_zalo.sql.</div>}
 
         {newKey && (
@@ -189,7 +192,7 @@ function useMirror(deviceId, kind, options) {
 }
 
 const Empty = ({ children }) => <div className="rounded-2xl border border-dashed border-white/10 p-6 text-center text-sm text-slate-500">{children}</div>;
-const Loading = () => <div className="flex items-center gap-2 text-sm text-slate-400"><Loader2 size={15} className="animate-spin" /> Đang tải…</div>;
+const Loading = () => <SkeletonRows rows={3} />;
 
 function Overview({ device, confirmRevoke, setConfirmRevoke, revoke, add, busy, newName, setNewName }) {
   const hb = device.heartbeat || {};
@@ -390,12 +393,14 @@ function Groups({ device, setError, setNotice }) {
         <h2 className="font-bold">Việc đang mở ({open.length})</h2>
         {!open.length ? <div className="mt-3"><Empty>Không có việc tồn.</Empty></div> : (
           <ul className="mt-3 space-y-2">
+            <AnimatePresence initial={false}>
             {open.map((r) => (
-              <li key={r.key} className="flex flex-wrap items-center justify-between gap-2 rounded-2xl border border-white/10 p-3 text-sm">
+              <motion.li key={r.key} layout {...listItem} className="flex flex-wrap items-center justify-between gap-2 rounded-2xl border border-white/10 p-3 text-sm">
                 <div><span className="mr-2 rounded-full bg-white/10 px-2 py-0.5 text-[11px]">{r.data?.priority || "NORMAL"}</span>{r.data?.summary}<div className="mt-1 text-xs text-slate-500">{fmtTs(r.ts)}</div></div>
                 <button type="button" className={ghostButton} disabled={busy === `i${r.key}`} onClick={() => run(`i${r.key}`, "resolve_item", { local_id: Number(r.key) }, "Đã gửi lệnh đánh dấu xong.")}><CheckCircle2 size={15} /> Xong</button>
-              </li>
+              </motion.li>
             ))}
+            </AnimatePresence>
           </ul>
         )}
       </div>
@@ -556,14 +561,16 @@ function Commands({ device }) {
       {error && <div className="mt-2 text-sm text-rose-200">{error}</div>}
       {!rows.length ? <div className="mt-3"><Empty>Chưa gửi lệnh nào.</Empty></div> : (
         <ul className="mt-3 divide-y divide-white/10 text-sm">
+          <AnimatePresence initial={false}>
           {rows.map((r) => (
-            <li key={r.id} className="py-2">
+            <motion.li key={r.id} layout {...listItem} className="py-2">
               <span className="font-semibold">{commandLabel[r.type] || r.type}</span>
               <span className={`ml-2 text-xs font-bold ${style[r.status]}`}>{commandStatusLabel[r.status] || r.status}</span>
               {r.result && <div className="text-xs text-slate-400">{r.result}</div>}
               <div className="text-xs text-slate-500">{fmtIso(r.created_at)}</div>
-            </li>
+            </motion.li>
           ))}
+          </AnimatePresence>
         </ul>
       )}
     </div>

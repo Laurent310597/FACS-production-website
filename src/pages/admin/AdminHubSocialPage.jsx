@@ -2,6 +2,10 @@ import { useCallback, useEffect, useState } from "react";
 import { Link, useSearchParams } from "react-router-dom";
 import { AlertTriangle, CheckCircle2, ExternalLink, Loader2, Plug, RefreshCw, Unplug, XCircle } from "lucide-react";
 import AdminLayout from "../../components/admin/AdminLayout";
+import { AnimatePresence, motion } from "framer-motion";
+import { useToastSetter } from "../../components/admin/ui/toastContext";
+import { SkeletonRows } from "../../components/admin/ui/Skeleton";
+import { listItem } from "../../components/admin/ui/motionPresets";
 import {
   cancelSocialPost,
   disconnectSocialAccount,
@@ -44,10 +48,11 @@ export default function AdminHubSocialPage() {
   const [busy, setBusy] = useState("");
   // Kết quả quay về sau khi kết nối (Facebook/LinkedIn chuyển hướng về trang này) được đọc một lần khi mở trang.
   const [error, setError] = useState(() => searchParams.get("error") || "");
-  const [notice, setNotice] = useState(() => {
+  const [connectedNotice] = useState(() => {
     const connected = searchParams.get("connected");
     return connected ? `Đã kết nối ${connected === "linkedin" ? "LinkedIn" : "Facebook/Instagram"} (${searchParams.get("count") || 1} tài khoản).` : "";
   });
+  const setNotice = useToastSetter("success", connectedNotice);
   const [confirmId, setConfirmId] = useState("");
   const [setupMissing, setSetupMissing] = useState(false);
 
@@ -137,7 +142,6 @@ export default function AdminHubSocialPage() {
       </div>
 
       {error && <div className="mb-5 rounded-2xl border border-rose-300/25 bg-rose-400/10 p-4 text-sm text-rose-100">{error}</div>}
-      {notice && <div className="mb-5 rounded-2xl border border-emerald-300/25 bg-emerald-400/10 p-4 text-sm text-emerald-100">{notice}</div>}
       {setupMissing && (
         <div className="mb-5 rounded-2xl border border-amber-300/25 bg-amber-400/10 p-4 text-sm text-amber-100">
           Cơ sở dữ liệu chưa có các bảng đăng bài (migration 20261117020000_facs_hub_social.sql). Cần chạy migration này trên Supabase.
@@ -201,9 +205,11 @@ export default function AdminHubSocialPage() {
         <h2 className="font-serif text-xl font-bold text-white">2. Hàng đợi & lịch sử đăng</h2>
         <p className="mt-1 text-sm text-slate-400">Hệ thống kiểm tra giờ hẹn mỗi phút. Bài lỗi sẽ không tự đăng lại, để tránh đăng trùng.</p>
         <div className="mt-4 space-y-3">
+          {loading && !posts.length && <SkeletonRows rows={3} />}
           {!posts.length && !loading && <p className="text-sm text-slate-500">Chưa có bài đăng nào.</p>}
+          <AnimatePresence initial={false}>
           {posts.map((post) => (
-            <div key={post.id} className="rounded-2xl border border-white/10 bg-[#0d1726]/50 p-4">
+            <motion.div key={post.id} layout {...listItem} className="rounded-2xl border border-white/10 bg-[#0d1726]/50 p-4">
               <div className="flex flex-wrap items-center gap-3">
                 <span className={`rounded-full px-3 py-1 text-xs font-bold ${statusStyle[post.status]}`}>{postStatusLabel[post.status]}</span>
                 <span className="text-sm font-semibold text-white">{accountName(post.account_id)}</span>
@@ -221,8 +227,9 @@ export default function AdminHubSocialPage() {
               <p className="mt-3 line-clamp-3 whitespace-pre-wrap text-sm leading-6 text-slate-300">{post.caption}</p>
               {post.image_path && <div className="mt-1 text-xs text-slate-500">Kèm 1 ảnh</div>}
               {post.error && <div className="mt-2 rounded-xl bg-rose-400/10 px-3 py-2 text-sm text-rose-200">{post.error}</div>}
-            </div>
+            </motion.div>
           ))}
+          </AnimatePresence>
         </div>
       </section>
     </AdminLayout>

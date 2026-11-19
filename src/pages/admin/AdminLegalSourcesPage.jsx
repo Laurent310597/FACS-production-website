@@ -16,6 +16,8 @@ import {
 } from "lucide-react";
 import { Link } from "react-router-dom";
 import AdminLayout from "../../components/admin/AdminLayout";
+import { useToastSetter } from "../../components/admin/ui/toastContext";
+import { SkeletonCards } from "../../components/admin/ui/Skeleton";
 import {
   formatLegalDateTime,
   invokeLegalCalendarImport,
@@ -58,7 +60,7 @@ export default function AdminLegalSourcesPage() {
   const [loading, setLoading] = useState(true);
   const [working, setWorking] = useState("");
   const [error, setError] = useState("");
-  const [message, setMessage] = useState("");
+  const setMessage = useToastSetter("success");
   const [startDate, setStartDate] = useState(() => currentYearRange().start);
   const [endDate, setEndDate] = useState(() => currentYearRange().end);
   const [importFile, setImportFile] = useState(null);
@@ -213,7 +215,6 @@ export default function AdminLegalSourcesPage() {
       </div>
 
       {error && <div className="mt-6 whitespace-pre-line rounded-2xl border border-red-300/20 bg-red-400/8 px-5 py-4 text-sm text-red-200">{error}</div>}
-      {message && <div className="mt-6 rounded-2xl border border-emerald-300/20 bg-emerald-400/8 px-5 py-4 text-sm text-emerald-200">{message}</div>}
 
       <div className="mt-7 grid gap-5 xl:grid-cols-2">
         <section className="rounded-[28px] border border-cyan-300/15 bg-cyan-300/[0.045] p-5 md:p-7">
@@ -379,7 +380,7 @@ export default function AdminLegalSourcesPage() {
           </div>
         </div>
         <div className="mt-5 grid gap-4 xl:grid-cols-2">
-          {loading ? <div className="text-slate-500">Đang tải...</div> : sources.map((source) => (
+          {loading ? <SkeletonCards count={4} className="contents" /> : sources.map((source) => (
             <article key={source.id} className="rounded-[24px] border border-white/10 bg-white/[0.035] p-5">
               <div className="flex gap-4">
                 <div className={`flex h-11 w-11 shrink-0 items-center justify-center rounded-2xl ${source.source_tier === "P1" ? "bg-emerald-300/10 text-emerald-300" : source.source_tier === "P2" ? "bg-cyan-300/10 text-cyan-300" : "bg-amber-300/10 text-amber-300"}`}>

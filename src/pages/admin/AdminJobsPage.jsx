@@ -2,6 +2,7 @@ import { useEffect, useMemo, useState } from "react";
 import { Briefcase, CalendarClock, Copy, Edit3, FilePlus2, Search, Trash2 } from "lucide-react";
 import { Link } from "react-router-dom";
 import AdminLayout from "../../components/admin/AdminLayout";
+import { SkeletonRows } from "../../components/admin/ui/Skeleton";
 import { getEmploymentTypeLabel, getLocalizedJob, getWorkplaceTypeLabel, slugify } from "../../lib/careers";
 import { formatVietnamDateTime, getPublicationState } from "../../lib/publication";
 import { supabase } from "../../lib/supabaseClient";
@@ -153,7 +154,7 @@ export default function AdminJobsPage() {
 
       <div className="mt-6 overflow-hidden rounded-[26px] border border-white/10 bg-white/[0.035]">
         {loading ? (
-          <div className="flex min-h-60 items-center justify-center"><div className="h-9 w-9 animate-spin rounded-full border-2 border-cyan-300/20 border-t-cyan-300" /></div>
+          <div className="p-5"><SkeletonRows rows={5} /></div>
         ) : error ? (
           <div className="p-8 text-red-200">Không thể tải dữ liệu tuyển dụng: {error}</div>
         ) : filteredJobs.length === 0 ? (

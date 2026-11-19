@@ -1,4 +1,5 @@
 import { useState } from "react";
+import { AnimatePresence, MotionConfig, motion } from "framer-motion";
 import { Link, NavLink, useLocation, useNavigate } from "react-router-dom";
 import { ChevronDown, ExternalLink, LogOut, Orbit, PanelLeftClose, PanelLeftOpen } from "lucide-react";
 import { supabase } from "../../lib/supabaseClient";
@@ -50,11 +51,22 @@ function ExpandedNav({ currentPath, activeId, openGroups, toggleGroup }) {
               {!isOpen && <span className="ml-1 rounded-full bg-white/[0.06] px-1.5 text-[10px] tracking-normal text-slate-500">{group.items.length}</span>}
               {!isActive && <ChevronDown size={14} className={`ml-auto transition-transform ${isOpen ? "" : "-rotate-90"}`} />}
             </button>
-            {isOpen && (
-              <div className="grid gap-1 pb-2">
-                {group.items.map((item) => <NavItem key={item.to || item.href} item={item} currentPath={currentPath} />)}
-              </div>
-            )}
+            <AnimatePresence initial={false}>
+              {isOpen && (
+                <motion.div
+                  key="items"
+                  initial={{ height: 0, opacity: 0 }}
+                  animate={{ height: "auto", opacity: 1 }}
+                  exit={{ height: 0, opacity: 0 }}
+                  transition={{ duration: 0.22, ease: "easeOut" }}
+                  className="overflow-hidden"
+                >
+                  <div className="grid gap-1 pb-2">
+                    {group.items.map((item) => <NavItem key={item.to || item.href} item={item} currentPath={currentPath} />)}
+                  </div>
+                </motion.div>
+              )}
+            </AnimatePresence>
           </div>
         );
       })}
@@ -122,6 +134,7 @@ export default function AdminLayout({ children }) {
   const gridCols = mode === "expanded" ? "lg:grid-cols-[260px_minmax(0,1fr)]" : mode === "collapsed" ? "lg:grid-cols-[76px_minmax(0,1fr)]" : "";
 
   return (
+    <MotionConfig reducedMotion="user">
     <div data-no-translate className="min-h-screen bg-[radial-gradient(circle_at_top_right,rgba(0,183,255,0.10),transparent_28%),linear-gradient(135deg,#0d1726_0%,#101b2f_55%,#132238_100%)] text-white">
       <header className="sticky top-0 z-40 border-b border-cyan-200/15 bg-[#0d1726]/90 backdrop-blur-2xl">
         <div className="mx-auto flex min-h-20 max-w-[1500px] items-center justify-between gap-4 px-5 py-3 lg:px-8">
@@ -186,7 +199,16 @@ export default function AdminLayout({ children }) {
           </aside>
         )}
 
-        <section className="min-w-0">{children}</section>
+        {/* Nội dung trang hiện mờ dần khi chuyển trang */}
+        <motion.section
+          key={location.pathname}
+          className="min-w-0"
+          initial={{ opacity: 0, y: 8 }}
+          animate={{ opacity: 1, y: 0 }}
+          transition={{ duration: 0.28, ease: "easeOut" }}
+        >
+          {children}
+        </motion.section>
       </div>
 
       {mode === "wheel" && (
@@ -208,5 +230,6 @@ export default function AdminLayout({ children }) {
 
       {wheelOpen && <AdminNavWheel open onClose={() => setWheelOpen(false)} />}
     </div>
+    </MotionConfig>
   );
 }

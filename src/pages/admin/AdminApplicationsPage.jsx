@@ -1,6 +1,7 @@
 import { useEffect, useMemo, useState } from "react";
 import { Download, Loader2, MailWarning, RefreshCw, Search, UserRoundSearch } from "lucide-react";
 import AdminLayout from "../../components/admin/AdminLayout";
+import { SkeletonRows } from "../../components/admin/ui/Skeleton";
 import { invokeFormEmailAdmin } from "../../lib/formSubmissions";
 import { supabase } from "../../lib/supabaseClient";
 
@@ -101,7 +102,7 @@ export default function AdminApplicationsPage() {
         <select value={status} onChange={(event) => setStatus(event.target.value)} className="rounded-2xl border border-white/10 bg-[#081321] px-4 py-3 text-sm"><option value="all">Tất cả trạng thái</option>{Object.entries(statusLabels).map(([value, label]) => <option key={value} value={value}>{label}</option>)}</select>
       </div>
       <div className="mt-6 space-y-4">
-        {loading ? <div className="flex min-h-60 items-center justify-center"><Loader2 className="animate-spin text-cyan-300" /></div> : filtered.length === 0 ? <div className="rounded-[26px] border border-white/10 bg-white/[0.035] px-6 py-16 text-center text-slate-500"><UserRoundSearch className="mx-auto mb-4" /> Chưa có hồ sơ phù hợp.</div> : filtered.map((row) => (
+        {loading ? <SkeletonRows rows={5} /> : filtered.length === 0 ? <div className="rounded-[26px] border border-white/10 bg-white/[0.035] px-6 py-16 text-center text-slate-500"><UserRoundSearch className="mx-auto mb-4" /> Chưa có hồ sơ phù hợp.</div> : filtered.map((row) => (
           <details key={row.id} className="group rounded-[26px] border border-white/10 bg-white/[0.035] open:border-cyan-200/20">
             <summary className="grid cursor-pointer list-none gap-4 p-5 md:grid-cols-[minmax(0,1.2fr)_minmax(0,.8fr)_auto] md:items-center">
               <div><div className="font-semibold text-white">{row.full_name}</div><div className="mt-1 text-sm text-slate-500">{row.email} · {row.phone}</div></div>

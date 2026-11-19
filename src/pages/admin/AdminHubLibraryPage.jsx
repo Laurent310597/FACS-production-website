@@ -2,6 +2,8 @@ import { useCallback, useEffect, useMemo, useState } from "react";
 import { Link } from "react-router-dom";
 import { BadgeCheck, BookOpen, FileUp, FolderOpen, ImagePlus, Inbox, Loader2, Pencil, Plus, Save, Sparkles, Trash2, X } from "lucide-react";
 import AdminLayout from "../../components/admin/AdminLayout";
+import { useToastSetter } from "../../components/admin/ui/toastContext";
+import { SkeletonRows } from "../../components/admin/ui/Skeleton";
 import {
   deleteApprovedExample,
   deleteGuideline,
@@ -390,7 +392,7 @@ export default function AdminHubLibraryPage() {
   const [approved, setApproved] = useState([]);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState("");
-  const [notice, setNotice] = useState("");
+  const setNotice = useToastSetter("success");
 
   const reload = useCallback(async () => {
     try {
@@ -428,7 +430,6 @@ export default function AdminHubLibraryPage() {
         </div>
 
         {error && <div className="rounded-2xl border border-red-300/30 bg-red-300/10 p-4 text-sm text-red-100">{error}</div>}
-        {notice && !error && <div className="rounded-2xl border border-emerald-300/30 bg-emerald-300/10 p-4 text-sm text-emerald-100">{notice}</div>}
 
         <div className="grid gap-3 md:grid-cols-3">
           {folders.map((folder) => {
@@ -449,7 +450,7 @@ export default function AdminHubLibraryPage() {
 
         <div className={cardClass}>
           {loading ? (
-            <div className="flex items-center gap-2 text-sm text-slate-400"><Loader2 size={16} className="animate-spin" /> Đang tải…</div>
+            <SkeletonRows rows={4} />
           ) : active === "guidelines" ? (
             <GuidelinesFolder rows={guidelines} reload={reload} setError={setError} setNotice={setNotice} />
           ) : active === "inputs" ? (
