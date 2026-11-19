@@ -19,7 +19,7 @@ import { useLanguage } from "../components/LanguageContext";
 import { getServiceContent, services } from "../data/services";
 
 const sectionCardClass =
-  "group rounded-[32px] border border-white/10 bg-white/[0.045] p-8 backdrop-blur-xl transition-all duration-500 hover:-translate-y-1 hover:border-cyan-400/30 hover:bg-white/[0.055] hover:shadow-[0_24px_80px_rgba(8,145,178,0.12)]";
+  "site-card site-tile group rounded-[32px] border border-white/10 bg-white/[0.045] p-8 backdrop-blur-xl transition-all duration-500 hover:-translate-y-1 hover:border-cyan-400/30 hover:bg-white/[0.055] hover:shadow-[0_24px_80px_rgba(8,145,178,0.12)]";
 
 function BulletList({ items }) {
   return (
@@ -136,7 +136,7 @@ export default function ServiceDetailPage() {
                 <p className="mt-10 text-xl leading-relaxed text-slate-400">{service.desc}</p>
               </motion.div>
 
-              <motion.div whileHover={{ y: -10, scale: 1.01 }} transition={{ duration: 0.35 }} className="site-card rounded-[40px] border border-white/10 bg-white/[0.045] p-10 backdrop-blur-xl hover:border-cyan-300/25 hover:shadow-[0_30px_90px_rgba(8,145,178,0.13)]">
+              <motion.div transition={{ duration: 0.35 }} className="site-card rounded-[40px] border border-white/10 bg-white/[0.045] p-10 backdrop-blur-xl hover:border-cyan-300/25 hover:shadow-[0_30px_90px_rgba(8,145,178,0.13)]">
                 <div className="flex h-20 w-20 items-center justify-center rounded-3xl bg-cyan-500/10 shadow-[0_0_40px_rgba(34,211,238,0.14)]">
                   <Icon size={40} className="text-cyan-400" />
                 </div>
@@ -166,7 +166,6 @@ export default function ServiceDetailPage() {
                 return (
                   <motion.div
                     key={item.title}
-                    whileHover={{ y: -10, scale: 1.01 }}
                     transition={{ duration: 0.3 }}
                     className={sectionCardClass}
                   >
@@ -197,7 +196,6 @@ export default function ServiceDetailPage() {
                 return (
                   <motion.div
                     key={item.title}
-                    whileHover={{ y: -8, scale: 1.005 }}
                     transition={{ duration: 0.3 }}
                     className={sectionCardClass}
                   >

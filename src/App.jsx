@@ -1,6 +1,6 @@
 import { useEffect, useState } from "react";
 import { BrowserRouter, Routes, Route, Navigate, useLocation } from "react-router-dom";
-import { AnimatePresence, motion } from "framer-motion";
+import { AnimatePresence, MotionConfig, motion } from "framer-motion";
 
 import HomePage from "./pages/HomePage";
 import AboutPage from "./pages/AboutPage";
@@ -117,15 +117,22 @@ function AnimatedRoutes() {
   const location = useLocation();
 
   return (
-    <AnimatePresence mode="wait">
+    <AnimatePresence
+      mode="wait"
+      initial={false}
+      onExitComplete={() => {
+        // Trang cũ đã mờ hẳn → đưa về đầu trang ngay (không cuộn mượt), trừ khi có #mục cần tới.
+        if (!window.location.hash) window.scrollTo({ top: 0, left: 0, behavior: "instant" });
+      }}
+    >
       <Routes location={location} key={location.pathname}>
         <Route path="/" element={<PageTransition><HomePage /></PageTransition>} />
         <Route path="/about" element={<PageTransition><AboutPage /></PageTransition>} />
         <Route path="/about/team/:slug" element={<PageTransition><TeamMemberDetailPage /></PageTransition>} />
         <Route path="/services" element={<PageTransition><ServicesPage /></PageTransition>} />
-        <Route path="/services/:slug" element={<ServiceDetailPage />} />
+        <Route path="/services/:slug" element={<PageTransition><ServiceDetailPage /></PageTransition>} />
         <Route path="/industries" element={<PageTransition><IndustriesPage /></PageTransition>} />
-        <Route path="/industries/:slug" element={<IndustryDetailPage />} />
+        <Route path="/industries/:slug" element={<PageTransition><IndustryDetailPage /></PageTransition>} />
         <Route path="/insights" element={<PageTransition><InsightsPage /></PageTransition>} />
         <Route path="/insights/:slug" element={<PageTransition><InsightDetailPage /></PageTransition>} />
         <Route path="/legal-calendar" element={<PageTransition><LegalCalendarPage /></PageTransition>} />
@@ -169,6 +176,7 @@ function AnimatedRoutes() {
 export default function App() {
   return (
     <BrowserRouter>
+      <MotionConfig reducedMotion="user">
       <LanguageProvider>
         <ScrollToTop />
         <MouseGlow />
@@ -182,6 +190,7 @@ export default function App() {
           </ConfirmProvider>
         </ToastProvider>
       </LanguageProvider>
+      </MotionConfig>
     </BrowserRouter>
   );
 }

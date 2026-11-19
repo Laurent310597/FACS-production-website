@@ -1193,3 +1193,15 @@ html:not(:has(.facs-cms)) {
   -webkit-mask-image: radial-gradient(ellipse 70% 70% at 70% 45%, #000 40%, transparent 100%);
   mask-image: radial-gradient(ellipse 70% 70% at 70% 45%, #000 40%, transparent 100%);
 }
+
+/* Đổi ngôn ngữ: nội dung mờ nhẹ rồi hiện lại. */
+html.lang-swap #root {
+  animation: lang-swap 0.45s ease;
+}
+@keyframes lang-swap {
+  from { opacity: 0.35; }
+  to { opacity: 1; }
+}
+@media (prefers-reduced-motion: reduce) {
+  html.lang-swap #root { animation: none; }
+}

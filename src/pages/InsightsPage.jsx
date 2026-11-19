@@ -1,6 +1,6 @@
 import { useEffect, useMemo, useRef, useState } from "react";
 import { ArrowRight, CalendarDays, Search } from "lucide-react";
-import { motion } from "framer-motion";
+import { AnimatePresence, LayoutGroup, motion } from "framer-motion";
 import { Link } from "react-router-dom";
 import Footer from "../components/Footer";
 import SiteBackdrop from "../components/site/SiteBackdrop";
@@ -131,16 +131,20 @@ export default function InsightsPage() {
                 className="w-full bg-transparent px-3 py-3 text-sm text-white outline-none placeholder:text-slate-600"
               />
             </label>
+            <LayoutGroup id="insights-categories">
             <div className="flex gap-2 overflow-x-auto pb-1 lg:pb-0">
-              <button type="button" onClick={() => setCategory("all")} className={`whitespace-nowrap rounded-2xl px-4 py-3 text-sm font-semibold transition ${category === "all" ? "bg-cyan-300 text-[#071421]" : "border border-white/10 text-slate-300 hover:border-cyan-200/25 hover:text-white"}`}>
+              <button type="button" onClick={() => setCategory("all")} className={`relative isolate whitespace-nowrap rounded-2xl px-4 py-3 text-sm font-semibold transition-colors duration-300 ${category === "all" ? "text-[#071421]" : "border border-white/10 text-slate-300 hover:border-cyan-200/25 hover:text-white"}`}>
+                {category === "all" && <motion.span layoutId="insights-category-pill" className="absolute inset-0 -z-10 rounded-2xl bg-cyan-300" transition={{ type: "spring", stiffness: 420, damping: 36 }} />}
                 {isVi ? "Tất cả" : "All"}
               </button>
               {insightCategories.map((item) => (
-                <button key={item.value} type="button" onClick={() => setCategory(item.value)} className={`whitespace-nowrap rounded-2xl px-4 py-3 text-sm font-semibold transition ${category === item.value ? "bg-cyan-300 text-[#071421]" : "border border-white/10 text-slate-300 hover:border-cyan-200/25 hover:text-white"}`}>
+                <button key={item.value} type="button" onClick={() => setCategory(item.value)} className={`relative isolate whitespace-nowrap rounded-2xl px-4 py-3 text-sm font-semibold transition-colors duration-300 ${category === item.value ? "text-[#071421]" : "border border-white/10 text-slate-300 hover:border-cyan-200/25 hover:text-white"}`}>
+                  {category === item.value && <motion.span layoutId="insights-category-pill" className="absolute inset-0 -z-10 rounded-2xl bg-cyan-300" transition={{ type: "spring", stiffness: 420, damping: 36 }} />}
                   {item[language] || item.en}
                 </button>
               ))}
             </div>
+            </LayoutGroup>
           </div>
 
           {loading ? (
@@ -154,16 +158,18 @@ export default function InsightsPage() {
             </div>
           ) : (
             <div className="mt-10 grid gap-8 lg:grid-cols-3">
+              <AnimatePresence mode="popLayout" initial={false}>
               {visiblePosts.map((post, index) => {
                 const localized = getLocalizedPost(post, language);
                 return (
                   <motion.article
                     key={post.id}
+                    layout="position"
+                    exit={{ opacity: 0, scale: 0.96, transition: { duration: 0.2 } }}
                     initial={{ opacity: 0, y: 22 }}
                     whileInView={{ opacity: 1, y: 0 }}
                     viewport={{ once: true, amount: 0.15 }}
-                    transition={{ duration: 0.5, delay: Math.min(index * 0.06, 0.24) }}
-                    whileHover={{ y: -9 }}
+                    transition={{ duration: 0.5, delay: Math.min(index * 0.06, 0.24) }} 
                     onMouseEnter={(event) => showGlow(event, post.cover_image_url)}
                     onMouseLeave={() => setGlow(null)}
                     className="site-card site-tile site-acrylic group overflow-hidden rounded-[32px] border border-white/[0.12] bg-transparent backdrop-blur-[2px] transition-all duration-300 hover:border-cyan-300/25 hover:shadow-[0_0_48px_rgba(34,211,238,0.14)]"
@@ -194,6 +200,7 @@ export default function InsightsPage() {
                   </motion.article>
                 );
               })}
+              </AnimatePresence>
             </div>
           )}
         </div>

@@ -346,7 +346,13 @@ export default function LegalCalendarPage() {
             </div>
 
             {loading ? <div className="mt-3"><LegalCalendarSkeleton /></div> : (
-              <div className="mt-3 grid grid-cols-7 gap-1.5 md:gap-2">
+              <motion.div
+                key={`${year}-${month}`}
+                initial={{ opacity: 0, y: 8 }}
+                animate={{ opacity: 1, y: 0 }}
+                transition={{ duration: 0.35, ease: [0.22, 1, 0.36, 1] }}
+                className="mt-3 grid grid-cols-7 gap-1.5 md:gap-2"
+              >
                 {cells.map((day, index) => {
                   if (!day) return <div key={`empty-${index}`} className="min-h-16 rounded-2xl border border-transparent md:min-h-32" />;
                   const dayEvents = eventsByDay.get(day) || [];
@@ -383,7 +389,7 @@ export default function LegalCalendarPage() {
                     </button>
                   );
                 })}
-              </div>
+              </motion.div>
             )}
           </div>
 

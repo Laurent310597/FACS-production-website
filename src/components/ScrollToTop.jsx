@@ -1,19 +1,19 @@
 import { useEffect } from "react";
 import { useLocation } from "react-router-dom";
 
+/**
+ * Cuộn tới mục (#hash) một cách mượt. Việc đưa trang mới về đầu được làm ngay khi trang cũ đã mờ đi xong
+ * (xem AnimatedRoutes → onExitComplete), nên người xem không thấy trang cũ bị cuộn ngược lên.
+ */
 export default function ScrollToTop() {
   const { pathname, hash } = useLocation();
 
   useEffect(() => {
-    if (hash) {
-      const target = document.querySelector(hash);
-      if (target) {
-        setTimeout(() => target.scrollIntoView({ behavior: "smooth", block: "start" }), 120);
-        return;
-      }
-    }
-
-    window.scrollTo({ top: 0, left: 0, behavior: "smooth" });
+    if (!hash) return undefined;
+    const timer = setTimeout(() => {
+      document.querySelector(hash)?.scrollIntoView({ behavior: "smooth", block: "start" });
+    }, 420);
+    return () => clearTimeout(timer);
   }, [pathname, hash]);
 
   return null;

@@ -115,7 +115,7 @@ export default function AboutPage() {
               ].map((item) => {
                 const Icon = item.icon;
                 return (
-                  <motion.div key={item.label} whileHover={{ y: -8 }} transition={{ duration: 0.3 }} className="site-card site-tile h-full rounded-[32px] border border-white/10 bg-white/[0.045] backdrop-blur-xl p-8 hover:border-cyan-400/25 hover:shadow-[0_0_40px_rgba(34,211,238,0.10)]">
+                  <motion.div key={item.label} transition={{ duration: 0.3 }} className="site-card site-tile h-full rounded-[32px] border border-white/10 bg-white/[0.045] backdrop-blur-xl p-8 hover:border-cyan-400/25 hover:shadow-[0_0_40px_rgba(34,211,238,0.10)]">
                     <div className="w-14 h-14 rounded-2xl bg-cyan-500/10 flex items-center justify-center">
                       <Icon size={28} className="text-cyan-400" />
                     </div>
@@ -131,8 +131,7 @@ export default function AboutPage() {
               <div className="grid sm:grid-cols-2 lg:grid-cols-4 gap-4">
                 {values.map((value) => (
                   <motion.div
-                    key={value}
-                    whileHover={{ y: -5, scale: 1.015 }}
+                    key={value} 
                     transition={{ duration: 0.25 }}
                     className="site-card site-tile group relative overflow-hidden rounded-2xl border border-white/10 bg-white/[0.035] px-5 py-4 text-slate-300 text-sm leading-snug text-pretty cursor-default hover:border-cyan-300/35 hover:bg-cyan-400/[0.055] hover:text-white hover:shadow-[0_0_30px_rgba(34,211,238,0.12)] transition-all duration-300"
                   >
@@ -155,7 +154,7 @@ export default function AboutPage() {
 
             <div className="grid md:grid-cols-3 gap-8 mt-16">
               {leadership.map((member) => (
-                <motion.article key={member.slug} whileHover={{ y: -10 }} transition={{ duration: 0.3 }} className="site-card site-tile site-acrylic site-acrylic--gold group h-full overflow-hidden rounded-[32px] border border-white/[0.12] bg-transparent backdrop-blur-[2px] transition-all duration-300">
+                <motion.article key={member.slug} transition={{ duration: 0.3 }} className="site-card site-tile site-acrylic site-acrylic--gold group h-full overflow-hidden rounded-[32px] border border-white/[0.12] bg-transparent backdrop-blur-[2px] transition-all duration-300">
                   <Link to={`/about/team/${member.slug}`} className="block h-full">
                     <div className="relative h-[420px] overflow-hidden bg-[#1f242c]">
                       <img src={member.photo} alt={getName(member)} className="h-full w-full object-cover object-top transition-all duration-700 group-hover:scale-105" />

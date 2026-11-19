@@ -247,17 +247,10 @@ export default function ServicesPage() {
                 return (
                   <motion.div
                     id={service.slug}
-                    key={service.slug}
-
-                    whileHover={{
-                      y: -12,
-                      scale: 1.015,
-                    }}
-
+                    key={service.slug} 
                     transition={{
                       duration: 0.3,
                     }}
-
                     className="site-card site-tile group rounded-[32px] border border-white/10 bg-white/[0.045] backdrop-blur-xl p-10 hover:border-cyan-400/30 hover:bg-white/[0.055] hover:shadow-[0_24px_80px_rgba(8,145,178,0.12)] transition-all duration-500"
                   >
 
@@ -322,12 +315,7 @@ export default function ServicesPage() {
               ].map((item, index) => (
 
                 <motion.div
-                  key={index}
-
-                  whileHover={{
-                    y: -10,
-                  }}
-
+                  key={index} 
                   className="site-card site-tile rounded-[32px] border border-white/10 bg-white/[0.045] p-10 transition-all duration-300 hover:border-cyan-300/25 hover:bg-white/[0.055] hover:shadow-[0_24px_70px_rgba(34,211,238,0.10)]"
                 >
 

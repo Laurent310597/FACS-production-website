@@ -186,7 +186,7 @@ export default function HomePage() {
                 const Icon = service.icon;
                 const serviceContent = getServiceContent(service, isVi);
                 return (
-                  <motion.div key={service.slug} whileHover={{ y: -10 }} className="site-card site-tile group h-full rounded-[32px] border border-white/10 bg-white/[0.045] p-8 backdrop-blur-xl transition-all duration-500 hover:border-cyan-400/25 hover:shadow-[0_24px_70px_rgba(34,211,238,0.10)]">
+                  <motion.div key={service.slug} className="site-card site-tile group h-full rounded-[32px] border border-white/10 bg-white/[0.045] p-8 backdrop-blur-xl transition-all duration-500 hover:border-cyan-400/25 hover:shadow-[0_24px_70px_rgba(34,211,238,0.10)]">
                     <div className="flex h-16 w-16 items-center justify-center rounded-2xl bg-cyan-500/10 transition-all group-hover:bg-cyan-400/15"><Icon size={30} className="text-cyan-400" /></div>
                     <h3 className="mt-8 text-2xl font-semibold">{serviceContent.title}</h3>
                     <p className="mt-5 leading-relaxed text-slate-400">{serviceContent.desc}</p>

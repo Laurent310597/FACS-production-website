@@ -116,8 +116,7 @@ export default function CareersPage() {
                 },
               ].map((item) => (
                 <motion.div
-                  key={item.title}
-                  whileHover={{ y: -10 }}
+                  key={item.title} 
                   className="site-card site-tile rounded-[32px] border border-white/10 bg-white/[0.045] p-10 transition-all duration-300 hover:border-cyan-300/25 hover:shadow-[0_0_42px_rgba(34,211,238,0.12)]"
                 >
                   <h3 className="text-3xl font-bold">{item.title}</h3>
@@ -173,8 +172,7 @@ export default function CareersPage() {
                       initial={{ opacity: 0, y: 22 }}
                       whileInView={{ opacity: 1, y: 0 }}
                       viewport={{ once: true, amount: 0.15 }}
-                      transition={{ duration: 0.5, delay: Math.min(index * 0.06, 0.24) }}
-                      whileHover={{ scale: 1.008 }}
+                      transition={{ duration: 0.5, delay: Math.min(index * 0.06, 0.24) }} 
                       className="site-card site-tile rounded-[32px] border border-white/10 bg-white/[0.045] p-8 transition-all duration-300 hover:border-cyan-300/25 hover:shadow-[0_0_42px_rgba(34,211,238,0.12)] lg:p-10"
                     >
                       <div className="flex flex-col gap-8 lg:flex-row lg:items-center lg:justify-between">

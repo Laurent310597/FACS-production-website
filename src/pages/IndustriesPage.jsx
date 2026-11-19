@@ -47,8 +47,7 @@ export default function IndustriesPage() {
 
                 return (
                   <motion.div
-                    key={industry.slug}
-                    whileHover={{ y: -10 }}
+                    key={industry.slug} 
                     transition={{ duration: 0.3 }}
                     className="site-card site-tile group rounded-[32px] border border-white/10 bg-white/[0.045] backdrop-blur-xl p-8 hover:border-cyan-400/25 hover:bg-white/[0.055] hover:shadow-[0_26px_80px_rgba(8,145,178,0.12)] transition-all duration-500"
                   >

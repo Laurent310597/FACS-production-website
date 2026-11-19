@@ -54,7 +54,7 @@ function ToolGuide({ slug, isVi }) {
 }
 
 const fieldClass = "mt-2 w-full rounded-2xl border border-white/10 bg-[#091422] px-4 py-3 text-white outline-none transition focus:border-cyan-300/45";
-const panelClass = "rounded-[28px] border border-cyan-200/12 bg-white/[0.035] p-5 shadow-[0_24px_80px_rgba(0,0,0,0.18)] md:p-7";
+const panelClass = "site-card rounded-[28px] border border-cyan-200/12 bg-white/[0.035] p-5 shadow-[0_24px_80px_rgba(0,0,0,0.18)] md:p-7";
 
 function Field({ label, value, onChange, suffix, type = "number", min = 0, step = 1 }) {
   return <label className="block text-sm font-semibold text-slate-300">{label}<div className="relative"><input className={`${fieldClass} ${suffix ? "pr-16" : ""}`} type={type} min={min} step={step} value={value} onChange={(event) => onChange(event.target.value)} />{suffix && <span className="pointer-events-none absolute right-4 top-1/2 mt-1 -translate-y-1/2 text-xs text-slate-500">{suffix}</span>}</div></label>;

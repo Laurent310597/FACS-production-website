@@ -43,13 +43,16 @@ export default function Navbar() {
     return () => window.removeEventListener("keydown", onKey);
   }, []);
 
-  // Khoá cuộn trang khi menu điện thoại đang mở.
+  // Khoá cuộn trang khi menu điện thoại đang mở; phím Esc để đóng.
   useEffect(() => {
     if (!mobileOpen) return undefined;
     const prev = document.body.style.overflow;
     document.body.style.overflow = "hidden";
+    const onKey = (e) => e.key === "Escape" && setMobileOpen(false);
+    window.addEventListener("keydown", onKey);
     return () => {
       document.body.style.overflow = prev;
+      window.removeEventListener("keydown", onKey);
     };
   }, [mobileOpen]);
 
