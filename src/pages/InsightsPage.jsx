@@ -84,7 +84,9 @@ export default function InsightsPage() {
       const matchesCategory = category === "all" || post.category === category;
       const matchesQuery = !normalized || `${localized.title} ${localized.excerpt}`.toLowerCase().includes(normalized);
       return matchesCategory && matchesQuery;
-    });
+    })
+      // Bài mới nhất lên đầu, giảm dần theo ngày đăng (bài không có ngày xếp cuối).
+      .sort((a, b) => (Date.parse(b.published_at || b.created_at || 0) || 0) - (Date.parse(a.published_at || a.created_at || 0) || 0));
   }, [posts, query, category, language]);
 
   return (
@@ -152,7 +154,7 @@ export default function InsightsPage() {
                     viewport={{ once: true, amount: 0.15 }}
                     transition={{ duration: 0.5, delay: Math.min(index * 0.06, 0.24) }}
                     whileHover={{ y: -9 }}
-                    className="site-card site-tile group overflow-hidden rounded-[32px] border border-white/10 bg-white/[0.045] transition-all duration-300 hover:border-cyan-300/25 hover:shadow-[0_0_48px_rgba(34,211,238,0.14)]"
+                    className="site-card site-tile group overflow-hidden rounded-[32px] border border-white/[0.12] bg-transparent backdrop-blur-[2px] transition-all duration-300 hover:border-cyan-300/25 hover:shadow-[0_0_48px_rgba(34,211,238,0.14)]"
                   >
                     <Link to={`/insights/${localized.slug}`} className="block h-full">
                       <div className="relative h-56 overflow-hidden bg-[#0d1726]">
@@ -161,7 +163,7 @@ export default function InsightsPage() {
                         ) : (
                           <div className="h-full w-full bg-[radial-gradient(circle_at_top_right,rgba(34,211,238,0.18),transparent_40%),linear-gradient(135deg,#0b1625,#142943)]" />
                         )}
-                        <div className="absolute inset-0 bg-gradient-to-t from-[#0d1726]/85 via-transparent to-transparent" />
+                        <div className="absolute inset-0 bg-gradient-to-t from-[#0f1c2e]/80 via-transparent to-transparent" />
                         {post.featured && <span className="absolute left-5 top-5 rounded-full border border-cyan-200/20 bg-[#0d1726]/75 px-3 py-1 text-xs font-semibold text-cyan-200 backdrop-blur-xl">{isVi ? "Nổi bật" : "Featured"}</span>}
                       </div>
 

@@ -43,6 +43,7 @@ import ScrollToTop from "./components/ScrollToTop";
 import PageTransition from "./components/PageTransition";
 import MouseGlow from "./components/MouseGlow";
 import useSiteMotion from "./components/site/useSiteMotion";
+import SiteSideDecor from "./components/site/SiteSideDecor";
 import { LanguageProvider } from "./components/LanguageContext";
 
 function HomeIntroOverlay() {
@@ -172,6 +173,7 @@ export default function App() {
         <ScrollToTop />
         <MouseGlow />
         <SiteMotion />
+        <SiteSideDecor />
         <HomeIntroOverlay />
         {/* Thông báo dạng toast cho CMS; giữ qua các lần chuyển trang */}
         <ToastProvider>

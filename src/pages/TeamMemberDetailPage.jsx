@@ -32,7 +32,7 @@ export default function TeamMemberDetailPage() {
             <div className="mt-12 grid items-center gap-12 lg:grid-cols-[0.88fr_1.12fr] lg:gap-16">
               <motion.div initial={{ opacity: 0, y: 28 }} animate={{ opacity: 1, y: 0 }} transition={{ duration: 0.7 }} className="relative">
                 <div className="absolute -inset-4 rounded-[44px] bg-cyan-400/10 blur-2xl" />
-                <div className="site-card relative overflow-hidden rounded-[40px] border border-cyan-200/15 bg-white/[0.045] shadow-[0_30px_100px_rgba(0,0,0,0.32)]">
+                <div className="site-card site-glass relative overflow-hidden rounded-[40px] border border-cyan-200/15 bg-white/[0.045] shadow-[0_30px_100px_rgba(0,0,0,0.32)]">
                   <img src={member.photo} alt={displayName} className="h-[560px] w-full object-cover object-top" />
                   <div className="absolute inset-x-0 bottom-0 bg-gradient-to-t from-[#0d1726] via-[#0d1726]/70 to-transparent p-8 pt-28">
                     <div className="text-3xl font-bold leading-tight">{displayName}</div>

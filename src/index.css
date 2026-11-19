@@ -909,3 +909,167 @@ main :has(> table) {
     hyphens: auto;
   }
 }
+
+/* Thanh cuộn mảnh cho menu thả xuống và các khung cuộn của website. */
+.site-scroll {
+  scrollbar-width: thin;
+  scrollbar-color: rgb(103 232 249 / 0.35) transparent;
+  scrollbar-gutter: stable;
+}
+.site-scroll::-webkit-scrollbar {
+  width: 6px;
+}
+.site-scroll::-webkit-scrollbar-track {
+  background: transparent;
+  margin: 18px 0;
+}
+.site-scroll::-webkit-scrollbar-thumb {
+  border-radius: 999px;
+  background: linear-gradient(180deg, rgb(103 232 249 / 0.55), rgb(59 130 246 / 0.45));
+}
+.site-scroll::-webkit-scrollbar-thumb:hover {
+  background: rgb(103 232 249 / 0.8);
+}
+.site-scroll::-webkit-scrollbar-button {
+  display: none;
+  height: 0;
+}
+/* Thanh cuộn trang website: mảnh, cùng tông. */
+html:not(:has(.facs-cms)) {
+  scrollbar-width: thin;
+  scrollbar-color: rgb(103 232 249 / 0.3) #0b1422;
+}
+
+/* Thẻ kính: ảnh và chữ như in trên một tấm kính – nền trong mờ, viền sáng, vệt phản chiếu chạy theo con trỏ. */
+.site-glass {
+  background: linear-gradient(150deg, rgb(255 255 255 / 0.1), rgb(255 255 255 / 0.025) 36%, rgb(255 255 255 / 0.012) 62%, rgb(255 255 255 / 0.06)) !important;
+  border-color: rgb(255 255 255 / 0.16) !important;
+  -webkit-backdrop-filter: blur(16px) saturate(150%);
+  backdrop-filter: blur(16px) saturate(150%);
+  box-shadow:
+    inset 0 1px 0 rgb(255 255 255 / 0.3),
+    inset 1px 0 0 rgb(255 255 255 / 0.08),
+    inset 0 -1px 0 rgb(255 255 255 / 0.06),
+    0 40px 80px -40px rgb(0 0 0 / 0.9);
+}
+.site-card.site-glass::before {
+  z-index: 4;
+  opacity: 0.85;
+  mix-blend-mode: screen;
+  background:
+    linear-gradient(118deg, transparent calc(var(--mx, 35%) - 220px), rgb(255 255 255 / 0.14) calc(var(--mx, 35%) - 60px), rgb(255 255 255 / 0.05) calc(var(--mx, 35%) - 20px), transparent calc(var(--mx, 35%) + 60px)),
+    linear-gradient(118deg, transparent calc(var(--mx, 35%) + 40px), rgb(255 255 255 / 0.07) calc(var(--mx, 35%) + 70px), transparent calc(var(--mx, 35%) + 110px)),
+    linear-gradient(180deg, rgb(255 255 255 / 0.12), transparent 18%, transparent 82%, rgb(255 255 255 / 0.04));
+  transition: opacity 0.4s;
+}
+.site-card.site-glass:hover::before {
+  opacity: 1;
+}
+.site-glass img {
+  filter: saturate(1.05) contrast(1.03);
+}
+
+/* Trang trí hai bên lề (từ 1440px): đường viền sáng + hạt sáng chạy dọc + vòng tròn xoay.
+   Chỉ nằm trong phần lề ngoài khung nội dung (container 1280px / 1536px), không đè lên chữ. */
+.site-side {
+  display: none;
+}
+@media (min-width: 1440px) {
+  .site-side {
+    display: block;
+    position: fixed;
+    inset: 0;
+    z-index: 5;
+    pointer-events: none;
+    --rail-x: calc((100vw - 1280px) / 4);
+  }
+}
+@media (min-width: 1536px) {
+  .site-side {
+    --rail-x: calc((100vw - 1536px) / 4 + 12px);
+  }
+}
+.site-side__col {
+  position: absolute;
+  top: 0;
+  bottom: 0;
+  width: 0;
+}
+.site-side__col--left {
+  left: var(--rail-x);
+}
+.site-side__col--right {
+  right: var(--rail-x);
+}
+.site-side__rail {
+  position: absolute;
+  top: 90px;
+  bottom: 0;
+  left: 0;
+  width: 1px;
+  background: linear-gradient(180deg, transparent, rgb(103 232 249 / 0.28) 18%, rgb(59 130 246 / 0.22) 60%, transparent);
+}
+.site-side__spark {
+  position: absolute;
+  left: -2px;
+  top: 0;
+  width: 5px;
+  height: 90px;
+  border-radius: 999px;
+  background: linear-gradient(180deg, transparent, #67e8f9, transparent);
+  box-shadow: 0 0 14px 2px rgb(103 232 249 / 0.6);
+  animation: site-spark 9s cubic-bezier(0.45, 0, 0.55, 1) infinite;
+}
+.site-side__spark--up {
+  animation-direction: reverse;
+  animation-delay: -4.5s;
+}
+@keyframes site-spark {
+  0% { translate: 0 10vh; opacity: 0; }
+  12% { opacity: 1; }
+  88% { opacity: 1; }
+  100% { translate: 0 100vh; opacity: 0; }
+}
+.site-side__ring-wrap {
+  position: absolute;
+  width: 520px;
+  height: 520px;
+  translate: -50% var(--scroll-shift, 0px);
+}
+.site-side__col--left .site-side__ring-wrap {
+  left: calc(var(--rail-x) * -1 - 90px);
+  top: 50vh;
+}
+.site-side__col--right .site-side__ring-wrap {
+  left: calc(var(--rail-x) + 90px);
+  top: 14vh;
+}
+.site-side__rings {
+  width: 100%;
+  height: 100%;
+  opacity: 0.9;
+  rotate: var(--scroll-rot, 0deg);
+  -webkit-mask-image: radial-gradient(circle, #000 55%, transparent 72%);
+  mask-image: radial-gradient(circle, #000 55%, transparent 72%);
+}
+.site-side__col--right .site-side__rings {
+  rotate: calc(var(--scroll-rot, 0deg) * -1);
+}
+.site-side__spin {
+  transform-origin: 300px 300px;
+  animation: site-spin 70s linear infinite;
+}
+.site-side__spin--rev {
+  animation-duration: 95s;
+  animation-direction: reverse;
+}
+.site-side__spin--slow {
+  animation-duration: 140s;
+}
+@keyframes site-spin {
+  to { rotate: 360deg; }
+}
+@media (prefers-reduced-motion: reduce) {
+  .site-side__spark,
+  .site-side__spin { animation: none; }
+}
