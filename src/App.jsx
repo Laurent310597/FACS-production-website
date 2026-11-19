@@ -96,7 +96,7 @@ function HomeIntroOverlay() {
               initial={{ x: -18, opacity: 0, filter: "blur(8px)" }}
               animate={{ x: 0, opacity: 1, filter: "blur(0px)" }}
               transition={{ duration: 0.9, delay: 0.9, ease: "easeOut" }}
-              className="text-3xl font-bold tracking-[-1px] text-white md:text-5xl"
+              className="font-[Cambria,Georgia,serif] text-3xl font-bold tracking-[-0.5px] text-white md:text-5xl"
             >
               Your Trusted <span className="text-cyan-300">Partner</span>
             </motion.div>

@@ -94,8 +94,12 @@ export default function InsightsPage() {
       const matchesQuery = !normalized || `${localized.title} ${localized.excerpt}`.toLowerCase().includes(normalized);
       return matchesCategory && matchesQuery;
     })
-      // Bài mới nhất lên đầu, giảm dần theo ngày đăng (bài không có ngày xếp cuối).
-      .sort((a, b) => (Date.parse(b.published_at || b.created_at || 0) || 0) - (Date.parse(a.published_at || a.created_at || 0) || 0));
+      // Bài nổi bật (Featured) ghim lên đầu; trong mỗi nhóm, bài mới nhất trước rồi giảm dần theo ngày đăng.
+      .sort(
+        (a, b) =>
+          Number(Boolean(b.featured)) - Number(Boolean(a.featured)) ||
+          (Date.parse(b.published_at || b.created_at || 0) || 0) - (Date.parse(a.published_at || a.created_at || 0) || 0),
+      );
   }, [posts, query, category, language]);
 
   return (

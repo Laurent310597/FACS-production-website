@@ -108,12 +108,27 @@ export default function SiteSideDecor() {
     window.scrollTo({ top, behavior: "smooth" });
   }, []);
 
+  // Bàn phím: Enter/Space tới phần đó; mũi tên lên/trái = phần trước, xuống/phải = phần sau; Home/End = đầu/cuối.
+  const onSegKey = (e, i) => {
+    const total = sectionsRef.current.length;
+    let target = null;
+    if (e.key === "Enter" || e.key === " ") target = i;
+    else if (e.key === "ArrowDown" || e.key === "ArrowRight") target = Math.min(i + 1, total - 1);
+    else if (e.key === "ArrowUp" || e.key === "ArrowLeft") target = Math.max(i - 1, 0);
+    else if (e.key === "Home") target = 0;
+    else if (e.key === "End") target = total - 1;
+    if (target === null) return;
+    e.preventDefault();
+    jump(target);
+    if (target !== i) ringRef.current?.querySelectorAll(".site-ring__seg")[target]?.focus({ preventScroll: true });
+  };
+
   if (hidden || sections.length < 2) return null;
   const n = sections.length;
   const seg = 360 / n;
 
   return (
-    <div className="site-side" aria-hidden="false">
+    <div className="site-side">
       <nav className="site-ring" aria-label="Các phần của trang">
         <div className="site-ring__label">
           <span className="site-ring__count">{String(active + 1).padStart(2, "0")}<span>/{String(n).padStart(2, "0")}</span></span>
@@ -139,7 +154,16 @@ export default function SiteSideDecor() {
               const on = i === active;
               const [tx, ty] = polar(180 + (i + 0.5) * seg, R + 15);
               return (
-                <g key={`${i}-${s.label}`} className="site-ring__seg" onClick={() => jump(i)}>
+                <g
+                  key={`${i}-${s.label}`}
+                  className="site-ring__seg"
+                  role="button"
+                  tabIndex={0}
+                  aria-label={`${String(i + 1).padStart(2, "0")}/${String(n).padStart(2, "0")}: ${s.label}`}
+                  aria-current={on ? "true" : undefined}
+                  onClick={() => jump(i)}
+                  onKeyDown={(e) => onSegKey(e, i)}
+                >
                   <title>{s.label}</title>
                   <path d={arc(from, to)} fill="none" stroke="transparent" strokeWidth="22" />
                   <path d={arc(from, to)} fill="none" stroke={on ? "url(#site-ring-grad)" : "#67E8F9"} strokeOpacity={on ? 1 : 0.28} strokeWidth={on ? 3.5 : 1.8} strokeLinecap="round" />

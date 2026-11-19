@@ -1044,8 +1044,18 @@ html:not(:has(.facs-cms)) {
   cursor: pointer;
   pointer-events: auto;
 }
-.site-ring__seg:hover path:last-of-type {
-  stroke-opacity: 0.85;
+.site-ring__seg:hover path:last-of-type,
+.site-ring__seg:focus-visible path:last-of-type {
+  stroke-opacity: 0.95;
+}
+.site-ring__seg:focus {
+  outline: none;
+}
+.site-ring__seg:focus-visible path:first-of-type {
+  stroke: rgb(103 232 249 / 0.25);
+}
+.site-ring:focus-within .site-ring__svg {
+  opacity: 1;
 }
 .site-ring__label {
   position: absolute;
@@ -1204,4 +1214,36 @@ html.lang-swap #root {
 }
 @media (prefers-reduced-motion: reduce) {
   html.lang-swap #root { animation: none; }
+}
+
+/* In trang: hiện đủ mọi thẻ, bỏ chuyển động và trang trí nền. */
+@media print {
+  .site-reveal .site-card:not(.is-in),
+  .facs-reveal .facs-card:not(.is-in) {
+    opacity: 1 !important;
+    translate: none !important;
+    scale: none !important;
+  }
+  .site-side,
+  .site-backdrop,
+  .ib,
+  .ib-diag,
+  .facs-backdrop {
+    display: none !important;
+  }
+  *,
+  *::before,
+  *::after {
+    animation: none !important;
+    transition: none !important;
+  }
+  .site-card::before,
+  .site-card::after {
+    display: none !important;
+  }
+  /* Khối do framer-motion điều khiển, chưa cuộn tới (đang ẩn bằng style trực tiếp). */
+  [style*="opacity: 0"] {
+    opacity: 1 !important;
+    transform: none !important;
+  }
 }
