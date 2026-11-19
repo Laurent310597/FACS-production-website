@@ -49,7 +49,7 @@ export default function IndustriesPage() {
                     key={industry.slug}
                     whileHover={{ y: -10 }}
                     transition={{ duration: 0.3 }}
-                    className="group rounded-[32px] border border-white/10 bg-white/[0.045] backdrop-blur-xl p-8 hover:border-cyan-400/25 hover:bg-white/[0.055] hover:shadow-[0_26px_80px_rgba(8,145,178,0.12)] transition-all duration-500"
+                    className="site-card site-tile group rounded-[32px] border border-white/10 bg-white/[0.045] backdrop-blur-xl p-8 hover:border-cyan-400/25 hover:bg-white/[0.055] hover:shadow-[0_26px_80px_rgba(8,145,178,0.12)] transition-all duration-500"
                   >
                     <Link to={`/industries/${industry.slug}`} className="block h-full">
                       <div className="w-16 h-16 rounded-2xl bg-cyan-500/10 flex items-center justify-center group-hover:bg-cyan-500/15 group-hover:scale-105 transition-all duration-500">
@@ -78,7 +78,7 @@ export default function IndustriesPage() {
         {/* CTA */}
         <section className="py-32">
           <div className="container mx-auto px-6 lg:px-12">
-            <div className="rounded-[48px] border border-white/10 bg-gradient-to-br from-cyan-500/10 to-blue-600/10 p-12 lg:p-24 backdrop-blur-xl">
+            <div className="site-card rounded-[48px] border border-white/10 bg-gradient-to-br from-cyan-500/10 to-blue-600/10 p-12 lg:p-24 backdrop-blur-xl">
               <div className="max-w-3xl">
                 <div className="text-cyan-400 mb-5 font-bold text-base">
                   {isVi ? "Tư vấn theo lĩnh vực" : "Industry-Focused Consulting"}
@@ -94,7 +94,7 @@ export default function IndustriesPage() {
                     : "Partner with FACS to build scalable operational and financial systems tailored to your industry."}
                 </p>
 
-                <Link to="/contact" className="inline-flex mt-10 px-8 py-4 rounded-2xl bg-cyan-500 hover:bg-cyan-400 hover:-translate-y-1 transition-all duration-300 text-[#06111f] font-semibold hover:shadow-[0_18px_42px_rgba(6,182,212,0.26)]">
+                <Link to="/contact" className="site-cta inline-flex mt-10 px-8 py-4 rounded-2xl bg-cyan-500 hover:bg-cyan-400 hover:-translate-y-1 transition-all duration-300 text-[#06111f] font-semibold hover:shadow-[0_18px_42px_rgba(6,182,212,0.26)]">
                   {isVi ? "Trao đổi cùng FACS" : "Talk With FACS"}
                 </Link>
               </div>

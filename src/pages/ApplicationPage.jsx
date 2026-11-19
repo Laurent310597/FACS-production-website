@@ -4,11 +4,13 @@ import { motion } from "framer-motion";
 import { CheckCircle2, Loader2 } from "lucide-react";
 import Navbar from "../components/Navbar";
 import Footer from "../components/Footer";
+import { useToast } from "../components/admin/ui/toastContext";
 import { useLanguage } from "../components/LanguageContext";
 import { newSubmissionKey, submitWebsiteForm } from "../lib/formSubmissions";
 
 export default function ApplicationPage() {
   const { language } = useLanguage();
+  const toast = useToast();
   const isVi = language === "vi";
   const [params] = useSearchParams();
   const selectedPosition = params.get("position") || "";
@@ -32,6 +34,7 @@ export default function ApplicationPage() {
         extra: { job_post_id: jobPostId },
       });
       setSuccess(true);
+      toast.success(language === "vi" ? "Đã gửi hồ sơ ứng tuyển. Cảm ơn bạn đã quan tâm tới FACS." : "Application submitted. Thank you for your interest in FACS.");
       submissionKey.current = newSubmissionKey();
       formElement.reset();
     } catch (submitError) {
@@ -68,7 +71,7 @@ export default function ApplicationPage() {
                 <Link to="/careers" className="mt-7 inline-flex rounded-2xl bg-cyan-300 px-6 py-3 font-bold text-[#071421]">{isVi ? "Trở lại Tuyển dụng" : "Back to Careers"}</Link>
               </div>
             ) : (
-              <motion.form onSubmit={handleSubmit} initial={{ opacity: 0, y: 30 }} animate={{ opacity: 1, y: 0 }} transition={{ duration: 0.7 }} className="mx-auto max-w-4xl space-y-6 rounded-[40px] border border-white/10 bg-white/[0.045] p-8 backdrop-blur-xl lg:p-12">
+              <motion.form onSubmit={handleSubmit} initial={{ opacity: 0, y: 30 }} animate={{ opacity: 1, y: 0 }} transition={{ duration: 0.7 }} className="site-card mx-auto max-w-4xl space-y-6 rounded-[40px] border border-white/10 bg-white/[0.045] p-8 backdrop-blur-xl lg:p-12">
                 <div className="grid gap-6 md:grid-cols-2">
                   <input name="full_name" required placeholder={isVi ? "Họ và tên *" : "Full Name *"} className="rounded-2xl border border-white/10 bg-white/[0.045] p-5 outline-none transition-all focus:border-cyan-300/50" />
                   <input name="phone" required placeholder={isVi ? "Số điện thoại *" : "Phone Number *"} className="rounded-2xl border border-white/10 bg-white/[0.045] p-5 outline-none transition-all focus:border-cyan-300/50" />
@@ -87,7 +90,7 @@ export default function ApplicationPage() {
                 </label>
                 <input name="website" tabIndex="-1" autoComplete="off" aria-hidden="true" className="absolute -left-[10000px] h-px w-px opacity-0" />
                 {error && <div className="rounded-2xl border border-red-300/20 bg-red-400/8 px-5 py-4 text-sm text-red-200">{error}</div>}
-                <button disabled={submitting} type="submit" className="inline-flex items-center gap-2 rounded-2xl bg-cyan-500 px-8 py-4 font-semibold transition-all hover:-translate-y-1 hover:bg-cyan-400 disabled:cursor-not-allowed disabled:opacity-60">
+                <button disabled={submitting} type="submit" className="site-cta inline-flex items-center gap-2 rounded-2xl bg-cyan-500 px-8 py-4 font-semibold transition-all hover:-translate-y-1 hover:bg-cyan-400 disabled:cursor-not-allowed disabled:opacity-60">
                   {submitting && <Loader2 size={18} className="animate-spin" />}{submitting ? (isVi ? "Đang gửi..." : "Submitting...") : (isVi ? "Gửi hồ sơ" : "Submit Application")}
                 </button>
               </motion.form>

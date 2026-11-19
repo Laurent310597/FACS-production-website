@@ -125,12 +125,12 @@ export default function ServicesPage() {
                 className="relative"
               >
 
-                <div className="rounded-[40px] border border-white/10 bg-white/[0.045] backdrop-blur-xl p-10 h-[700px] flex flex-col justify-between">
+                <div className="site-card rounded-[40px] border border-white/10 bg-white/[0.045] backdrop-blur-xl p-10 h-[700px] flex flex-col justify-between">
 
                   {/* TOP */}
                   <div className="grid grid-cols-2 gap-6">
 
-                    <div className="rounded-3xl bg-[#111827]/80 p-8 border border-white/10">
+                    <div className="site-card rounded-3xl bg-[#111827]/80 p-8 border border-white/10">
 
                       <ShieldCheck
                         size={40}
@@ -145,7 +145,7 @@ export default function ServicesPage() {
 
                     </div>
 
-                    <div className="rounded-3xl bg-[#111827]/80 p-8 border border-white/10">
+                    <div className="site-card rounded-3xl bg-[#111827]/80 p-8 border border-white/10">
 
                       <BarChart3
                         size={40}
@@ -163,7 +163,7 @@ export default function ServicesPage() {
                   </div>
 
                   {/* CENTER */}
-                  <div className="rounded-[32px] bg-gradient-to-br from-cyan-500/10 to-blue-500/10 border border-cyan-400/10 p-10">
+                  <div className="site-card rounded-[32px] bg-gradient-to-br from-cyan-500/10 to-blue-500/10 border border-cyan-400/10 p-10">
 
                     <Building2
                       size={60}
@@ -186,7 +186,7 @@ export default function ServicesPage() {
                   </div>
 
                   {/* BOTTOM */}
-                  <div className="rounded-3xl bg-[#111827]/80 p-8 border border-white/10 flex items-center justify-between">
+                  <div className="site-card rounded-3xl bg-[#111827]/80 p-8 border border-white/10 flex items-center justify-between">
 
                     <div>
 
@@ -257,7 +257,7 @@ export default function ServicesPage() {
                       duration: 0.3,
                     }}
 
-                    className="group rounded-[32px] border border-white/10 bg-white/[0.045] backdrop-blur-xl p-10 hover:border-cyan-400/30 hover:bg-white/[0.055] hover:shadow-[0_24px_80px_rgba(8,145,178,0.12)] transition-all duration-500"
+                    className="site-card site-tile group rounded-[32px] border border-white/10 bg-white/[0.045] backdrop-blur-xl p-10 hover:border-cyan-400/30 hover:bg-white/[0.055] hover:shadow-[0_24px_80px_rgba(8,145,178,0.12)] transition-all duration-500"
                   >
 
                     <div className="w-16 h-16 rounded-2xl bg-cyan-500/10 flex items-center justify-center transition-all duration-500 group-hover:scale-110 group-hover:bg-cyan-500/15">
@@ -327,7 +327,7 @@ export default function ServicesPage() {
                     y: -10,
                   }}
 
-                  className="rounded-[32px] border border-white/10 bg-white/[0.045] p-10 transition-all duration-300 hover:border-cyan-300/25 hover:bg-white/[0.055] hover:shadow-[0_24px_70px_rgba(34,211,238,0.10)]"
+                  className="site-card site-tile rounded-[32px] border border-white/10 bg-white/[0.045] p-10 transition-all duration-300 hover:border-cyan-300/25 hover:bg-white/[0.055] hover:shadow-[0_24px_70px_rgba(34,211,238,0.10)]"
                 >
 
                   <div className="text-cyan-400 text-5xl font-bold">
@@ -357,7 +357,7 @@ export default function ServicesPage() {
 
           <div className="container mx-auto px-6 lg:px-12">
 
-            <div className="rounded-[48px] border border-white/10 bg-gradient-to-br from-cyan-500/10 to-blue-600/10 p-12 lg:p-24 backdrop-blur-xl">
+            <div className="site-card rounded-[48px] border border-white/10 bg-gradient-to-br from-cyan-500/10 to-blue-600/10 p-12 lg:p-24 backdrop-blur-xl">
 
               <div className="max-w-3xl">
 
@@ -378,7 +378,7 @@ export default function ServicesPage() {
 
                 </p>
 
-                <Link to="/contact" className="inline-flex mt-10 px-8 py-4 rounded-2xl bg-cyan-500 hover:bg-cyan-400 hover:-translate-y-1 transition-all duration-300 text-[#06111f] font-semibold hover:shadow-[0_18px_42px_rgba(6,182,212,0.26)]">
+                <Link to="/contact" className="site-cta inline-flex mt-10 px-8 py-4 rounded-2xl bg-cyan-500 hover:bg-cyan-400 hover:-translate-y-1 transition-all duration-300 text-[#06111f] font-semibold hover:shadow-[0_18px_42px_rgba(6,182,212,0.26)]">
 
                   Schedule Consultation
 

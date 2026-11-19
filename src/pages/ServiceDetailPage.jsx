@@ -24,7 +24,7 @@ function BulletList({ items }) {
   return (
     <div className="mt-6 space-y-4">
       {items.map((item) => (
-        <div key={item} className="flex gap-4 rounded-3xl border border-white/10 bg-[#111827]/80 p-5 transition-all duration-300 hover:translate-x-1 hover:border-cyan-400/25 hover:bg-white/[0.05]">
+        <div key={item} className="site-card site-tile flex gap-4 rounded-3xl border border-white/10 bg-[#111827]/80 p-5 transition-all duration-300 hover:translate-x-1 hover:border-cyan-400/25 hover:bg-white/[0.05]">
           <CheckCircle2 className="mt-1 shrink-0 text-cyan-400" size={22} />
           <div className="leading-relaxed text-slate-300">{item}</div>
         </div>
@@ -135,7 +135,7 @@ export default function ServiceDetailPage() {
                 <p className="mt-10 text-xl leading-relaxed text-slate-400">{service.desc}</p>
               </motion.div>
 
-              <motion.div whileHover={{ y: -10, scale: 1.01 }} transition={{ duration: 0.35 }} className="rounded-[40px] border border-white/10 bg-white/[0.045] p-10 backdrop-blur-xl hover:border-cyan-300/25 hover:shadow-[0_30px_90px_rgba(8,145,178,0.13)]">
+              <motion.div whileHover={{ y: -10, scale: 1.01 }} transition={{ duration: 0.35 }} className="site-card rounded-[40px] border border-white/10 bg-white/[0.045] p-10 backdrop-blur-xl hover:border-cyan-300/25 hover:shadow-[0_30px_90px_rgba(8,145,178,0.13)]">
                 <div className="flex h-20 w-20 items-center justify-center rounded-3xl bg-cyan-500/10 shadow-[0_0_40px_rgba(34,211,238,0.14)]">
                   <Icon size={40} className="text-cyan-400" />
                 </div>
@@ -225,12 +225,12 @@ export default function ServiceDetailPage() {
 
         <section className="py-28">
           <div className="container mx-auto px-6 lg:px-12">
-            <div className="rounded-[48px] border border-white/10 bg-gradient-to-br from-cyan-500/10 to-blue-600/10 p-12 backdrop-blur-xl transition-all duration-500 hover:border-cyan-400/20 lg:p-20">
+            <div className="site-card rounded-[48px] border border-white/10 bg-gradient-to-br from-cyan-500/10 to-blue-600/10 p-12 backdrop-blur-xl transition-all duration-500 hover:border-cyan-400/20 lg:p-20">
               <div className="max-w-3xl">
                 <div className="mb-5 font-medium text-cyan-400">{labels.tailoredSolution}</div>
                 <h2 className="text-4xl font-bold leading-tight lg:text-6xl">{labels.discuss}</h2>
                 <p className="mt-8 text-lg leading-relaxed text-slate-300">{labels.ctaText}</p>
-                <Link to="/contact" className="mt-10 inline-flex rounded-2xl bg-cyan-500 px-8 py-4 font-semibold text-[#06111f] transition-all duration-300 hover:-translate-y-1 hover:bg-cyan-400 hover:shadow-[0_18px_42px_rgba(6,182,212,0.26)]">
+                <Link to="/contact" className="site-cta mt-10 inline-flex rounded-2xl bg-cyan-500 px-8 py-4 font-semibold text-[#06111f] transition-all duration-300 hover:-translate-y-1 hover:bg-cyan-400 hover:shadow-[0_18px_42px_rgba(6,182,212,0.26)]">
                   {labels.schedule}
                 </Link>
               </div>

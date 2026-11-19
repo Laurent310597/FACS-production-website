@@ -173,7 +173,7 @@ export default function LegalPage({ type }) {
               {page.sections.map((section) => (
                 <article
                   key={section.heading}
-                  className="rounded-3xl border border-cyan-200/12 bg-white/[0.035] p-7 shadow-[0_22px_80px_rgba(0,0,0,0.22)] backdrop-blur-xl transition-all duration-300 hover:-translate-y-1 hover:border-cyan-300/25 hover:bg-white/[0.055]"
+                  className="site-card site-tile rounded-3xl border border-cyan-200/12 bg-white/[0.035] p-7 shadow-[0_22px_80px_rgba(0,0,0,0.22)] backdrop-blur-xl transition-all duration-300 hover:-translate-y-1 hover:border-cyan-300/25 hover:bg-white/[0.055]"
                 >
                   <h2 className="text-xl font-semibold text-white">{section.heading}</h2>
                   <p className="mt-4 leading-8 text-slate-300">{section.body}</p>

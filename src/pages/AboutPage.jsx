@@ -57,25 +57,25 @@ export default function AboutPage() {
               </motion.div>
 
               <motion.div initial={{ opacity: 0, scale: 0.95 }} animate={{ opacity: 1, scale: 1 }} transition={{ duration: 0.8 }} className="relative">
-                <div className="rounded-[40px] border border-white/10 bg-white/[0.045] backdrop-blur-xl p-8 lg:p-10 min-h-[640px] flex flex-col justify-between">
+                <div className="site-card rounded-[40px] border border-white/10 bg-white/[0.045] backdrop-blur-xl p-8 lg:p-10 min-h-[640px] flex flex-col justify-between">
                   <div className="grid grid-cols-2 gap-6">
-                    <div className="rounded-3xl bg-[#111827]/80 p-7 border border-white/10">
+                    <div className="site-card rounded-3xl bg-[#111827]/80 p-7 border border-white/10">
                       <ShieldCheck size={40} className="text-cyan-400" />
                       <AnimatedCounter value="8" className="mt-6 block text-4xl font-bold" />
                       <div className="mt-2 text-slate-400">Industry Sectors</div>
                     </div>
-                    <div className="rounded-3xl bg-[#111827]/80 p-7 border border-white/10">
+                    <div className="site-card rounded-3xl bg-[#111827]/80 p-7 border border-white/10">
                       <Building2 size={40} className="text-cyan-400" />
                       <AnimatedCounter value="10+" className="mt-6 block text-4xl font-bold" />
                       <div className="mt-2 text-slate-400">Strategic Partners</div>
                     </div>
                   </div>
-                  <div className="rounded-[32px] bg-gradient-to-br from-cyan-500/10 to-blue-500/10 border border-cyan-400/10 p-9">
+                  <div className="site-card rounded-[32px] bg-gradient-to-br from-cyan-500/10 to-blue-500/10 border border-cyan-400/10 p-9">
                     <BarChart3 size={60} className="text-cyan-400" />
                     <div className="mt-8 text-3xl font-bold leading-snug text-balance">Enterprise Financial Intelligence</div>
                     <p className="mt-5 text-slate-400 leading-relaxed text-pretty">Modern consulting systems designed to optimize operations, compliance and sustainable growth.</p>
                   </div>
-                  <div className="rounded-3xl bg-[#111827]/80 p-7 border border-white/10 flex items-center justify-between gap-6">
+                  <div className="site-card rounded-3xl bg-[#111827]/80 p-7 border border-white/10 flex items-center justify-between gap-6">
                     <div>
                       <div className="text-3xl font-bold text-balance">Strategic Advisory</div>
                       <div className="mt-3 text-slate-400">Accounting · Tax · Legal · Governance</div>
@@ -114,7 +114,7 @@ export default function AboutPage() {
               ].map((item) => {
                 const Icon = item.icon;
                 return (
-                  <motion.div key={item.label} whileHover={{ y: -8 }} transition={{ duration: 0.3 }} className="h-full rounded-[32px] border border-white/10 bg-white/[0.045] backdrop-blur-xl p-8 hover:border-cyan-400/25 hover:shadow-[0_0_40px_rgba(34,211,238,0.10)]">
+                  <motion.div key={item.label} whileHover={{ y: -8 }} transition={{ duration: 0.3 }} className="site-card site-tile h-full rounded-[32px] border border-white/10 bg-white/[0.045] backdrop-blur-xl p-8 hover:border-cyan-400/25 hover:shadow-[0_0_40px_rgba(34,211,238,0.10)]">
                     <div className="w-14 h-14 rounded-2xl bg-cyan-500/10 flex items-center justify-center">
                       <Icon size={28} className="text-cyan-400" />
                     </div>
@@ -126,7 +126,7 @@ export default function AboutPage() {
               })}
             </div>
 
-            <div className="mt-10 rounded-[32px] border border-white/10 bg-[#111827]/60 p-8">
+            <div className="site-card mt-10 rounded-[32px] border border-white/10 bg-[#111827]/60 p-8">
               <div className="grid sm:grid-cols-2 lg:grid-cols-4 gap-4">
                 {values.map((value) => (
                   <motion.div
@@ -154,7 +154,7 @@ export default function AboutPage() {
 
             <div className="grid md:grid-cols-3 gap-8 mt-16">
               {leadership.map((member) => (
-                <motion.article key={member.slug} whileHover={{ y: -10 }} transition={{ duration: 0.3 }} className="group h-full overflow-hidden rounded-[36px] border border-white/10 bg-white/[0.045] backdrop-blur-xl transition-all duration-500 hover:border-cyan-300/25 hover:shadow-[0_0_50px_rgba(34,211,238,0.12)]">
+                <motion.article key={member.slug} whileHover={{ y: -10 }} transition={{ duration: 0.3 }} className="site-card site-tile group h-full overflow-hidden rounded-[36px] border border-white/10 bg-white/[0.045] backdrop-blur-xl transition-all duration-500 hover:border-cyan-300/25 hover:shadow-[0_0_50px_rgba(34,211,238,0.12)]">
                   <Link to={`/about/team/${member.slug}`} className="block h-full">
                     <div className="relative h-[420px] overflow-hidden bg-[#1f242c]">
                       <img src={member.photo} alt={getName(member)} className="h-full w-full object-cover object-top transition-all duration-700 group-hover:scale-105" />

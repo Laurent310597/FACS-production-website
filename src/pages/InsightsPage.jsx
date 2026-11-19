@@ -3,6 +3,7 @@ import { ArrowRight, CalendarDays, Search } from "lucide-react";
 import { motion } from "framer-motion";
 import { Link } from "react-router-dom";
 import Footer from "../components/Footer";
+import SiteBackdrop from "../components/site/SiteBackdrop";
 import Navbar from "../components/Navbar";
 import { useLanguage } from "../components/LanguageContext";
 import {
@@ -16,12 +17,12 @@ import { isSupabaseConfigured, supabase } from "../lib/supabaseClient";
 
 function PostSkeleton() {
   return (
-    <div className="overflow-hidden rounded-[32px] border border-white/10 bg-white/[0.04]">
-      <div className="h-56 animate-pulse bg-white/[0.06]" />
+    <div className="site-card overflow-hidden rounded-[32px] border border-white/10 bg-white/[0.04]">
+      <div className="h-56 site-skeleton bg-white/[0.06]" />
       <div className="space-y-4 p-8">
-        <div className="h-3 w-24 animate-pulse rounded-full bg-white/[0.08]" />
-        <div className="h-7 w-4/5 animate-pulse rounded-full bg-white/[0.08]" />
-        <div className="h-4 w-full animate-pulse rounded-full bg-white/[0.06]" />
+        <div className="h-3 w-24 site-skeleton rounded-full bg-white/[0.08]" />
+        <div className="h-7 w-4/5 site-skeleton rounded-full bg-white/[0.08]" />
+        <div className="h-4 w-full site-skeleton rounded-full bg-white/[0.06]" />
       </div>
     </div>
   );
@@ -89,8 +90,9 @@ export default function InsightsPage() {
   return (
     <main className="min-h-screen bg-[radial-gradient(circle_at_top_right,rgba(0,183,255,0.10),transparent_30%),linear-gradient(135deg,#0d1726_0%,#101b2f_48%,#132238_100%)] text-white">
       <Navbar />
-      <section className="border-b border-white/10 py-24 md:py-32">
-        <div className="container mx-auto px-6 lg:px-12">
+      <section className="relative overflow-hidden border-b border-white/10 py-24 md:py-32">
+        <SiteBackdrop />
+        <div className="container relative z-10 mx-auto px-6 lg:px-12">
           <div className="max-w-4xl">
             <div className="mb-4 text-cyan-400">{isVi ? "Góc nhìn chuyên môn" : "Insights & Perspectives"}</div>
             <h1 className="text-balance text-5xl font-bold leading-tight lg:text-7xl">
@@ -103,7 +105,7 @@ export default function InsightsPage() {
             </p>
           </div>
 
-          <div className="mt-14 grid gap-4 rounded-[28px] border border-white/10 bg-white/[0.035] p-4 lg:grid-cols-[minmax(260px,1fr)_auto]">
+          <div className="site-card mt-14 grid gap-4 rounded-[28px] border border-white/10 bg-white/[0.035] p-4 lg:grid-cols-[minmax(260px,1fr)_auto]">
             <label className="flex items-center rounded-2xl border border-white/10 bg-[#081321]/55 px-4 focus-within:border-cyan-300/35">
               <Search size={18} className="text-slate-500" />
               <input
@@ -130,7 +132,7 @@ export default function InsightsPage() {
               {[0, 1, 2].map((item) => <PostSkeleton key={item} />)}
             </div>
           ) : visiblePosts.length === 0 ? (
-            <div className="mt-12 rounded-[32px] border border-white/10 bg-white/[0.035] px-7 py-20 text-center">
+            <div className="site-card mt-12 rounded-[32px] border border-white/10 bg-white/[0.035] px-7 py-20 text-center">
               <div className="text-2xl font-semibold">{isVi ? "Chưa có bài viết phù hợp" : "No matching insights yet"}</div>
               <p className="mt-3 text-slate-500">{isVi ? "Hãy thử thay đổi từ khóa hoặc chuyên mục." : "Try a different keyword or category."}</p>
             </div>
@@ -146,7 +148,7 @@ export default function InsightsPage() {
                     viewport={{ once: true, amount: 0.15 }}
                     transition={{ duration: 0.5, delay: Math.min(index * 0.06, 0.24) }}
                     whileHover={{ y: -9 }}
-                    className="group overflow-hidden rounded-[32px] border border-white/10 bg-white/[0.045] transition-all duration-300 hover:border-cyan-300/25 hover:shadow-[0_0_48px_rgba(34,211,238,0.14)]"
+                    className="site-card site-tile group overflow-hidden rounded-[32px] border border-white/10 bg-white/[0.045] transition-all duration-300 hover:border-cyan-300/25 hover:shadow-[0_0_48px_rgba(34,211,238,0.14)]"
                   >
                     <Link to={`/insights/${localized.slug}`} className="block h-full">
                       <div className="relative h-56 overflow-hidden bg-[#0d1726]">

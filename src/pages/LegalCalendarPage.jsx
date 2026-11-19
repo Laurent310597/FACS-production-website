@@ -66,7 +66,7 @@ function LegalCalendarSkeleton() {
   return (
     <div className="grid grid-cols-7 gap-2">
       {Array.from({ length: 35 }, (_, index) => (
-        <div key={index} className="min-h-24 animate-pulse rounded-2xl bg-slate-300/65 md:min-h-32" />
+        <div key={index} className="min-h-24 site-skeleton rounded-2xl bg-slate-300/65 md:min-h-32" />
       ))}
     </div>
   );
@@ -409,7 +409,7 @@ export default function LegalCalendarPage() {
                     <EventCard event={event} language={language} />
                   </motion.div>
                 )) : (
-                  <div className="rounded-[28px] border border-white/10 bg-white/[0.03] px-6 py-16 text-center">
+                  <div className="site-card rounded-[28px] border border-white/10 bg-white/[0.03] px-6 py-16 text-center">
                     <CalendarCheck2 size={34} className="mx-auto text-slate-600" />
                     <div className="mt-4 text-xl font-semibold">{isVi ? "Chưa có mốc đã công bố" : "No published deadlines"}</div>
                     <p className="mx-auto mt-2 max-w-lg text-sm leading-relaxed text-slate-500">
@@ -430,7 +430,7 @@ export default function LegalCalendarPage() {
                 <p>{isVi ? "Ngày thực hiện có thể thay đổi do ngày nghỉ, phương thức nộp, cơ quan quản lý, địa phương hoặc đặc điểm của doanh nghiệp." : "Dates may change due to holidays, filing method, authority, locality or enterprise-specific circumstances."}</p>
               </div>
 
-              <a href="/contact" className="mt-6 inline-flex w-full items-center justify-center gap-2 rounded-2xl bg-cyan-300 px-5 py-3.5 font-bold text-[#071421] transition hover:-translate-y-0.5 hover:bg-cyan-200">
+              <a href="/contact" className="site-cta mt-6 inline-flex w-full items-center justify-center gap-2 rounded-2xl bg-cyan-300 px-5 py-3.5 font-bold text-[#071421] transition hover:-translate-y-0.5 hover:bg-cyan-200">
                 {isVi ? "Trao đổi với FACS" : "Discuss with FACS"} <ExternalLink size={16} />
               </a>
             </aside>

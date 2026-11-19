@@ -42,6 +42,7 @@ import TeamMemberDetailPage from "./pages/TeamMemberDetailPage";
 import ScrollToTop from "./components/ScrollToTop";
 import PageTransition from "./components/PageTransition";
 import MouseGlow from "./components/MouseGlow";
+import useSiteMotion from "./components/site/useSiteMotion";
 import { LanguageProvider } from "./components/LanguageContext";
 
 function HomeIntroOverlay() {
@@ -105,6 +106,12 @@ function HomeIntroOverlay() {
   );
 }
 
+// Chuyển động chung cho website (thẻ, hiện dần khi cuộn, gợn sóng nút kêu gọi hành động).
+function SiteMotion() {
+  useSiteMotion();
+  return null;
+}
+
 function AnimatedRoutes() {
   const location = useLocation();
 
@@ -164,6 +171,7 @@ export default function App() {
       <LanguageProvider>
         <ScrollToTop />
         <MouseGlow />
+        <SiteMotion />
         <HomeIntroOverlay />
         {/* Thông báo dạng toast cho CMS; giữ qua các lần chuyển trang */}
         <ToastProvider>

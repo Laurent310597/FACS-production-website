@@ -31,7 +31,7 @@ export default function TeamMemberDetailPage() {
             <div className="mt-12 grid items-center gap-12 lg:grid-cols-[0.88fr_1.12fr] lg:gap-16">
               <motion.div initial={{ opacity: 0, y: 28 }} animate={{ opacity: 1, y: 0 }} transition={{ duration: 0.7 }} className="relative">
                 <div className="absolute -inset-4 rounded-[44px] bg-cyan-400/10 blur-2xl" />
-                <div className="relative overflow-hidden rounded-[40px] border border-cyan-200/15 bg-white/[0.045] shadow-[0_30px_100px_rgba(0,0,0,0.32)]">
+                <div className="site-card relative overflow-hidden rounded-[40px] border border-cyan-200/15 bg-white/[0.045] shadow-[0_30px_100px_rgba(0,0,0,0.32)]">
                   <img src={member.photo} alt={displayName} className="h-[560px] w-full object-cover object-top" />
                   <div className="absolute inset-x-0 bottom-0 bg-gradient-to-t from-[#0d1726] via-[#0d1726]/70 to-transparent p-8 pt-28">
                     <div className="text-3xl font-bold leading-tight">{displayName}</div>
@@ -48,11 +48,11 @@ export default function TeamMemberDetailPage() {
                 <p className="mt-8 max-w-4xl text-lg leading-relaxed text-slate-300 text-pretty lg:text-xl">{isVi ? member.summaryVi : member.summary}</p>
 
                 <div className="mt-8 grid gap-4 sm:grid-cols-2">
-                  <div className="rounded-3xl border border-white/10 bg-white/[0.045] p-6">
+                  <div className="site-card rounded-3xl border border-white/10 bg-white/[0.045] p-6">
                     <Award className="text-cyan-300" size={28} />
                     <div className="mt-4 text-2xl font-bold">{isVi ? member.experienceVi : member.experience}</div>
                   </div>
-                  <div className="rounded-3xl border border-white/10 bg-white/[0.045] p-6">
+                  <div className="site-card rounded-3xl border border-white/10 bg-white/[0.045] p-6">
                     <ShieldCheck className="text-cyan-300" size={28} />
                     <div className="mt-4 flex flex-wrap gap-2">
                       {credentials.map((item) => <span key={item} className="rounded-full border border-cyan-200/15 bg-cyan-400/10 px-3 py-1 text-sm font-bold text-cyan-100">{item}</span>)}
@@ -67,7 +67,7 @@ export default function TeamMemberDetailPage() {
         <section className="border-b border-white/10 py-24">
           <div className="container mx-auto px-6 lg:px-12">
             <div className="grid gap-8 lg:grid-cols-[0.95fr_1.05fr]">
-              <div className="rounded-[36px] border border-white/10 bg-white/[0.045] p-8 lg:p-10">
+              <div className="site-card rounded-[36px] border border-white/10 bg-white/[0.045] p-8 lg:p-10">
                 <div className="flex items-center gap-3 text-cyan-300">
                   <BriefcaseBusiness size={26} />
                   <div className="text-lg font-bold">{isVi ? "Năng lực chuyên môn" : "Professional Strengths"}</div>
@@ -82,7 +82,7 @@ export default function TeamMemberDetailPage() {
                 </div>
               </div>
 
-              <div className="rounded-[36px] border border-white/10 bg-gradient-to-br from-cyan-400/10 to-blue-500/8 p-8 lg:p-10">
+              <div className="site-card rounded-[36px] border border-white/10 bg-gradient-to-br from-cyan-400/10 to-blue-500/8 p-8 lg:p-10">
                 <div className="flex items-center gap-3 text-cyan-300">
                   <Sparkles size={26} />
                   <div className="text-lg font-bold">{isVi ? "Lĩnh vực trọng tâm" : "Advisory Focus"}</div>
@@ -96,7 +96,7 @@ export default function TeamMemberDetailPage() {
                   <div className="text-2xl font-bold">{isVi ? "Kết nối tư vấn" : "Connect for advisory"}</div>
                   <p className="mt-4 leading-relaxed text-slate-400">{isVi ? "Trao đổi cùng FACS để được tư vấn giải pháp phù hợp với nhu cầu quản trị, kế toán, thuế và vận hành của doanh nghiệp." : "Contact FACS to discuss practical solutions for your enterprise management, accounting, tax and operating needs."}</p>
                   <div className="mt-6 grid gap-3 sm:grid-cols-2">
-                    <a href={`tel:${member.phone.replace(/\s/g, "")}`} className="flex items-center gap-3 rounded-2xl border border-white/10 bg-white/[0.045] px-4 py-3 font-semibold text-slate-200 transition-all duration-300 hover:bg-cyan-300 hover:text-[#06111f]"><Phone size={18} />{member.phone}</a>
+                    <a href={`tel:${member.phone.replace(/\s/g, "")}`} className="site-cta flex items-center gap-3 rounded-2xl border border-white/10 bg-white/[0.045] px-4 py-3 font-semibold text-slate-200 transition-all duration-300 hover:bg-cyan-300 hover:text-[#06111f]"><Phone size={18} />{member.phone}</a>
                     <a href={`mailto:${member.email}`} className="flex items-center gap-3 rounded-2xl border border-white/10 bg-white/[0.045] px-4 py-3 font-semibold text-slate-200 transition-all duration-300 hover:bg-cyan-300 hover:text-[#06111f]"><Mail size={18} />{member.email}</a>
                   </div>
                 </div>
