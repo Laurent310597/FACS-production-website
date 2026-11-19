@@ -285,11 +285,11 @@ export default function AdminPostEditorPage() {
     <AdminLayout>
       <div className="flex flex-col gap-5 lg:flex-row lg:items-end lg:justify-between">
         <div>
-          <Link to="/admin/posts" className="inline-flex items-center gap-2 text-sm text-slate-400 transition hover:text-cyan-200"><ArrowLeft size={16} /> Trở lại danh sách</Link>
+          <Link to="/admin/posts" className="inline-flex items-center gap-2 text-sm text-ink-2 transition hover:text-cyan-200"><ArrowLeft size={16} /> Trở lại danh sách</Link>
           <h1 className="mt-4 text-3xl font-bold md:text-4xl">{isEditing ? "Chỉnh sửa bài viết" : "Viết bài mới"}</h1>
-          <p className="mt-2 max-w-2xl text-sm leading-relaxed text-slate-400">Nội dung, tác giả và đường dẫn được quản lý riêng theo từng ngôn ngữ. Các thiết lập xuất bản được gom ở cột bên phải.</p>
+          <p className="mt-2 max-w-2xl text-sm leading-relaxed text-ink-2">Nội dung, tác giả và đường dẫn được quản lý riêng theo từng ngôn ngữ. Các thiết lập xuất bản được gom ở cột bên phải.</p>
         </div>
-        <button type="button" onClick={() => setPreviewOpen(true)} className="inline-flex items-center justify-center gap-2 rounded-2xl border border-white/10 px-5 py-3 font-semibold text-slate-200 transition hover:border-cyan-200/30 hover:text-cyan-100">
+        <button type="button" onClick={() => setPreviewOpen(true)} className="inline-flex items-center justify-center gap-2 rounded-2xl border border-white/10 px-5 py-3 font-semibold text-ink-1 transition hover:border-cyan-200/30 hover:text-cyan-100">
           <Eye size={18} /> Xem trước {activeLanguageLabel}
         </button>
       </div>
@@ -306,25 +306,25 @@ export default function AdminPostEditorPage() {
               </div>
               <div className="flex rounded-2xl border border-white/10 bg-cms-2 p-1">
                 {[["vi", "Tiếng Việt"], ["en", "English"]].map(([value, label]) => (
-                  <button key={value} type="button" onClick={() => setActiveLanguage(value)} className={`rounded-xl px-4 py-2 text-sm font-semibold transition ${activeLanguage === value ? "bg-cyan-300/[0.12] text-cyan-100" : "text-slate-400 hover:text-white"}`}>{label}</button>
+                  <button key={value} type="button" onClick={() => setActiveLanguage(value)} className={`rounded-xl px-4 py-2 text-sm font-semibold transition ${activeLanguage === value ? "bg-cyan-300/[0.12] text-cyan-100" : "text-ink-2 hover:text-white"}`}>{label}</button>
                 ))}
               </div>
             </div>
 
             <div className="mt-6 space-y-5">
               <label className="block">
-                <span className="mb-2 block text-sm font-semibold text-slate-200">{activeLanguage === "vi" ? "Tiêu đề tiếng Việt" : "English title"}</span>
+                <span className="mb-2 block text-sm font-semibold text-ink-1">{activeLanguage === "vi" ? "Tiêu đề tiếng Việt" : "English title"}</span>
                 <input value={form[`title_${activeLanguage}`] || ""} onChange={(event) => handleTitleChange(event.target.value)} className="w-full rounded-2xl border border-white/10 bg-cms-2 px-4 py-3.5 text-white outline-none placeholder:text-[#6A7BA3] focus:border-cyan-300/35" placeholder={activeLanguage === "vi" ? "Nhập tiêu đề bài viết..." : "Enter article title..."} />
               </label>
 
               <label className="block">
-                <span className="mb-2 block text-sm font-semibold text-slate-200">{activeLanguage === "vi" ? "Mô tả ngắn" : "Short description"}</span>
+                <span className="mb-2 block text-sm font-semibold text-ink-1">{activeLanguage === "vi" ? "Mô tả ngắn" : "Short description"}</span>
                 <textarea value={form[`excerpt_${activeLanguage}`] || ""} onChange={(event) => updateField(`excerpt_${activeLanguage}`, event.target.value)} rows={3} maxLength={320} className="w-full resize-y rounded-2xl border border-white/10 bg-cms-2 px-4 py-3.5 leading-relaxed text-white outline-none placeholder:text-[#6A7BA3] focus:border-cyan-300/35" placeholder={activeLanguage === "vi" ? "Đoạn giới thiệu ngắn hiển thị trên thẻ bài viết..." : "Short introduction shown on the article card..."} />
                 <span className="mt-1 block text-right text-xs text-ink-3">{(form[`excerpt_${activeLanguage}`] || "").length}/320</span>
               </label>
 
               <div>
-                <span className="mb-2 block text-sm font-semibold text-slate-200">{activeLanguage === "vi" ? "Nội dung chính" : "Main content"}</span>
+                <span className="mb-2 block text-sm font-semibold text-ink-1">{activeLanguage === "vi" ? "Nội dung chính" : "Main content"}</span>
                 <RichTextEditor key={activeLanguage} value={form[`content_${activeLanguage}`] || ""} onChange={(value) => updateField(`content_${activeLanguage}`, value)} placeholder={activeLanguage === "vi" ? "Bắt đầu viết nội dung tại đây..." : "Start writing here..."} />
               </div>
             </div>
@@ -351,11 +351,11 @@ export default function AdminPostEditorPage() {
                   </label>
                 </div>
                 <label className="block">
-                  <span className="mb-2 block text-sm font-semibold text-slate-200">URL ảnh</span>
+                  <span className="mb-2 block text-sm font-semibold text-ink-1">URL ảnh</span>
                   <input value={form.cover_image_url || ""} onChange={(event) => updateField("cover_image_url", event.target.value)} className="w-full rounded-2xl border border-white/10 bg-cms-2 px-4 py-3.5 text-white outline-none placeholder:text-[#6A7BA3] focus:border-cyan-300/35" placeholder="https://..." />
                 </label>
                 <label className="block">
-                  <span className="mb-2 block text-sm font-semibold text-slate-200">{activeLanguage === "vi" ? "Mô tả ảnh tiếng Việt" : "English image alt text"}</span>
+                  <span className="mb-2 block text-sm font-semibold text-ink-1">{activeLanguage === "vi" ? "Mô tả ảnh tiếng Việt" : "English image alt text"}</span>
                   <input value={form[`cover_image_alt_${activeLanguage}`] || ""} onChange={(event) => updateField(`cover_image_alt_${activeLanguage}`, event.target.value)} className="w-full rounded-2xl border border-white/10 bg-cms-2 px-4 py-3 text-sm text-white outline-none placeholder:text-[#6A7BA3] focus:border-cyan-300/35" placeholder={activeLanguage === "vi" ? "Mô tả ngắn nội dung ảnh" : "Short description of the image"} />
                 </label>
                 <p className="text-xs leading-relaxed text-ink-3">JPG, PNG, WEBP hoặc GIF; tối đa 5 MB.</p>
@@ -367,11 +367,11 @@ export default function AdminPostEditorPage() {
             <summary className="cursor-pointer text-xl font-semibold">SEO nâng cao · {activeLanguageLabel}</summary>
             <div className="mt-6 space-y-4">
               <label className="block">
-                <span className="mb-2 block text-sm font-semibold text-slate-200">SEO title</span>
+                <span className="mb-2 block text-sm font-semibold text-ink-1">SEO title</span>
                 <input value={form[`seo_title_${activeLanguage}`] || ""} onChange={(event) => updateField(`seo_title_${activeLanguage}`, event.target.value)} className="w-full rounded-xl border border-white/10 bg-cms-2 px-4 py-3 text-sm text-white outline-none focus:border-cyan-300/35" placeholder={activeTitle} />
               </label>
               <label className="block">
-                <span className="mb-2 block text-sm font-semibold text-slate-200">Meta description</span>
+                <span className="mb-2 block text-sm font-semibold text-ink-1">Meta description</span>
                 <textarea value={form[`seo_description_${activeLanguage}`] || ""} onChange={(event) => updateField(`seo_description_${activeLanguage}`, event.target.value)} rows={3} className="w-full rounded-xl border border-white/10 bg-cms-2 px-4 py-3 text-sm text-white outline-none focus:border-cyan-300/35" placeholder={activeExcerpt || "Mô tả hiển thị trên công cụ tìm kiếm"} />
               </label>
             </div>
@@ -391,19 +391,19 @@ export default function AdminPostEditorPage() {
 
             <div className="mt-5 space-y-4">
               <label className="block">
-                <span className="mb-2 block text-sm font-semibold text-slate-200">Chuyên mục</span>
+                <span className="mb-2 block text-sm font-semibold text-ink-1">Chuyên mục</span>
                 <select value={form.category} onChange={(event) => updateField("category", event.target.value)} className="w-full rounded-2xl border border-white/10 bg-cms-2 px-4 py-3 text-white outline-none focus:border-cyan-300/35">
                   {insightCategories.map((category) => <option key={category.value} value={category.value}>{category.vi} / {category.en}</option>)}
                 </select>
               </label>
 
               <label className="block">
-                <span className="mb-2 block text-sm font-semibold text-slate-200">{activeLanguage === "vi" ? "Tác giả tiếng Việt" : "Author (English)"}</span>
+                <span className="mb-2 block text-sm font-semibold text-ink-1">{activeLanguage === "vi" ? "Tác giả tiếng Việt" : "Author (English)"}</span>
                 <input value={form[`author_name_${activeLanguage}`] || ""} onChange={(event) => updateField(`author_name_${activeLanguage}`, event.target.value)} className="w-full rounded-2xl border border-white/10 bg-cms-2 px-4 py-3 text-white outline-none focus:border-cyan-300/35" placeholder={activeLanguage === "vi" ? "Ví dụ: Anh Nguyễn Hoàng Tú" : "Example: Mr. Tu Hoang Nguyen"} />
               </label>
 
               <label className="block">
-                <span className="mb-2 flex items-center gap-2 text-sm font-semibold text-slate-200"><Link2 size={15} /> {activeLanguage === "vi" ? "Slug tiếng Việt" : "English slug"}</span>
+                <span className="mb-2 flex items-center gap-2 text-sm font-semibold text-ink-1"><Link2 size={15} /> {activeLanguage === "vi" ? "Slug tiếng Việt" : "English slug"}</span>
                 <div className="overflow-hidden rounded-2xl border border-white/10 bg-cms-2 focus-within:border-cyan-300/35">
                   <div className="border-b border-white/10 px-3 py-2 text-[11px] text-ink-3">facs.vn/insights/</div>
                   <input value={form[`slug_${activeLanguage}`] || ""} onChange={(event) => updateField(`slug_${activeLanguage}`, slugify(event.target.value))} className="w-full bg-transparent px-3 py-3 text-sm text-white outline-none" placeholder={activeLanguage === "vi" ? "duong-dan-tieng-viet" : "english-article-url"} />
@@ -412,7 +412,7 @@ export default function AdminPostEditorPage() {
 
               {isEditing && form.slug && (
                 <div className="rounded-2xl border border-white/8 bg-cms-2 px-3 py-3 text-xs leading-relaxed text-ink-3">
-                  Link cũ được giữ làm đường dẫn dự phòng: <span className="break-all text-slate-400">/insights/{form.slug}</span>
+                  Link cũ được giữ làm đường dẫn dự phòng: <span className="break-all text-ink-2">/insights/{form.slug}</span>
                 </div>
               )}
             </div>
@@ -441,7 +441,7 @@ export default function AdminPostEditorPage() {
             </label>
 
             <div className="mt-4">
-              <div className="text-sm font-semibold text-slate-200">Phương thức gửi Email Insights</div>
+              <div className="text-sm font-semibold text-ink-1">Phương thức gửi Email Insights</div>
               <p className="mt-1 text-xs leading-relaxed text-ink-3">Email Audience cần xem trước, gửi thử và xác nhận. Với bài hẹn đăng, có thể xác nhận lịch gửi cùng giờ đăng tại Email & Audience.</p>
               <div className="mt-3 space-y-2">
                 {[
@@ -506,14 +506,14 @@ export default function AdminPostEditorPage() {
                 <div className="text-xs font-bold uppercase tracking-[0.18em] text-sunset">Bản xem trước · {activeLanguageLabel}</div>
                 <div className="mt-1 text-xs text-ink-3">/insights/{activeSlug || "duong-dan-bai-viet"}</div>
               </div>
-              <button type="button" onClick={() => setPreviewOpen(false)} className="flex h-10 w-10 items-center justify-center rounded-xl border border-white/10 text-slate-400 transition hover:text-white" aria-label="Đóng xem trước"><X size={19} /></button>
+              <button type="button" onClick={() => setPreviewOpen(false)} className="flex h-10 w-10 items-center justify-center rounded-xl border border-white/10 text-ink-2 transition hover:text-white" aria-label="Đóng xem trước"><X size={19} /></button>
             </div>
             <div className="max-h-[calc(92vh-74px)] overflow-y-auto">
               {form.cover_image_url && <img src={form.cover_image_url} alt="" className="max-h-[560px] h-auto w-full bg-white/[0.025] p-3 object-contain" />}
               <div className="mx-auto max-w-3xl p-7 md:p-10">
                 <div className="text-xs font-semibold uppercase tracking-[0.18em] text-sunset">{insightCategories.find((item) => item.value === form.category)?.[activeLanguage] || "FACS Insight"}</div>
                 <h2 className="mt-4 text-3xl font-bold leading-tight md:text-5xl">{activeTitle}</h2>
-                {activeExcerpt && <p className="mt-5 text-lg leading-relaxed text-slate-400">{activeExcerpt}</p>}
+                {activeExcerpt && <p className="mt-5 text-lg leading-relaxed text-ink-2">{activeExcerpt}</p>}
                 <div className="mt-5 text-sm text-ink-3">{activeAuthor} · /insights/{activeSlug || "duong-dan-bai-viet"}</div>
                 <div className="mt-8 border-t border-white/10 pt-8">
                   {safePreview ? <div className="facs-article" dangerouslySetInnerHTML={{ __html: safePreview }} /> : <p className="text-sm text-ink-3">Nội dung xem trước sẽ hiển thị tại đây.</p>}

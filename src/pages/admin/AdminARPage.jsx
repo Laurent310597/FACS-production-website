@@ -46,7 +46,7 @@ const label = ui.label;
 const ghost = ui.btnSecondary;
 const primary = ui.btnPrimary;
 const statusStyle = {
-  draft: "bg-slate-400/15 text-slate-200",
+  draft: "bg-slate-400/15 text-ink-1",
   sending: "bg-amber-300/15 text-amber-200",
   sent: "bg-emerald-300/15 text-emerald-200",
   failed: "bg-rose-400/15 text-rose-200",
@@ -114,9 +114,9 @@ export default function AdminARPage() {
   return (
     <AdminLayout>
       <div>
-        <div className="text-xs font-bold uppercase tracking-[.18em] text-sunset">Finance · AR</div>
+        <div className="text-xs font-bold uppercase tracking-[0.18em] text-sunset">Finance · AR</div>
         <h1 className="mt-2 text-3xl font-bold md:text-4xl">Email nhắc công nợ</h1>
-        <p className="mt-2 max-w-3xl text-sm leading-relaxed text-slate-400">
+        <p className="mt-2 max-w-3xl text-sm leading-relaxed text-ink-2">
           Nhập công nợ từng khách (trực tiếp hoặc bằng file Excel), xem trước rồi gửi email song ngữ từ <span className="text-cyan-200">accounting@facs.vn</span>, kèm thông tin tài khoản ngân hàng của FACS. Không có email nào được gửi khi anh/chị chưa bấm gửi và xác nhận.
         </p>
       </div>
@@ -129,7 +129,7 @@ export default function AdminARPage() {
           >
             <div className="mt-6 flex items-start justify-between gap-3 rounded-2xl border border-red-300/20 bg-red-400/10 px-5 py-4 text-sm text-red-100">
               <span className="whitespace-pre-line">{error}</span>
-              <button type="button" onClick={() => setError("")} className="text-slate-400 hover:text-white" aria-label="Đóng"><X size={16} /></button>
+              <button type="button" onClick={() => setError("")} className="text-ink-2 hover:text-white" aria-label="Đóng"><X size={16} /></button>
             </div>
           </motion.div>
         )}
@@ -164,11 +164,11 @@ function StatusBar({ status, onEdit, onRefresh, loading }) {
       <div className="flex flex-col gap-4 md:flex-row md:items-center md:justify-between">
         <div className="space-y-2 text-sm">
           <div className="flex items-center gap-2">
-            {!status ? <Loader2 size={16} className="animate-spin text-slate-400" /> : status.connected ? <CheckCircle2 size={17} className="text-emerald-300" /> : <XCircle size={17} className="text-amber-300" />}
+            {!status ? <Loader2 size={16} className="animate-spin text-ink-2" /> : status.connected ? <CheckCircle2 size={17} className="text-emerald-300" /> : <XCircle size={17} className="text-amber-300" />}
             <span>Gửi từ <strong className="text-cyan-200">accounting@facs.vn</strong> qua Microsoft 365{status && !status.connected && " — chưa cấu hình Microsoft Graph"}</span>
           </div>
           <div className="flex items-center gap-2">
-            {!status ? <Loader2 size={16} className="animate-spin text-slate-400" /> : status.bank_ready ? <Landmark size={17} className="text-emerald-300" /> : <AlertTriangle size={17} className="text-amber-300" />}
+            {!status ? <Loader2 size={16} className="animate-spin text-ink-2" /> : status.bank_ready ? <Landmark size={17} className="text-emerald-300" /> : <AlertTriangle size={17} className="text-amber-300" />}
             <span>{!status ? "Đang kiểm tra…" : status.bank_ready ? "Đã có thông tin tài khoản ngân hàng trong email" : "Chưa điền tài khoản ngân hàng — cần điền trước khi gửi"}</span>
           </div>
         </div>
@@ -236,8 +236,8 @@ function AddReminders({ onSaved, onError, onPreview }) {
           <p className="mt-1 text-sm text-ink-3">Ít khách: nhập trực tiếp. Nhiều khách: tải file Excel theo mẫu. Các dòng được lưu ở trạng thái “Chưa gửi”.</p>
         </div>
         <div className="flex gap-2">
-          <button type="button" onClick={() => setMode("manual")} className={`rounded-xl px-4 py-2 text-sm font-semibold ${mode === "manual" ? "bg-cyan-300/[0.12] text-cyan-100" : "border border-white/10 text-slate-300"}`}>Nhập trực tiếp</button>
-          <button type="button" onClick={() => setMode("file")} className={`rounded-xl px-4 py-2 text-sm font-semibold ${mode === "file" ? "bg-cyan-300/[0.12] text-cyan-100" : "border border-white/10 text-slate-300"}`}>Tải file Excel</button>
+          <button type="button" onClick={() => setMode("manual")} className={`rounded-xl px-4 py-2 text-sm font-semibold ${mode === "manual" ? "bg-cyan-300/[0.12] text-cyan-100" : "border border-white/10 text-ink-2"}`}>Nhập trực tiếp</button>
+          <button type="button" onClick={() => setMode("file")} className={`rounded-xl px-4 py-2 text-sm font-semibold ${mode === "file" ? "bg-cyan-300/[0.12] text-cyan-100" : "border border-white/10 text-ink-2"}`}>Tải file Excel</button>
         </div>
       </div>
 
@@ -284,19 +284,19 @@ function AddReminders({ onSaved, onError, onPreview }) {
               <UploadCloud size={16} /> Chọn file (.xlsx, .csv)
               <input type="file" accept=".xlsx,.csv" className="hidden" onChange={pickFile} />
             </label>
-            {fileName && <span className="inline-flex items-center gap-2 text-sm text-slate-400"><FileSpreadsheet size={15} /> {fileName}</span>}
+            {fileName && <span className="inline-flex items-center gap-2 text-sm text-ink-2"><FileSpreadsheet size={15} /> {fileName}</span>}
           </div>
           <p className="text-xs text-ink-3">Cột cần có: Người nhận, Email người nhận, Email CC, Tên công ty khách hàng, MST, Số tiền nợ, Giai đoạn nợ, Ghi chú. Nhiều email trong một ô thì ngăn bằng dấu chấm phẩy. Tối đa 500 dòng.</p>
           {fileErrors.length > 0 && <div className="rounded-xl border border-rose-300/25 bg-rose-400/10 p-3 text-sm text-rose-100">{fileErrors.join(" ")}</div>}
           {fileRows.length > 0 && (
             <>
-              <div className="text-sm text-slate-300">
+              <div className="text-sm text-ink-2">
                 {fileRows.length} dòng · tổng {formatVnd(fileTotal)}
                 {fileInvalid > 0 && <span className="ml-2 text-rose-200">· {fileInvalid} dòng có lỗi (tô đỏ) — sửa trong file rồi tải lại</span>}
               </div>
               <div className="max-h-[420px] overflow-auto rounded-2xl border border-white/10">
                 <table className="w-full min-w-[900px] text-left text-sm">
-                  <thead className="sticky top-0 bg-cms-3 text-xs text-slate-400">
+                  <thead className="sticky top-0 bg-cms-3 text-xs text-ink-2">
                     <tr><th className="p-3">Dòng</th><th>Người nhận</th><th>Email</th><th>Công ty / MST</th><th className="text-right">Số tiền</th><th className="pl-4">Giai đoạn</th><th>Ghi chú</th><th /></tr>
                   </thead>
                   <tbody>
@@ -304,11 +304,11 @@ function AddReminders({ onSaved, onError, onPreview }) {
                       <tr key={r._line} className={`border-t border-white/5 align-top ${r._errors.length ? "bg-rose-500/10" : ""}`}>
                         <td className="p-3 text-ink-3">{r._line}</td>
                         <td className="py-3 pr-3">{r.recipient_name}</td>
-                        <td className="py-3 pr-3 text-xs text-slate-300">{r.recipient_emails}{r.cc_emails && <div className="text-ink-3">CC: {r.cc_emails}</div>}</td>
+                        <td className="py-3 pr-3 text-xs text-ink-2">{r.recipient_emails}{r.cc_emails && <div className="text-ink-3">CC: {r.cc_emails}</div>}</td>
                         <td className="py-3 pr-3">{r.company_name}<div className="text-xs text-ink-3">{r.tax_code}</div></td>
                         <td className="py-3 text-right font-semibold">{Number.isFinite(toAmount(r.amount)) ? formatVnd(toAmount(r.amount)) : r.amount}</td>
                         <td className="py-3 pl-4 pr-3">{r.period}</td>
-                        <td className="max-w-[220px] py-3 pr-3 text-xs text-slate-400">{r.note}{r._errors.length > 0 && <div className="mt-1 font-semibold text-rose-200">{r._errors.join(", ")}</div>}</td>
+                        <td className="max-w-[220px] py-3 pr-3 text-xs text-ink-2">{r.note}{r._errors.length > 0 && <div className="mt-1 font-semibold text-rose-200">{r._errors.join(", ")}</div>}</td>
                         <td className="py-3 pr-3"><button type="button" className="text-cyan-300 hover:text-cyan-100" onClick={() => onPreview(r)} aria-label="Xem trước"><Eye size={15} /></button></td>
                       </tr>
                     ))}
@@ -441,7 +441,7 @@ function ReminderList({ rows, loading, status, onReload, onNotify, onError, onPr
       ) : (
         <div className="mt-5 overflow-x-auto rounded-2xl border border-white/10">
           <table className="w-full min-w-[980px] text-left text-sm">
-            <thead className="bg-cms-1 text-xs text-slate-400">
+            <thead className="bg-cms-1 text-xs text-ink-2">
               <tr>
                 <th className="w-10 p-3">{selectable.length > 0 && <input type="checkbox" className="accent-cyan-300" checked={selectable.every((r) => selected.has(r.id))} onChange={toggleAll} aria-label="Chọn tất cả" />}</th>
                 <th>Công ty / MST</th>
@@ -462,11 +462,11 @@ function ReminderList({ rows, loading, status, onReload, onNotify, onError, onPr
                     <td className="py-3 pr-3">
                       <div className="font-semibold">{r.company_name}</div>
                       <div className="text-xs text-ink-3">{[r.tax_code && `MST ${r.tax_code}`, r.batch_label].filter(Boolean).join(" · ")}</div>
-                      {r.note && <div className="mt-1 max-w-[280px] text-xs text-slate-400">{r.note}</div>}
+                      {r.note && <div className="mt-1 max-w-[280px] text-xs text-ink-2">{r.note}</div>}
                     </td>
                     <td className="py-3 pr-3">
                       <div>{r.recipient_name}</div>
-                      <div className="text-xs text-slate-400">{(r.recipient_emails || []).join("; ")}</div>
+                      <div className="text-xs text-ink-2">{(r.recipient_emails || []).join("; ")}</div>
                       {r.cc_emails?.length > 0 && <div className="text-xs text-ink-3">CC: {r.cc_emails.join("; ")}</div>}
                     </td>
                     <td className="py-3 text-right font-semibold">{formatVnd(r.amount)}</td>
@@ -477,7 +477,7 @@ function ReminderList({ rows, loading, status, onReload, onNotify, onError, onPr
                       {r.last_error && <div className="mt-1 max-w-[220px] text-xs text-rose-200">{r.last_error}</div>}
                     </td>
                     <td className="py-3 pr-3">
-                      <div className="flex justify-end gap-3 text-slate-400">
+                      <div className="flex justify-end gap-3 text-ink-2">
                         <button type="button" className="hover:text-cyan-200" onClick={() => onPreview(r)} title="Xem trước email"><Eye size={16} /></button>
                         {editable && <button type="button" className="hover:text-cyan-200" onClick={() => onEdit(r)} title="Sửa"><Pencil size={16} /></button>}
                         {r.status === "sent" && <button type="button" className="hover:text-amber-200" onClick={() => setConfirm({ ids: [r.id], resend: true, rows: [r] })} disabled={!canSend} title="Gửi lại"><RotateCcw size={16} /></button>}
@@ -493,7 +493,7 @@ function ReminderList({ rows, loading, status, onReload, onNotify, onError, onPr
       )}
 
       <div className="mt-5 flex flex-wrap items-center gap-3">
-        <span className="text-sm text-slate-300">Đã chọn {chosen.length} dòng{chosen.length > 0 && ` · tổng ${formatVnd(chosenTotal)}`}</span>
+        <span className="text-sm text-ink-2">Đã chọn {chosen.length} dòng{chosen.length > 0 && ` · tổng ${formatVnd(chosenTotal)}`}</span>
         <button type="button" className={primary} disabled={!chosen.length || !canSend || !!progress} onClick={() => setConfirm({ ids: chosen.map((r) => r.id), resend: false, rows: chosen })}>
           <Send size={16} /> Gửi email
         </button>
@@ -507,10 +507,10 @@ function ReminderList({ rows, loading, status, onReload, onNotify, onError, onPr
         <div className="fixed inset-0 z-[100] flex items-center justify-center bg-[#020812]/80 p-4 backdrop-blur-md" role="dialog" aria-modal="true">
           <div className="w-full max-w-lg rounded-[20px] border border-cyan-200/20 bg-cms-3 p-6">
             <h3 className="text-xl font-bold">{confirm.resend ? "Gửi lại email nhắc nợ?" : `Gửi ${confirm.ids.length} email nhắc nợ?`}</h3>
-            <p className="mt-3 text-sm leading-relaxed text-slate-300">
+            <p className="mt-3 text-sm leading-relaxed text-ink-2">
               Email sẽ được gửi từ <strong className="text-cyan-200">accounting@facs.vn</strong> đến khách hàng thật, tổng công nợ {formatVnd(confirm.rows.reduce((s, r) => s + Number(r.amount || 0), 0))}. Không thể thu hồi sau khi gửi.
             </p>
-            <ul className="mt-3 max-h-40 overflow-auto text-xs text-slate-400">
+            <ul className="mt-3 max-h-40 overflow-auto text-xs text-ink-2">
               {confirm.rows.slice(0, 20).map((r) => <li key={r.id}>• {r.company_name} — {(r.recipient_emails || []).join(", ")} — {formatVnd(r.amount)}</li>)}
               {confirm.rows.length > 20 && <li>… và {confirm.rows.length - 20} khách khác</li>}
             </ul>
@@ -579,10 +579,10 @@ function SettingsModal({ onClose, onSaved }) {
       <div className="max-h-[94vh] w-full max-w-6xl overflow-y-auto rounded-[20px] border border-cyan-200/20 bg-cms-3 p-5 md:p-7">
         <div className="flex items-start justify-between gap-4">
           <div>
-            <div className="text-xs font-bold uppercase tracking-[.18em] text-sunset">accounting@facs.vn</div>
+            <div className="text-xs font-bold uppercase tracking-[0.18em] text-sunset">accounting@facs.vn</div>
             <h2 className="mt-2 text-2xl font-bold">Mẫu email nhắc nợ & tài khoản ngân hàng</h2>
           </div>
-          <button type="button" onClick={onClose} className="flex h-10 w-10 items-center justify-center rounded-xl border border-white/10 text-slate-300"><X size={19} /></button>
+          <button type="button" onClick={onClose} className="flex h-10 w-10 items-center justify-center rounded-xl border border-white/10 text-ink-2"><X size={19} /></button>
         </div>
         {error && <div className="mt-4 rounded-xl border border-rose-300/25 bg-rose-400/10 p-3 text-sm text-rose-100">{error}</div>}
         {!settings ? (
@@ -623,7 +623,7 @@ function SettingsModal({ onClose, onSaved }) {
             </div>
             <div>
               <div className="mb-2 flex items-center justify-between">
-                <span className="text-sm font-semibold text-slate-300">Xem trước (dữ liệu minh họa)</span>
+                <span className="text-sm font-semibold text-ink-2">Xem trước (dữ liệu minh họa)</span>
                 <button type="button" className={ghost} onClick={doPreview} disabled={busy === "preview"}>{busy === "preview" ? <Loader2 size={16} className="animate-spin" /> : <Eye size={16} />} Cập nhật xem trước</button>
               </div>
               {previewHtml ? <iframe title="Xem trước email" sandbox="" srcDoc={previewHtml} className="h-[70vh] w-full rounded-2xl border border-white/10 bg-white" /> : <div className="flex h-[300px] items-center justify-center rounded-2xl border border-dashed border-white/10 text-sm text-ink-3">Bấm “Cập nhật xem trước”.</div>}
@@ -670,7 +670,7 @@ function EditModal({ row, onClose, onSaved }) {
   return (
     <div className="fixed inset-0 z-[100] flex items-center justify-center bg-[#020812]/80 p-4 backdrop-blur-md" role="dialog" aria-modal="true">
       <div className="w-full max-w-3xl rounded-[20px] border border-cyan-200/20 bg-cms-3 p-6">
-        <div className="flex items-center justify-between"><h3 className="text-xl font-bold">Sửa dòng nhắc nợ</h3><button type="button" onClick={onClose} className="text-slate-400"><X size={19} /></button></div>
+        <div className="flex items-center justify-between"><h3 className="text-xl font-bold">Sửa dòng nhắc nợ</h3><button type="button" onClick={onClose} className="text-ink-2"><X size={19} /></button></div>
         {error && <div className="mt-3 rounded-xl border border-rose-300/25 bg-rose-400/10 p-3 text-sm text-rose-100">{error}</div>}
         <div className="mt-4 grid gap-3 md:grid-cols-2">
           {fields.map(([key, text]) => (
@@ -694,13 +694,13 @@ function PreviewModal({ preview, onClose }) {
         <div className="flex items-start justify-between gap-3">
           <div>
             <h3 className="text-lg font-bold">{preview.title}</h3>
-            {preview.subject && <div className="mt-1 text-sm text-slate-300"><span className="text-ink-3">Tiêu đề:</span> {preview.subject}</div>}
+            {preview.subject && <div className="mt-1 text-sm text-ink-2"><span className="text-ink-3">Tiêu đề:</span> {preview.subject}</div>}
             {preview.bank_warning && <div className="mt-1 text-xs text-amber-200">{preview.bank_warning}</div>}
           </div>
-          <button type="button" onClick={onClose} className="text-slate-400"><X size={19} /></button>
+          <button type="button" onClick={onClose} className="text-ink-2"><X size={19} /></button>
         </div>
         {preview.loading ? (
-          <div className="mt-6 flex items-center gap-2 text-sm text-slate-400"><Loader2 size={16} className="animate-spin" /> Đang dựng email…</div>
+          <div className="mt-6 flex items-center gap-2 text-sm text-ink-2"><Loader2 size={16} className="animate-spin" /> Đang dựng email…</div>
         ) : (
           <iframe title="Xem trước email" sandbox="" srcDoc={preview.html} className="mt-4 h-[75vh] w-full rounded-2xl bg-white" />
         )}

@@ -382,7 +382,7 @@ export default function AdminHubContentPage() {
           <div>
             <div className="text-xs font-bold uppercase tracking-[0.18em] text-sunset">FACS Hub</div>
             <h1 className="mt-1 text-3xl font-bold tracking-[-0.02em]">Tạo nội dung</h1>
-            <p className="mt-2 max-w-3xl text-sm text-slate-400">
+            <p className="mt-2 max-w-3xl text-sm text-ink-2">
               Gửi link bài báo, văn bản hoặc ghi chú. Trợ lý soạn bài website song ngữ, bài mạng xã hội và infographic để anh/chị rà soát. Không có gì được đăng hay gửi email tự động từ trang này.
             </p>
           </div>
@@ -428,7 +428,7 @@ export default function AdminHubContentPage() {
               <div className="flex flex-wrap items-center gap-3">
                 {inputFiles.map((file) => (
                   <div key={file.path} className="relative h-24 w-24 overflow-hidden rounded-xl border border-white/10 bg-white/5">
-                    {previews[file.path] ? <img src={previews[file.path]} alt={file.name} className="h-full w-full object-cover" /> : <div className="p-2 text-xs text-slate-400">{file.name}</div>}
+                    {previews[file.path] ? <img src={previews[file.path]} alt={file.name} className="h-full w-full object-cover" /> : <div className="p-2 text-xs text-ink-2">{file.name}</div>}
                     <button type="button" onClick={() => removeImage(file.path)} className="absolute right-1 top-1 rounded-full bg-black/70 p-1 text-white" aria-label={`Bỏ ảnh ${file.name}`}>
                       <X size={12} />
                     </button>
@@ -454,7 +454,7 @@ export default function AdminHubContentPage() {
                     type="button"
                     aria-pressed={active}
                     onClick={() => toggleOutput(option.value)}
-                    className={`rounded-xl border px-4 py-2 text-sm font-semibold transition ${active ? "border-cyan-300 bg-cyan-300/15 text-cyan-100" : "border-white/10 text-slate-400 hover:text-white"}`}
+                    className={`rounded-xl border px-4 py-2 text-sm font-semibold transition ${active ? "border-cyan-300 bg-cyan-300/15 text-cyan-100" : "border-white/10 text-ink-2 hover:text-white"}`}
                   >
                     {active ? "✓ " : ""}{option.label}
                   </button>
@@ -486,7 +486,7 @@ export default function AdminHubContentPage() {
 
             <div className="mt-6 flex flex-wrap gap-2 border-b border-white/10 pb-3">
               {visibleTabs.map((name) => (
-                <button key={name} type="button" onClick={() => setActiveTab(name)} className={`rounded-xl px-4 py-2 text-sm font-semibold transition ${currentTab === name ? "bg-cyan-300/[0.12] text-cyan-100" : "text-slate-300 hover:bg-white/[0.07]"}`}>
+                <button key={name} type="button" onClick={() => setActiveTab(name)} className={`rounded-xl px-4 py-2 text-sm font-semibold transition ${currentTab === name ? "bg-cyan-300/[0.12] text-cyan-100" : "text-ink-2 hover:bg-white/[0.07]"}`}>
                   {tabLabels[name]}
                 </button>
               ))}
@@ -497,7 +497,7 @@ export default function AdminHubContentPage() {
                 <div className="flex flex-wrap items-center gap-3">
                   <div className="flex rounded-xl border border-white/10 p-1">
                     {["vi", "en"].map((code) => (
-                      <button key={code} type="button" onClick={() => setLanguage(code)} className={`rounded-lg px-4 py-1.5 text-sm font-semibold ${language === code ? "bg-white/15 text-white" : "text-slate-400"}`}>
+                      <button key={code} type="button" onClick={() => setLanguage(code)} className={`rounded-lg px-4 py-1.5 text-sm font-semibold ${language === code ? "bg-white/15 text-white" : "text-ink-2"}`}>
                         {code === "vi" ? "Tiếng Việt" : "English"}
                       </button>
                     ))}

@@ -131,7 +131,7 @@ export default function InsightScheduledWorkflow({
           <legend className="px-2 font-semibold text-white">
             Gửi email cùng thời điểm đăng bài?
           </legend>
-          <p className="text-sm text-slate-300">
+          <p className="text-sm text-ink-2">
             Bài viết hẹn đăng lúc{" "}
             <strong className="text-cyan-100">{when}</strong> (giờ Việt Nam).
           </p>
@@ -166,7 +166,7 @@ export default function InsightScheduledWorkflow({
       {!active && (
         <div className="grid gap-4 lg:grid-cols-3">
           <Step title="1. Xem trước email" complete={previewReady}>
-            <p className="mt-2 text-sm text-slate-300">
+            <p className="mt-2 text-sm text-ink-2">
               Kiểm tra nội dung và đường dẫn bài viết.
             </p>
             <button
@@ -180,7 +180,7 @@ export default function InsightScheduledWorkflow({
             </button>
           </Step>
           <Step title="2. Gửi thử nội bộ" complete={testReady}>
-            <p className="mt-2 text-sm text-slate-300">
+            <p className="mt-2 text-sm text-ink-2">
               Gửi bản thử đến tunguyen@facs.vn.
             </p>
             <button
@@ -200,7 +200,7 @@ export default function InsightScheduledWorkflow({
                 : "3. Xác nhận gửi Audience"
             }
           >
-            <p className="mt-2 text-sm text-slate-300">
+            <p className="mt-2 text-sm text-ink-2">
               {choice === "yes"
                 ? `Gửi ${selectedIds.length ? `${selectedIds.length} khách đã chọn` : "toàn bộ Audience"} dưới dạng Bcc.`
                 : "Tú có thể xác nhận gửi thủ công sau khi bài đã công khai."}
@@ -222,7 +222,7 @@ export default function InsightScheduledWorkflow({
         </div>
       )}
       {!active && choice === "yes" && (
-        <p className="text-sm leading-relaxed text-slate-300">
+        <p className="text-sm leading-relaxed text-ink-2">
           Lịch gửi chỉ được lưu sau bước xác nhận cuối. Hệ thống xử lý từ giờ đã
           hẹn, thường trong vòng một phút. Danh sách người nhận được chốt khi
           xác nhận và loại người đã huỷ đăng ký khi gửi.
@@ -258,7 +258,7 @@ export default function InsightScheduledWorkflow({
             <p className="mt-3 font-semibold text-cyan-100">
               {formatVietnamDateTime(plan.scheduled_at)} · Giờ Việt Nam (UTC+7)
             </p>
-            <div className="mt-4 rounded-2xl bg-cms-2 p-4 text-sm leading-7 text-slate-300">
+            <div className="mt-4 rounded-2xl bg-cms-2 p-4 text-sm leading-7 text-ink-2">
               <p>From: infor@facs.vn</p>
               <p>To: tunguyen@facs.vn</p>
               <p>Cc: yendoan@facs.vn, thanhhuynh@facs.vn</p>
@@ -276,7 +276,7 @@ export default function InsightScheduledWorkflow({
                 </ul>
               </details>
             </div>
-            <p className="mt-4 text-sm text-slate-300">
+            <p className="mt-4 text-sm text-ink-2">
               Sau khi xác nhận, hệ thống sẽ tự gửi khi đến hạn. Sửa nội dung
               hoặc giờ đăng sẽ yêu cầu xác nhận lịch lại.
             </p>

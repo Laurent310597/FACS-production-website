@@ -53,7 +53,7 @@ export default function AdminLoginPage() {
         <Link to="/" className="font-serif text-4xl font-black tracking-[-0.05em]">
           FACS<span className="text-facs-logo">.</span>
         </Link>
-        <div className="mt-2 text-xs font-bold uppercase tracking-[0.2em] text-sunset">Content CMS</div>
+        <div className="mt-2 text-xs font-bold uppercase tracking-[0.18em] text-sunset">Content CMS</div>
         <h1 className="mt-8 text-3xl font-bold">Đăng nhập quản trị</h1>
         <p className="mt-3 text-sm leading-relaxed text-ink-2">Đăng nhập bằng tài khoản quản trị đã được tạo trong Supabase.</p>
 

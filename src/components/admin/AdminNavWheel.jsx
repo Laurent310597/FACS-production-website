@@ -131,7 +131,7 @@ export default function AdminNavWheel({ open, onClose }) {
       onPointerMove={onTilt}
       initial={{ opacity: 0 }} animate={{ opacity: 1 }} transition={{ duration: 0.2 }}
     >
-      <button type="button" onClick={onClose} className="absolute right-5 top-5 flex h-11 w-11 items-center justify-center rounded-2xl border border-white/10 text-slate-300 hover:text-white" aria-label="Đóng menu">
+      <button type="button" onClick={onClose} className="absolute right-5 top-5 flex h-11 w-11 items-center justify-center rounded-2xl border border-white/10 text-ink-2 hover:text-white" aria-label="Đóng menu">
         <X size={20} />
       </button>
 
@@ -156,9 +156,9 @@ export default function AdminNavWheel({ open, onClose }) {
             aria-label={`Nhóm đang chọn: ${group.label}. Dùng phím mũi tên để xoay, Enter để chọn chức năng.`}
           >
             {/* Vòng nền và kim chỉ ở đỉnh */}
-            <div className="absolute inset-[22px] rounded-full border border-cyan-200/15 bg-[radial-gradient(circle,rgba(34,211,238,0.10),rgba(13,23,38,0.6)_62%)]" />
+            <div className="absolute inset-[22px] rounded-full border border-cyan-200/15 bg-[radial-gradient(circle,rgba(43,91,255,0.14),rgba(5,7,13,0.6)_62%)]" />
             <div className="absolute inset-[78px] rounded-full border border-dashed border-white/10" />
-            <div className="absolute left-1/2 top-0 h-0 w-0 -translate-x-1/2 border-x-[9px] border-t-[12px] border-x-transparent border-t-cyan-300" />
+            <div className="absolute left-1/2 top-0 h-0 w-0 -translate-x-1/2 border-x-[9px] border-t-[12px] border-x-transparent border-t-sunset" />
 
             <motion.div className="absolute inset-0" style={{ rotate: spring }}>
               {ADMIN_NAV.map((g, i) => {
@@ -179,7 +179,7 @@ export default function AdminNavWheel({ open, onClose }) {
                   >
                     <motion.span
                       className={`flex h-full w-full flex-col items-center justify-center gap-1 rounded-full border text-center transition-colors ${
-                        isSelected ? "border-[#FFB08F] bg-gradient-to-br from-sunset to-[#FF8F5E] text-[#160800] shadow-[0_0_44px_rgba(255,107,53,0.5)]" : "border-white/10 bg-cms-3 text-slate-300 hover:border-cyan-200/40 hover:text-white"
+                        isSelected ? "border-[#FFB08F] bg-gradient-to-br from-sunset to-[#FF8F5E] text-[#160800] shadow-[0_0_44px_rgba(255,107,53,0.5)]" : "border-white/10 bg-cms-3 text-ink-2 hover:border-cyan-200/40 hover:text-white"
                       }`}
                       style={{ rotate: counter }}
                       animate={{ scale: isSelected ? 1.12 : 1 }}
@@ -187,7 +187,7 @@ export default function AdminNavWheel({ open, onClose }) {
                       transition={{ type: "spring", stiffness: 300, damping: 20 }}
                     >
                       <Icon size={22} />
-                      <span className="px-1 text-[9.5px] font-bold uppercase leading-tight tracking-wide">{g.label}</span>
+                      <span className="px-1 text-[11px] font-semibold leading-tight">{g.label}</span>
                     </motion.span>
                   </button>
                 );
@@ -204,7 +204,7 @@ export default function AdminNavWheel({ open, onClose }) {
             </div>
           </div>
 
-          <div className="mt-5 flex items-center gap-3 text-xs text-slate-400">
+          <div className="mt-5 flex items-center gap-3 text-xs text-ink-2">
             <button type="button" onClick={() => stepBy(-1)} className="flex h-9 w-9 items-center justify-center rounded-xl border border-white/10 hover:text-white" aria-label="Nhóm trước">
               <ChevronLeft size={17} />
             </button>
@@ -216,13 +216,13 @@ export default function AdminNavWheel({ open, onClose }) {
         </motion.div>
 
         <div key={group.id} className="w-full max-w-sm rounded-[20px] border border-cyan-200/15 bg-cms-3/95 p-5">
-          <div className="text-xs font-bold uppercase tracking-[.18em] text-cyan-300">{group.label}</div>
+          <div className="text-[13px] font-semibold text-sunset">{group.label}</div>
           <motion.ul className="mt-4 space-y-2" initial="hidden" animate="show" variants={{ show: { transition: { staggerChildren: 0.05 } } }}>
             {group.items.map((item, index) => {
               const Icon = item.icon;
               const active = item.to && item.to === currentPath;
               const className = `flex items-center gap-3 rounded-2xl px-4 py-3.5 text-sm font-semibold transition ${
-                active ? "bg-cyan-300/[0.12] text-cyan-100 shadow-[inset_3px_0_0_#FF6B35]" : "border border-white/10 text-slate-200 hover:border-cyan-200/40 hover:bg-white/[0.05] hover:text-white"
+                active ? "bg-cyan-300/[0.12] text-cyan-100 shadow-[inset_3px_0_0_#FF6B35]" : "border border-white/10 text-ink-1 hover:translate-x-1 hover:border-cyan-300/50 hover:bg-white/[0.05] hover:text-white"
               }`;
               return (
                 <motion.li key={item.to || item.href} variants={{ hidden: { opacity: 0, x: 16 }, show: { opacity: 1, x: 0 } }}>

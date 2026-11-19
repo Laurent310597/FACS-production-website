@@ -125,8 +125,8 @@ export default function CommandPalette({ open, onClose }) {
               })}
             </ul>
             <div className="flex items-center gap-4 border-t border-white/[0.08] px-4 py-2.5 text-[11px] text-ink-3">
-              <span><kbd className="font-sans">↑ ↓</kbd> chọn</span>
-              <span><kbd className="font-sans">Enter</kbd> mở</span>
+              <span><kbd>↑ ↓</kbd> chọn</span>
+              <span><kbd>Enter</kbd> mở</span>
               <span className="ml-auto">Ctrl / ⌘ + K để mở lại</span>
             </div>
           </motion.div>

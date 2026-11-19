@@ -134,7 +134,7 @@ export default function AdminJobsPage() {
         <div>
           <div className="text-xs font-bold uppercase tracking-[0.18em] text-sunset">Quản lý tuyển dụng</div>
           <h1 className="mt-2 text-3xl font-bold md:text-4xl">Danh sách vị trí tuyển dụng</h1>
-          <p className="mt-2 text-sm text-slate-400">Tạo, lưu nháp, hẹn giờ hoặc đăng ngay JD trên trang Careers.</p>
+          <p className="mt-2 text-sm text-ink-2">Tạo, lưu nháp, hẹn giờ hoặc đăng ngay JD trên trang Careers.</p>
         </div>
         <Link to="/admin/jobs/new" className="inline-flex items-center justify-center gap-2 rounded-2xl bg-brand px-5 py-3 font-bold text-white transition hover:-translate-y-0.5 hover:bg-brand-hover">
           <FilePlus2 size={18} /> Tạo JD mới
@@ -162,7 +162,7 @@ export default function AdminJobsPage() {
         ) : filteredJobs.length === 0 ? (
           <div className="px-6 py-16 text-center">
             <div className="text-xl font-semibold">Chưa có vị trí tuyển dụng phù hợp</div>
-            <p className="mt-2 text-sm text-slate-400">Hãy tạo JD đầu tiên hoặc thay đổi bộ lọc tìm kiếm.</p>
+            <p className="mt-2 text-sm text-ink-2">Hãy tạo JD đầu tiên hoặc thay đổi bộ lọc tìm kiếm.</p>
           </div>
         ) : (
           <div className="divide-y divide-white/10">
@@ -189,9 +189,9 @@ export default function AdminJobsPage() {
                     )}
                   </div>
                   <div className="flex items-center gap-2 md:justify-end">
-                    <button type="button" onClick={() => duplicateJob(job)} className="flex h-10 w-10 items-center justify-center rounded-xl border border-white/10 text-slate-400 transition hover:border-cyan-200/30 hover:text-cyan-200" title="Nhân bản"><Copy size={17} /></button>
-                    <Link to={`/admin/jobs/${job.id}/edit`} className="flex h-10 w-10 items-center justify-center rounded-xl border border-white/10 text-slate-400 transition hover:border-cyan-200/30 hover:text-cyan-200" title="Chỉnh sửa"><Edit3 size={17} /></Link>
-                    <button type="button" onClick={() => deleteJob(job)} className="flex h-10 w-10 items-center justify-center rounded-xl border border-white/10 text-slate-400 transition hover:border-red-300/30 hover:text-red-200" title="Xóa"><Trash2 size={17} /></button>
+                    <button type="button" onClick={() => duplicateJob(job)} className="flex h-10 w-10 items-center justify-center rounded-xl border border-white/10 text-ink-2 transition hover:border-cyan-200/30 hover:text-cyan-200" title="Nhân bản"><Copy size={17} /></button>
+                    <Link to={`/admin/jobs/${job.id}/edit`} className="flex h-10 w-10 items-center justify-center rounded-xl border border-white/10 text-ink-2 transition hover:border-cyan-200/30 hover:text-cyan-200" title="Chỉnh sửa"><Edit3 size={17} /></Link>
+                    <button type="button" onClick={() => deleteJob(job)} className="flex h-10 w-10 items-center justify-center rounded-xl border border-white/10 text-ink-2 transition hover:border-red-300/30 hover:text-red-200" title="Xóa"><Trash2 size={17} /></button>
                   </div>
                 </article>
               );

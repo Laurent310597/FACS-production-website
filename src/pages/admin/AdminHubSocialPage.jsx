@@ -24,12 +24,12 @@ const ghostButton = ui.btnSecondary;
 
 const fmt = (value) => (value ? new Date(value).toLocaleString("vi-VN", { timeZone: "Asia/Ho_Chi_Minh", hour12: false }) : "—");
 const statusStyle = {
-  draft: "bg-slate-500/20 text-slate-300",
+  draft: "bg-slate-500/20 text-ink-2",
   scheduled: "bg-cyan-400/15 text-cyan-200",
   publishing: "bg-amber-400/15 text-amber-200",
   published: "bg-emerald-400/15 text-emerald-200",
   failed: "bg-rose-400/15 text-rose-200",
-  cancelled: "bg-slate-500/20 text-slate-400",
+  cancelled: "bg-slate-500/20 text-ink-2",
 };
 const accountStatusLabel = { connected: "Đã kết nối", expired: "Hết hạn – cần kết nối lại", error: "Lỗi", disconnected: "Đã gỡ" };
 
@@ -130,9 +130,9 @@ export default function AdminHubSocialPage() {
     <AdminLayout>
       <div className="mb-8 flex flex-wrap items-start justify-between gap-4">
         <div>
-          <div className="text-[11px] font-bold uppercase tracking-[0.22em] text-sunset">FACS Hub</div>
+          <div className="text-xs font-bold uppercase tracking-[0.18em] text-sunset">FACS Hub</div>
           <h1 className="mt-2 font-serif text-3xl font-bold text-white">Đăng & lịch đăng mạng xã hội</h1>
-          <p className="mt-2 max-w-2xl text-sm leading-6 text-slate-400">
+          <p className="mt-2 max-w-2xl text-sm leading-6 text-ink-2">
             Kết nối Facebook Fanpage, Instagram và LinkedIn cá nhân bằng quyền chính thức. Bài chỉ được đăng khi anh/chị bấm “Duyệt & hẹn giờ” hoặc “Đăng ngay” trong trang Tạo nội dung; không có gì tự đăng.
           </p>
         </div>
@@ -149,7 +149,7 @@ export default function AdminHubSocialPage() {
       )}
 
       <section className={cardClass}>
-        <h2 className="font-serif text-xl font-bold text-white">1. Tài khoản đã kết nối</h2>
+        <h2 className="text-xl font-semibold text-ink-1">1. Tài khoản đã kết nối</h2>
         <div className="mt-4 flex flex-wrap gap-3">
           <button type="button" className={ghostButton} onClick={() => connect("facebook")} disabled={busy === "facebook" || status?.meta_configured === false}>
             {busy === "facebook" ? <Loader2 size={16} className="animate-spin" /> : <Plug size={16} />} Kết nối Facebook & Instagram
@@ -202,8 +202,8 @@ export default function AdminHubSocialPage() {
       </section>
 
       <section className={`${cardClass} mt-6`}>
-        <h2 className="font-serif text-xl font-bold text-white">2. Hàng đợi & lịch sử đăng</h2>
-        <p className="mt-1 text-sm text-slate-400">Hệ thống kiểm tra giờ hẹn mỗi phút. Bài lỗi sẽ không tự đăng lại, để tránh đăng trùng.</p>
+        <h2 className="text-xl font-semibold text-ink-1">2. Hàng đợi & lịch sử đăng</h2>
+        <p className="mt-1 text-sm text-ink-2">Hệ thống kiểm tra giờ hẹn mỗi phút. Bài lỗi sẽ không tự đăng lại, để tránh đăng trùng.</p>
         <div className="mt-4 space-y-3">
           {loading && !posts.length && <SkeletonRows rows={3} />}
           {!posts.length && !loading && <p className="text-sm text-ink-3">Chưa có bài đăng nào.</p>}
@@ -224,7 +224,7 @@ export default function AdminHubSocialPage() {
                   )}
                 </span>
               </div>
-              <p className="mt-3 line-clamp-3 whitespace-pre-wrap text-sm leading-6 text-slate-300">{post.caption}</p>
+              <p className="mt-3 line-clamp-3 whitespace-pre-wrap text-sm leading-6 text-ink-2">{post.caption}</p>
               {post.image_path && <div className="mt-1 text-xs text-ink-3">Kèm 1 ảnh</div>}
               {post.error && <div className="mt-2 rounded-xl bg-rose-400/10 px-3 py-2 text-sm text-rose-200">{post.error}</div>}
             </motion.div>

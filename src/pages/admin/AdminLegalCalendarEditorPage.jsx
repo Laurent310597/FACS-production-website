@@ -213,9 +213,9 @@ export default function AdminLegalCalendarEditorPage() {
     <AdminLayout>
       <div className="flex flex-col gap-5 xl:flex-row xl:items-end xl:justify-between">
         <div>
-          <Link to="/admin/legal-calendar" className="inline-flex items-center gap-2 text-sm text-slate-400 transition hover:text-cyan-200"><ArrowLeft size={16} /> Trở lại lịch pháp lý</Link>
+          <Link to="/admin/legal-calendar" className="inline-flex items-center gap-2 text-sm text-ink-2 transition hover:text-cyan-200"><ArrowLeft size={16} /> Trở lại lịch pháp lý</Link>
           <h1 className="mt-4 text-3xl font-bold md:text-4xl">{isEditing ? "Chỉnh sửa mốc pháp lý" : "Thêm mốc pháp lý"}</h1>
-          <p className="mt-2 max-w-3xl text-sm leading-relaxed text-slate-400">Nguồn phát hiện P2/P3 không thay thế căn cứ chính thức P1. Hệ thống sẽ chặn xuất bản nếu chưa có nguồn chính thức.</p>
+          <p className="mt-2 max-w-3xl text-sm leading-relaxed text-ink-2">Nguồn phát hiện P2/P3 không thay thế căn cứ chính thức P1. Hệ thống sẽ chặn xuất bản nếu chưa có nguồn chính thức.</p>
         </div>
         <div className="flex flex-wrap gap-3">
           <button type="button" disabled={saving} onClick={() => saveEvent("draft")} className="inline-flex items-center gap-2 rounded-2xl border border-cyan-200/25 bg-cms-1 px-5 py-3 font-semibold text-cyan-100 transition hover:bg-white/[0.08] disabled:opacity-50">
@@ -239,41 +239,41 @@ export default function AdminLegalCalendarEditorPage() {
               </div>
               <div className="flex rounded-2xl border border-white/10 bg-cms-2 p-1">
                 {[["vi", "Tiếng Việt"], ["en", "English"]].map(([value, label]) => (
-                  <button key={value} type="button" onClick={() => setActiveLanguage(value)} className={`rounded-xl px-4 py-2 text-sm font-semibold transition ${activeLanguage === value ? "bg-cyan-300/[0.12] text-cyan-100" : "text-slate-400 hover:text-white"}`}>{label}</button>
+                  <button key={value} type="button" onClick={() => setActiveLanguage(value)} className={`rounded-xl px-4 py-2 text-sm font-semibold transition ${activeLanguage === value ? "bg-cyan-300/[0.12] text-cyan-100" : "text-ink-2 hover:text-white"}`}>{label}</button>
                 ))}
               </div>
             </div>
 
             <div className="mt-6 grid gap-5 md:grid-cols-2">
               <label className="block">
-                <span className="mb-2 block text-sm font-semibold text-slate-200">Ngày đến hạn *</span>
+                <span className="mb-2 block text-sm font-semibold text-ink-1">Ngày đến hạn *</span>
                 <input type="date" value={form.event_date} onChange={(event) => updateField("event_date", event.target.value)} className="w-full rounded-2xl border border-white/10 bg-cms-2 px-4 py-3.5 text-white outline-none focus:border-cyan-300/35" />
               </label>
               <label className="block">
-                <span className="mb-2 block text-sm font-semibold text-slate-200">Lĩnh vực *</span>
+                <span className="mb-2 block text-sm font-semibold text-ink-1">Lĩnh vực *</span>
                 <select value={form.category} onChange={(event) => updateField("category", event.target.value)} className="w-full rounded-2xl border border-white/10 bg-cms-2 px-4 py-3.5 text-white outline-none">
                   {legalCalendarCategories.map((item) => <option key={item.value} value={item.value}>{item.vi} / {item.en}</option>)}
                 </select>
               </label>
 
               <label className="block md:col-span-2">
-                <span className="mb-2 block text-sm font-semibold text-slate-200">Tên nghĩa vụ ({activeLanguage.toUpperCase()}) *</span>
+                <span className="mb-2 block text-sm font-semibold text-ink-1">Tên nghĩa vụ ({activeLanguage.toUpperCase()}) *</span>
                 <input value={form[`title_${activeLanguage}`]} onChange={(event) => updateField(`title_${activeLanguage}`, event.target.value)} className="w-full rounded-2xl border border-white/10 bg-cms-2 px-4 py-3.5 text-white outline-none placeholder:text-[#6A7BA3] focus:border-cyan-300/35" placeholder={activeLanguage === "vi" ? "Ví dụ: Nộp hồ sơ khai thuế GTGT theo quý..." : "Example: Quarterly VAT return filing..."} />
               </label>
               <label className="block">
-                <span className="mb-2 block text-sm font-semibold text-slate-200">Kỳ báo cáo ({activeLanguage.toUpperCase()})</span>
+                <span className="mb-2 block text-sm font-semibold text-ink-1">Kỳ báo cáo ({activeLanguage.toUpperCase()})</span>
                 <input value={form[`period_label_${activeLanguage}`]} onChange={(event) => updateField(`period_label_${activeLanguage}`, event.target.value)} className="w-full rounded-2xl border border-white/10 bg-cms-2 px-4 py-3.5 text-white outline-none placeholder:text-[#6A7BA3] focus:border-cyan-300/35" placeholder={activeLanguage === "vi" ? "Quý 2/2026" : "Q2 2026"} />
               </label>
               <label className="block">
-                <span className="mb-2 block text-sm font-semibold text-slate-200">Đối tượng ({activeLanguage.toUpperCase()})</span>
+                <span className="mb-2 block text-sm font-semibold text-ink-1">Đối tượng ({activeLanguage.toUpperCase()})</span>
                 <input value={form[`target_audience_${activeLanguage}`]} onChange={(event) => updateField(`target_audience_${activeLanguage}`, event.target.value)} className="w-full rounded-2xl border border-white/10 bg-cms-2 px-4 py-3.5 text-white outline-none placeholder:text-[#6A7BA3] focus:border-cyan-300/35" placeholder={activeLanguage === "vi" ? "Doanh nghiệp khai thuế theo quý" : "Quarterly tax filers"} />
               </label>
               <label className="block md:col-span-2">
-                <span className="mb-2 block text-sm font-semibold text-slate-200">Mô tả và lưu ý áp dụng ({activeLanguage.toUpperCase()})</span>
+                <span className="mb-2 block text-sm font-semibold text-ink-1">Mô tả và lưu ý áp dụng ({activeLanguage.toUpperCase()})</span>
                 <textarea value={form[`summary_${activeLanguage}`]} onChange={(event) => updateField(`summary_${activeLanguage}`, event.target.value)} rows={4} className="w-full resize-y rounded-2xl border border-white/10 bg-cms-2 px-4 py-3.5 leading-relaxed text-white outline-none placeholder:text-[#6A7BA3] focus:border-cyan-300/35" />
               </label>
               <label className="block md:col-span-2">
-                <span className="mb-2 block text-sm font-semibold text-slate-200">Căn cứ pháp lý ({activeLanguage.toUpperCase()}) *</span>
+                <span className="mb-2 block text-sm font-semibold text-ink-1">Căn cứ pháp lý ({activeLanguage.toUpperCase()}) *</span>
                 <textarea value={form[`legal_basis_${activeLanguage}`]} onChange={(event) => updateField(`legal_basis_${activeLanguage}`, event.target.value)} rows={4} className="w-full resize-y rounded-2xl border border-white/10 bg-cms-2 px-4 py-3.5 leading-relaxed text-white outline-none placeholder:text-[#6A7BA3] focus:border-cyan-300/35" placeholder={activeLanguage === "vi" ? "Điều, khoản, tên và số hiệu văn bản..." : "Article, clause, title and instrument number..."} />
               </label>
             </div>
@@ -297,31 +297,31 @@ export default function AdminLegalCalendarEditorPage() {
                 </div>
               </label>
               <label className="block">
-                <span className="mb-2 block text-sm font-semibold text-slate-200">Tên nguồn phát hiện</span>
+                <span className="mb-2 block text-sm font-semibold text-ink-1">Tên nguồn phát hiện</span>
                 <input value={form.source_name || ""} onChange={(event) => updateField("source_name", event.target.value)} className="w-full rounded-2xl border border-white/10 bg-cms-2 px-4 py-3.5 text-white outline-none" placeholder="MISA AMIS, Thư Viện Pháp Luật..." />
               </label>
               <label className="block">
-                <span className="mb-2 block text-sm font-semibold text-slate-200">Cấp nguồn</span>
+                <span className="mb-2 block text-sm font-semibold text-ink-1">Cấp nguồn</span>
                 <select value={form.source_tier} onChange={(event) => updateField("source_tier", event.target.value)} className="w-full rounded-2xl border border-white/10 bg-cms-2 px-4 py-3.5 text-white outline-none">
                   {sourceTiers.map((item) => <option key={item.value} value={item.value}>{item.vi}</option>)}
                 </select>
               </label>
               <label className="block md:col-span-2">
-                <span className="mb-2 block text-sm font-semibold text-slate-200">Đường dẫn nguồn phát hiện</span>
+                <span className="mb-2 block text-sm font-semibold text-ink-1">Đường dẫn nguồn phát hiện</span>
                 <input type="url" value={form.source_url || ""} onChange={(event) => updateField("source_url", event.target.value)} className="w-full rounded-2xl border border-white/10 bg-cms-2 px-4 py-3.5 text-white outline-none" placeholder="https://..." />
               </label>
               <label className="block">
-                <span className="mb-2 block text-sm font-semibold text-slate-200">Ngày nguồn công bố</span>
+                <span className="mb-2 block text-sm font-semibold text-ink-1">Ngày nguồn công bố</span>
                 <input type="date" value={form.source_published_at || ""} onChange={(event) => updateField("source_published_at", event.target.value)} className="w-full rounded-2xl border border-white/10 bg-cms-2 px-4 py-3.5 text-white outline-none" />
               </label>
               <label className="block">
-                <span className="mb-2 block text-sm font-semibold text-slate-200">Trạng thái xác minh *</span>
+                <span className="mb-2 block text-sm font-semibold text-ink-1">Trạng thái xác minh *</span>
                 <select value={form.verification_status} onChange={(event) => updateField("verification_status", event.target.value)} className="w-full rounded-2xl border border-white/10 bg-cms-2 px-4 py-3.5 text-white outline-none">
                   {verificationStates.map((item) => <option key={item.value} value={item.value}>{item.vi}</option>)}
                 </select>
               </label>
               <label className="block md:col-span-2">
-                <span className="mb-2 block text-sm font-semibold text-slate-200">Ghi chú nội bộ</span>
+                <span className="mb-2 block text-sm font-semibold text-ink-1">Ghi chú nội bộ</span>
                 <textarea value={form.notes || ""} onChange={(event) => updateField("notes", event.target.value)} rows={4} className="w-full resize-y rounded-2xl border border-white/10 bg-cms-2 px-4 py-3.5 leading-relaxed text-white outline-none" />
               </label>
             </div>
@@ -332,12 +332,12 @@ export default function AdminLegalCalendarEditorPage() {
           <div className="text-xs font-bold uppercase tracking-[0.18em] text-sunset">Xem trước · {activeLanguage.toUpperCase()}</div>
           <div className="mt-6 flex h-16 w-16 flex-col items-center justify-center rounded-2xl border border-cyan-200/15 bg-cyan-300/[0.06]">
             <CalendarDays size={22} className="text-cyan-300" />
-            <span className="mt-1 text-xs font-semibold text-slate-400">{form.event_date || "YYYY-MM-DD"}</span>
+            <span className="mt-1 text-xs font-semibold text-ink-2">{form.event_date || "YYYY-MM-DD"}</span>
           </div>
           <h2 className="mt-5 text-2xl font-bold leading-snug">{activeTitle}</h2>
-          {activeSummary && <p className="mt-4 leading-relaxed text-slate-400">{activeSummary}</p>}
+          {activeSummary && <p className="mt-4 leading-relaxed text-ink-2">{activeSummary}</p>}
           <div className="mt-6 border-t border-white/10 pt-5">
-            <div className="flex items-center gap-2 text-sm font-semibold text-slate-200">
+            <div className="flex items-center gap-2 text-sm font-semibold text-ink-1">
               {form.verification_status === "verified" ? <CheckCircle2 size={17} className="text-emerald-300" /> : <ShieldCheck size={17} className="text-amber-300" />}
               {verificationStates.find((item) => item.value === form.verification_status)?.vi}
             </div>

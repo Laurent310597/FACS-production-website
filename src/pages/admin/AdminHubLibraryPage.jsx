@@ -128,7 +128,7 @@ function GuidelinesFolder({ rows, reload, setError, setNotice }) {
   return (
     <div className="space-y-5">
       <div className="flex flex-wrap items-center justify-between gap-3">
-        <p className="max-w-3xl text-sm text-slate-400">
+        <p className="max-w-3xl text-sm text-ink-2">
           Mỗi mục là một hướng dẫn AI phải đọc trước khi viết: quy tắc bắt buộc, văn phong thương hiệu, kỹ năng (cách viết một loại bài), hoặc tài liệu tham chiếu. Chọn kênh áp dụng, để trống là áp dụng cho mọi kênh. Tắt một mục khi muốn tạm ngưng mà không xóa.
         </p>
         {!form && (
@@ -162,7 +162,7 @@ function GuidelinesFolder({ rows, reload, setError, setNotice }) {
               {hubOutputOptions.map((option) => {
                 const active = form.applies_to.includes(option.value);
                 return (
-                  <button key={option.value} type="button" aria-pressed={active} onClick={() => toggleChannel(option.value)} className={`rounded-xl border px-3 py-1.5 text-sm ${active ? "border-cyan-300 bg-cyan-300/15 text-cyan-100" : "border-white/10 text-slate-400"}`}>
+                  <button key={option.value} type="button" aria-pressed={active} onClick={() => toggleChannel(option.value)} className={`rounded-xl border px-3 py-1.5 text-sm ${active ? "border-cyan-300 bg-cyan-300/15 text-cyan-100" : "border-white/10 text-ink-2"}`}>
                     {active ? "✓ " : ""}{option.label}
                   </button>
                 );
@@ -178,7 +178,7 @@ function GuidelinesFolder({ rows, reload, setError, setNotice }) {
             <div className="flex flex-wrap items-center gap-3">
               {(form.images || []).map((image) => (
                 <div key={image.path} className="relative h-28 w-24 overflow-hidden rounded-xl border border-white/10 bg-white/5">
-                  {previews[image.path] ? <img src={previews[image.path]} alt={image.name} className="h-full w-full object-cover" /> : <div className="p-2 text-xs text-slate-400">{image.name}</div>}
+                  {previews[image.path] ? <img src={previews[image.path]} alt={image.name} className="h-full w-full object-cover" /> : <div className="p-2 text-xs text-ink-2">{image.name}</div>}
                   <button type="button" onClick={() => removeImage(image.path)} className="absolute right-1 top-1 rounded-full bg-black/70 p-1 text-white" aria-label={`Bỏ ảnh ${image.name}`}><X size={12} /></button>
                 </div>
               ))}
@@ -199,7 +199,7 @@ function GuidelinesFolder({ rows, reload, setError, setNotice }) {
               <FileUp size={15} /> Nhập từ file .txt / .md
               <input type="file" accept=".txt,.md,text/plain,text/markdown" onChange={importFile} className="hidden" />
             </label>
-            <label className="flex items-center gap-2 text-sm text-slate-300">
+            <label className="flex items-center gap-2 text-sm text-ink-2">
               <input type="checkbox" checked={form.is_active} onChange={(e) => update("is_active", e.target.checked)} /> Đang áp dụng
             </label>
             <button type="button" className={ghostButton} onClick={() => setForm(null)}>Hủy</button>
@@ -216,13 +216,13 @@ function GuidelinesFolder({ rows, reload, setError, setNotice }) {
               <div className="min-w-0 flex-1">
                 <div className="flex flex-wrap items-center gap-2">
                   <span className="font-semibold text-white">{row.title}</span>
-                  <span className="rounded-full bg-white/10 px-2 py-0.5 text-xs text-slate-300">{kindLabel[row.kind] || row.kind}</span>
+                  <span className="rounded-full bg-white/10 px-2 py-0.5 text-xs text-ink-2">{kindLabel[row.kind] || row.kind}</span>
                   <span className={`rounded-full px-2 py-0.5 text-xs ${row.is_active ? "bg-emerald-300/15 text-emerald-200" : "bg-white/5 text-ink-3"}`}>{row.is_active ? "Đang áp dụng" : "Tạm tắt"}</span>
                 </div>
                 <div className="mt-1 text-xs text-ink-3">
                   {row.applies_to?.length ? row.applies_to.map((c) => channelLabel[c] || c).join(", ") : "Mọi kênh"} · cập nhật {fmt(row.updated_at)}{row.images?.length ? ` · ${row.images.length} ảnh mẫu` : ""}
                 </div>
-                <p className="mt-2 line-clamp-2 whitespace-pre-line text-sm text-slate-400">{row.content}</p>
+                <p className="mt-2 line-clamp-2 whitespace-pre-line text-sm text-ink-2">{row.content}</p>
               </div>
               <div className="flex gap-2">
                 <button type="button" className={ghostButton} onClick={() => toggleActive(row)}>{row.is_active ? "Tạm tắt" : "Bật lại"}</button>
@@ -266,7 +266,7 @@ function InputsFolder({ rows }) {
               </div>
               <Link to={`/admin/hub/content?item=${row.id}`} className={ghostButton}><FolderOpen size={15} /> Mở</Link>
             </div>
-            {row.brief && <p className="mt-2 text-sm text-slate-300"><span className="text-ink-3">Yêu cầu: </span>{row.brief}</p>}
+            {row.brief && <p className="mt-2 text-sm text-ink-2"><span className="text-ink-3">Yêu cầu: </span>{row.brief}</p>}
             {row.source_urls?.length > 0 && (
               <ul className="mt-2 space-y-1 text-sm">
                 {row.source_urls.map((url) => (
@@ -275,8 +275,8 @@ function InputsFolder({ rows }) {
               </ul>
             )}
             {row.source_text && (
-              <details className="mt-2 text-sm text-slate-400">
-                <summary className="cursor-pointer text-slate-300">Nội dung đã dán ({row.source_text.length.toLocaleString("vi-VN")} ký tự)</summary>
+              <details className="mt-2 text-sm text-ink-2">
+                <summary className="cursor-pointer text-ink-2">Nội dung đã dán ({row.source_text.length.toLocaleString("vi-VN")} ký tự)</summary>
                 <p className="mt-2 max-h-48 overflow-auto whitespace-pre-line rounded-xl bg-black/20 p-3">{row.source_text}</p>
               </details>
             )}
@@ -346,12 +346,12 @@ function ApprovedFolder({ rows, reload, setError }) {
 
   return (
     <div className="space-y-4">
-      <p className="max-w-3xl text-sm text-slate-400">
+      <p className="max-w-3xl text-sm text-ink-2">
         Mỗi lần tạo nội dung, AI đọc tối đa 2 bài đã duyệt cho mỗi kênh (ưu tiên bài cùng chủ đề, rồi bài mới nhất) để học văn phong, độ dài và cấu trúc. AI không lấy số liệu từ bài mẫu. Bỏ chọn "Dùng làm mẫu" với bài anh/chị không muốn AI học theo.
       </p>
       <div className="flex flex-wrap gap-2">
         {[{ value: "all", label: "Tất cả" }, ...hubOutputOptions].map((option) => (
-          <button key={option.value} type="button" onClick={() => setChannel(option.value)} className={`rounded-xl px-3 py-1.5 text-sm font-semibold ${channel === option.value ? "bg-cyan-300/[0.12] text-cyan-100" : "text-slate-300 hover:bg-white/[0.07]"}`}>
+          <button key={option.value} type="button" onClick={() => setChannel(option.value)} className={`rounded-xl px-3 py-1.5 text-sm font-semibold ${channel === option.value ? "bg-cyan-300/[0.12] text-cyan-100" : "text-ink-2 hover:bg-white/[0.07]"}`}>
             {option.label} {option.value === "all" ? `(${rows.length})` : `(${rows.filter((r) => r.channel === option.value).length})`}
           </button>
         ))}
@@ -368,7 +368,7 @@ function ApprovedFolder({ rows, reload, setError }) {
                   <div className="mt-1 text-xs text-ink-3">{channelLabel[row.channel] || row.channel} · duyệt lúc {fmt(row.approved_at)}</div>
                 </button>
                 <div className="flex flex-wrap items-center gap-2">
-                  <label className="flex items-center gap-2 text-sm text-slate-300">
+                  <label className="flex items-center gap-2 text-sm text-ink-2">
                     <input type="checkbox" checked={row.is_reference} onChange={() => toggleReference(row)} /> Dùng làm mẫu
                   </label>
                   {row.content_item_id && <Link to={`/admin/hub/content?item=${row.content_item_id}`} className={ghostButton}><FolderOpen size={15} /> Mở bộ gốc</Link>}
@@ -428,7 +428,7 @@ export default function AdminHubLibraryPage() {
           <div>
             <div className="text-xs font-bold uppercase tracking-[0.18em] text-sunset">FACS Hub</div>
             <h1 className="mt-1 text-3xl font-bold tracking-[-0.02em]">Thư viện</h1>
-            <p className="mt-2 max-w-3xl text-sm text-slate-400">Nơi AI học cách làm việc theo cách của FACS: đọc hướng dẫn ở thư mục 1 và các bài đã duyệt ở thư mục 3 trước mỗi lần tạo nội dung.</p>
+            <p className="mt-2 max-w-3xl text-sm text-ink-2">Nơi AI học cách làm việc theo cách của FACS: đọc hướng dẫn ở thư mục 1 và các bài đã duyệt ở thư mục 3 trước mỗi lần tạo nội dung.</p>
           </div>
           <Link to="/admin/hub/content" className={primaryButton}><Sparkles size={16} /> Tạo nội dung</Link>
         </div>
@@ -442,10 +442,10 @@ export default function AdminHubLibraryPage() {
             return (
               <button key={folder.key} type="button" onClick={() => { setActive(folder.key); setNotice(""); }} aria-pressed={isActive} className={`facs-card facs-tile rounded-[20px] border p-5 text-left transition ${isActive ? "border-cyan-300 bg-cyan-300/10" : "border-cyan-300/[0.14] bg-cms-1 hover:border-cyan-200/30"}`}>
                 <div className="flex items-center gap-3">
-                  <Icon size={22} className={isActive ? "text-cyan-300" : "text-slate-400"} />
+                  <Icon size={22} className={isActive ? "text-cyan-300" : "text-ink-2"} />
                   <span className="font-bold text-white">{folder.title}</span>
                 </div>
-                <p className="mt-2 text-xs text-slate-400">{folder.note}</p>
+                <p className="mt-2 text-xs text-ink-2">{folder.note}</p>
                 <p className="mt-3 text-sm font-semibold text-cyan-200">{loading ? "…" : countLabel[folder.key]}</p>
               </button>
             );

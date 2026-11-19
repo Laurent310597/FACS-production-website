@@ -89,7 +89,7 @@ function CollapsedNav({ currentPath, activeId }) {
           <div key={group.id} className="group relative">
             <button
               type="button"
-              className={`flex h-12 w-12 items-center justify-center rounded-2xl transition ${isActive ? "bg-cyan-300/[0.12] text-cyan-100" : "text-slate-400 hover:bg-white/[0.07] hover:text-white"}`}
+              className={`flex h-12 w-12 items-center justify-center rounded-2xl transition ${isActive ? "bg-cyan-300/[0.12] text-cyan-100" : "text-ink-2 hover:bg-white/[0.07] hover:text-white"}`}
               aria-label={group.label}
             >
               <GroupIcon size={20} />
@@ -307,7 +307,7 @@ export default function AdminLayout({ children }) {
             >
               <Search size={16} />
               <span className="hidden sm:inline">Tìm nhanh…</span>
-              <kbd className="ml-auto hidden rounded-md border border-white/[0.12] px-1.5 py-0.5 font-sans text-[11px] sm:inline">Ctrl K</kbd>
+              <kbd className="ml-auto hidden rounded-md border border-white/[0.12] px-1.5 py-0.5 text-[11px] sm:inline">Ctrl K</kbd>
             </button>
             <div ref={siteMenuRef} className="relative">
               <button
@@ -349,7 +349,7 @@ export default function AdminLayout({ children }) {
 
       <div className={`mx-auto grid max-w-[1500px] gap-6 px-5 py-6 lg:px-8 lg:py-8 ${gridCols}`}>
         {mode !== "wheel" && (
-          <aside className="hidden h-fit lg:sticky lg:top-24 lg:block">
+          <aside className="relative z-30 hidden h-fit lg:sticky lg:top-24 lg:block">
             {/* Màn hình nhỏ luôn dùng thanh mở rộng; màn hình lớn theo lựa chọn */}
             <div className={`rounded-[20px] border border-white/[0.07] bg-midnight-2/90 p-3 lg:max-h-[calc(100vh-7.5rem)] lg:overflow-y-auto ${mode === "collapsed" ? "lg:hidden" : ""}`}>
               <div className="mb-1 flex items-center justify-between px-2 pb-2">

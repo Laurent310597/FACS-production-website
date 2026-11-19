@@ -156,7 +156,7 @@ export default function AdminPostsPage() {
         <div>
           <div className="text-xs font-bold uppercase tracking-[0.18em] text-sunset">Quản lý nội dung</div>
           <h1 className="mt-2 text-3xl font-bold md:text-4xl">Danh sách bài viết</h1>
-          <p className="mt-2 text-sm text-slate-400">Tạo, lưu nháp, hẹn giờ hoặc đăng ngay bài viết trên trang Insights.</p>
+          <p className="mt-2 text-sm text-ink-2">Tạo, lưu nháp, hẹn giờ hoặc đăng ngay bài viết trên trang Insights.</p>
         </div>
         <Link to="/admin/posts/new" className="inline-flex items-center justify-center gap-2 rounded-2xl bg-brand px-5 py-3 font-bold text-white transition hover:-translate-y-0.5 hover:bg-brand-hover">
           <FilePlus2 size={18} /> Viết bài mới
@@ -184,7 +184,7 @@ export default function AdminPostsPage() {
         ) : filteredPosts.length === 0 ? (
           <div className="px-6 py-16 text-center">
             <div className="text-xl font-semibold">Chưa có bài viết phù hợp</div>
-            <p className="mt-2 text-sm text-slate-400">Hãy tạo bài đầu tiên hoặc thay đổi bộ lọc tìm kiếm.</p>
+            <p className="mt-2 text-sm text-ink-2">Hãy tạo bài đầu tiên hoặc thay đổi bộ lọc tìm kiếm.</p>
           </div>
         ) : (
           <div className="divide-y divide-white/10">
@@ -219,11 +219,11 @@ export default function AdminPostsPage() {
                   </div>
                   <div className="flex items-center gap-2 md:justify-end">
                     {post.email_delivery_mode !== "disabled" && (
-                      <Link to={`/admin/email?post_id=${post.id}`} className="flex h-10 w-10 items-center justify-center rounded-xl border border-white/10 text-slate-400 transition hover:border-sky-200/30 hover:text-sky-200" title="Quy trình Email Insights"><Mail size={17} /></Link>
+                      <Link to={`/admin/email?post_id=${post.id}`} className="flex h-10 w-10 items-center justify-center rounded-xl border border-white/10 text-ink-2 transition hover:border-sky-200/30 hover:text-sky-200" title="Quy trình Email Insights"><Mail size={17} /></Link>
                     )}
-                    <button type="button" onClick={() => duplicatePost(post)} className="flex h-10 w-10 items-center justify-center rounded-xl border border-white/10 text-slate-400 transition hover:border-cyan-200/30 hover:text-cyan-200" title="Nhân bản"><Copy size={17} /></button>
-                    <Link to={`/admin/posts/${post.id}/edit`} className="flex h-10 w-10 items-center justify-center rounded-xl border border-white/10 text-slate-400 transition hover:border-cyan-200/30 hover:text-cyan-200" title="Chỉnh sửa"><Edit3 size={17} /></Link>
-                    <button type="button" onClick={() => deletePost(post)} className="flex h-10 w-10 items-center justify-center rounded-xl border border-white/10 text-slate-400 transition hover:border-red-300/30 hover:text-red-200" title="Xóa"><Trash2 size={17} /></button>
+                    <button type="button" onClick={() => duplicatePost(post)} className="flex h-10 w-10 items-center justify-center rounded-xl border border-white/10 text-ink-2 transition hover:border-cyan-200/30 hover:text-cyan-200" title="Nhân bản"><Copy size={17} /></button>
+                    <Link to={`/admin/posts/${post.id}/edit`} className="flex h-10 w-10 items-center justify-center rounded-xl border border-white/10 text-ink-2 transition hover:border-cyan-200/30 hover:text-cyan-200" title="Chỉnh sửa"><Edit3 size={17} /></Link>
+                    <button type="button" onClick={() => deletePost(post)} className="flex h-10 w-10 items-center justify-center rounded-xl border border-white/10 text-ink-2 transition hover:border-red-300/30 hover:text-red-200" title="Xóa"><Trash2 size={17} /></button>
                   </div>
                 </article>
               );

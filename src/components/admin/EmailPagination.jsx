@@ -1,7 +1,7 @@
 export default function EmailPagination({ count, page, pageSize, onPageChange, onPageSizeChange, label = "người", busy = false }) {
   const pages = Math.max(1, Math.ceil(count / pageSize));
   return (
-    <nav aria-label={`Phân trang ${label}`} className="mt-4 flex flex-wrap items-center justify-between gap-3 text-sm text-slate-400">
+    <nav aria-label={`Phân trang ${label}`} className="mt-4 flex flex-wrap items-center justify-between gap-3 text-sm text-ink-2">
       <label className="flex items-center gap-2">
         <select aria-label={`Số ${label} mỗi trang`} value={pageSize} disabled={busy}
           onChange={(event) => onPageSizeChange(Number(event.target.value))}

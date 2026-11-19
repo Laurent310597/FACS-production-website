@@ -157,10 +157,10 @@ export default function HubSchedulePanel({ channel, caption, infographic, itemId
 
   return (
     <div className="mt-6 rounded-2xl bg-white/[0.03] p-5 ring-1 ring-inset ring-white/[0.05]">
-      <div className="flex items-center gap-2 font-serif text-lg font-bold text-white"><CalendarClock size={18} className="text-cyan-300" /> Đăng lên {platformName[channel]}</div>
+      <div className="flex items-center gap-2 text-lg font-semibold text-ink-1"><CalendarClock size={18} className="text-cyan-300" /> Đăng lên {platformName[channel]}</div>
 
       {!accounts.length ? (
-        <p className="mt-3 text-sm text-slate-400">
+        <p className="mt-3 text-sm text-ink-2">
           Chưa có tài khoản {platformName[channel]} nào được kết nối. <Link to="/admin/hub/social" className="font-semibold text-cyan-300 underline">Kết nối tại trang Đăng & lịch đăng</Link>.
         </p>
       ) : (
@@ -183,7 +183,7 @@ export default function HubSchedulePanel({ channel, caption, infographic, itemId
 
           <div>
             <span className={labelClass}>Ảnh đính kèm{channel === "instagram" && " (Instagram bắt buộc có ảnh)"}</span>
-            <div className="space-y-2 text-sm text-slate-200">
+            <div className="space-y-2 text-sm text-ink-1">
               {channel !== "instagram" && (
                 <label className="flex items-center gap-2"><input type="radio" name={`img-${channel}`} checked={imageMode === "none"} onChange={() => setImageMode("none")} className="accent-cyan-300" /> Không kèm ảnh</label>
               )}
@@ -206,8 +206,8 @@ export default function HubSchedulePanel({ channel, caption, infographic, itemId
               {uploaded && (
                 <span className="flex items-center gap-3">
                   <img src={uploaded.previewUrl} alt="Ảnh sẽ đăng" className="h-24 w-auto rounded-lg border border-white/10" />
-                  <span className="text-xs text-slate-400">{uploaded.name}<br />{uploaded.width} × {uploaded.height}px</span>
-                  <button type="button" onClick={clearUploaded} className="text-slate-400 hover:text-white" aria-label="Bỏ ảnh"><X size={16} /></button>
+                  <span className="text-xs text-ink-2">{uploaded.name}<br />{uploaded.width} × {uploaded.height}px</span>
+                  <button type="button" onClick={clearUploaded} className="text-ink-2 hover:text-white" aria-label="Bỏ ảnh"><X size={16} /></button>
                 </span>
               )}
             </div>
@@ -251,8 +251,8 @@ export default function HubSchedulePanel({ channel, caption, infographic, itemId
       {error && <div className="mt-4 rounded-xl border border-rose-300/25 bg-rose-400/10 p-3 text-sm text-rose-100">{error}</div>}
 
       {recent.length > 0 && (
-        <div className="mt-4 space-y-1 text-xs text-slate-400">
-          <div className="font-semibold text-slate-300">Bài gần đây của bộ nội dung này</div>
+        <div className="mt-4 space-y-1 text-xs text-ink-2">
+          <div className="font-semibold text-ink-2">Bài gần đây của bộ nội dung này</div>
           {recent.map((p) => (
             <div key={p.id}>
               {postStatusLabel[p.status]} · {p.status === "published" ? fmt(p.published_at) : p.scheduled_at ? fmt(p.scheduled_at) : fmt(p.created_at)}

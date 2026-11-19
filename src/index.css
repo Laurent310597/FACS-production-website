@@ -215,6 +215,9 @@ img {
   --color-cyan-950: #0F1A45;
   accent-color: var(--color-electric);
 }
+.facs-cms kbd {
+  font-family: inherit;
+}
 .facs-cms h1 {
   font-family: Cambria, Georgia, serif;
   letter-spacing: -0.01em;
@@ -419,6 +422,21 @@ img {
 }
 @keyframes facs-title {
   from { opacity: 0; translate: 0 10px; letter-spacing: 0.01em; }
+}
+/* Màn hình cảm ứng: không giữ trạng thái phóng to/nổi sau khi chạm. */
+@media (hover: none) {
+  .facs-card.is-in:hover:not(:has(.fixed)),
+  .facs-tile.is-in:not([open]):not(:has(.fixed)):hover,
+  .facs-cms .facs-tile:not(.facs-card):not([open]):not(:has(.fixed)):hover,
+  .facs-row:not(:has(.fixed)):hover {
+    translate: none;
+    scale: none;
+    transform: none;
+  }
+  .facs-card:hover::before,
+  .facs-card:hover::after {
+    opacity: 0;
+  }
 }
 }
 
