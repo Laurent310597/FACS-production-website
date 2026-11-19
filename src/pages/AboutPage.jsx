@@ -1,4 +1,5 @@
 import Navbar from "../components/Navbar";
+import SiteBackdrop from "../components/site/SiteBackdrop";
 import Footer from "../components/Footer";
 import AnimatedCounter from "../components/AnimatedCounter";
 import { Link } from "react-router-dom";
@@ -28,7 +29,7 @@ export default function AboutPage() {
     <>
       <Navbar />
       <main className="bg-[radial-gradient(circle_at_top_right,rgba(0,183,255,0.10),transparent_30%),linear-gradient(135deg,#0d1726_0%,#101b2f_48%,#132238_100%)] text-white overflow-hidden">
-        <section className="relative py-32 border-b border-white/10 overflow-hidden">
+        <section className="relative py-32 border-b border-white/10 overflow-hidden"><SiteBackdrop />
           <div className="absolute inset-0 bg-gradient-to-br from-cyan-500/5 via-transparent to-blue-500/5" />
           <div className="absolute top-0 left-0 w-[500px] h-[500px] bg-cyan-500/10 blur-[120px] rounded-full" />
           <div className="container mx-auto px-6 lg:px-12 relative z-10">
@@ -133,7 +134,7 @@ export default function AboutPage() {
                     key={value}
                     whileHover={{ y: -5, scale: 1.015 }}
                     transition={{ duration: 0.25 }}
-                    className="group relative overflow-hidden rounded-2xl border border-white/10 bg-white/[0.035] px-5 py-4 text-slate-300 text-sm leading-snug text-pretty cursor-default hover:border-cyan-300/35 hover:bg-cyan-400/[0.055] hover:text-white hover:shadow-[0_0_30px_rgba(34,211,238,0.12)] transition-all duration-300"
+                    className="site-card site-tile group relative overflow-hidden rounded-2xl border border-white/10 bg-white/[0.035] px-5 py-4 text-slate-300 text-sm leading-snug text-pretty cursor-default hover:border-cyan-300/35 hover:bg-cyan-400/[0.055] hover:text-white hover:shadow-[0_0_30px_rgba(34,211,238,0.12)] transition-all duration-300"
                   >
                     <span className="absolute inset-y-0 left-0 w-1 bg-cyan-300/0 transition-all duration-300 group-hover:bg-cyan-300/80" />
                     <span className="relative z-10 block transition-transform duration-300 group-hover:translate-x-1">{value}</span>

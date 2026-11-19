@@ -3,6 +3,7 @@ import { ArrowRight, Briefcase, CalendarDays, MapPin } from "lucide-react";
 import { Link } from "react-router-dom";
 import { motion } from "framer-motion";
 import Navbar from "../components/Navbar";
+import SiteBackdrop from "../components/site/SiteBackdrop";
 import Footer from "../components/Footer";
 import { useLanguage } from "../components/LanguageContext";
 import {
@@ -74,7 +75,7 @@ export default function CareersPage() {
     <>
       <Navbar />
       <main className="overflow-hidden bg-[radial-gradient(circle_at_top_right,rgba(0,183,255,0.10),transparent_30%),linear-gradient(135deg,#0d1726_0%,#101b2f_48%,#132238_100%)] text-white">
-        <section className="relative border-b border-white/10 py-32">
+        <section className="overflow-hidden relative border-b border-white/10 py-32"><SiteBackdrop />
           <div className="absolute left-0 top-0 h-[500px] w-[500px] rounded-full bg-cyan-500/10 blur-[120px]" />
           <div className="container relative z-10 mx-auto px-6 lg:px-12">
             <div className="max-w-5xl">

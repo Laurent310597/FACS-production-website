@@ -15,6 +15,7 @@ import {
 import { motion } from "framer-motion";
 import Footer from "../components/Footer";
 import Navbar from "../components/Navbar";
+import SiteBackdrop from "../components/site/SiteBackdrop";
 import { useLanguage } from "../components/LanguageContext";
 import {
   downloadLegalEventIcs,
@@ -79,7 +80,7 @@ function EventCard({ event, language, compact = false }) {
   const officialSourceUrl = event.official_source_url || event.source_url;
 
   return (
-    <article className={`rounded-[26px] border border-white/10 bg-[#081321]/55 transition hover:border-cyan-200/25 ${compact ? "p-5" : "p-6 md:p-7"}`}>
+    <article className={`site-card rounded-[26px] border border-white/10 bg-[#081321]/55 transition hover:border-cyan-200/25 ${compact ? "p-5" : "p-6 md:p-7"}`}>
       <div className="flex flex-wrap items-center gap-2">
         <span
           className="rounded-full border px-3 py-1 text-xs font-bold uppercase tracking-[0.12em]"
@@ -238,9 +239,9 @@ export default function LegalCalendarPage() {
     <main className="min-h-screen bg-[radial-gradient(circle_at_top_right,rgba(0,183,255,0.11),transparent_28%),linear-gradient(135deg,#0d1726_0%,#101b2f_50%,#132238_100%)] text-white">
       <Navbar />
 
-      <section className="relative overflow-hidden border-b border-white/10 py-20 md:py-28">
+      <section className="relative overflow-hidden border-b border-white/10 py-20 md:py-28"><SiteBackdrop />
         <div className="absolute -right-24 top-8 h-80 w-80 rounded-full bg-cyan-400/10 blur-[110px]" />
-        <div className="container relative mx-auto px-6 lg:px-12">
+        <div className="z-10 container relative mx-auto px-6 lg:px-12">
           <div className="grid items-end gap-10 xl:grid-cols-[minmax(0,1fr)_440px]">
             <div className="max-w-4xl">
               <div className="mb-4 inline-flex items-center gap-2 rounded-full border border-cyan-200/20 bg-cyan-300/[0.06] px-4 py-2 text-sm font-semibold text-cyan-200">
@@ -262,7 +263,7 @@ export default function LegalCalendarPage() {
                 [RefreshCw, isVi ? "Cập nhật định kỳ" : "Regularly updated", isVi ? "Các mốc được rà soát và bổ sung thường xuyên" : "Deadlines are reviewed and updated regularly"],
                 [ExternalLink, isVi ? "Truy xuất nguồn" : "Source traceability", isVi ? "Lưu nguồn phát hiện và căn cứ chính thức" : "Discovery and official sources are retained"],
               ].map(([Icon, title, desc]) => (
-                <div key={title} className="flex gap-3 rounded-2xl border border-white/10 bg-white/[0.035] p-4">
+                <div key={title} className="site-card site-tile flex gap-3 rounded-2xl border border-white/10 bg-white/[0.035] p-4">
                   <Icon size={19} className="mt-0.5 shrink-0 text-cyan-300" />
                   <div>
                     <div className="text-sm font-semibold">{title}</div>
@@ -277,7 +278,7 @@ export default function LegalCalendarPage() {
 
       <section className="py-14 md:py-20">
         <div className="container mx-auto px-4 sm:px-6 lg:px-12">
-          <div className="rounded-[32px] border border-slate-300/45 bg-[linear-gradient(145deg,rgba(218,228,236,0.97),rgba(191,207,220,0.96))] p-4 text-[#0d1726] shadow-[0_32px_100px_rgba(0,0,0,0.24)] md:p-7">
+          <div className="site-card rounded-[32px] border border-slate-300/45 bg-[linear-gradient(145deg,rgba(218,228,236,0.97),rgba(191,207,220,0.96))] p-4 text-[#0d1726] shadow-[0_32px_100px_rgba(0,0,0,0.24)] md:p-7">
             <div className="flex flex-col gap-5 xl:flex-row xl:items-center xl:justify-between">
               <div className="flex items-center justify-between gap-3 sm:justify-start">
                 <button type="button" onClick={() => changeMonth(-1)} aria-label={isVi ? "Tháng trước" : "Previous month"} className="flex h-11 w-11 items-center justify-center rounded-2xl border border-slate-400/60 bg-slate-100/70 text-slate-600 transition hover:border-cyan-600/40 hover:bg-slate-50 hover:text-cyan-900">
@@ -420,7 +421,7 @@ export default function LegalCalendarPage() {
               </div>
             </div>
 
-            <aside className="h-fit rounded-[28px] border border-white/10 bg-white/[0.035] p-6 xl:sticky xl:top-28">
+            <aside className="site-card h-fit rounded-[28px] border border-white/10 bg-white/[0.035] p-6 xl:sticky xl:top-28">
               <div className="flex items-center gap-3">
                 <ShieldCheck className="text-cyan-300" />
                 <h2 className="text-xl font-semibold">{isVi ? "Nguyên tắc sử dụng" : "How to use this calendar"}</h2>

@@ -1,6 +1,7 @@
 import { Link } from "react-router-dom";
 import { motion } from "framer-motion";
 import Navbar from "../components/Navbar";
+import SiteBackdrop from "../components/site/SiteBackdrop";
 import Footer from "../components/Footer";
 import { industries } from "../data/industries";
 import { useLanguage } from "../components/LanguageContext";
@@ -15,7 +16,7 @@ export default function IndustriesPage() {
 
       <main className="bg-[radial-gradient(circle_at_top_right,rgba(0,183,255,0.10),transparent_30%),linear-gradient(135deg,#0d1726_0%,#101b2f_48%,#132238_100%)] text-white overflow-hidden">
         {/* HERO */}
-        <section className="relative py-32 border-b border-white/10">
+        <section className="overflow-hidden relative py-32 border-b border-white/10"><SiteBackdrop />
           <div className="absolute top-0 right-0 w-[500px] h-[500px] bg-cyan-500/10 blur-[120px] rounded-full" />
 
           <div className="container mx-auto px-6 lg:px-12 relative z-10">

@@ -1,4 +1,5 @@
 import Navbar from "../components/Navbar";
+import SiteBackdrop from "../components/site/SiteBackdrop";
 import Footer from "../components/Footer";
 import AnimatedCounter from "../components/AnimatedCounter";
 
@@ -31,7 +32,7 @@ export default function ServicesPage() {
       <main className="bg-[radial-gradient(circle_at_top_right,rgba(0,183,255,0.10),transparent_30%),linear-gradient(135deg,#0d1726_0%,#101b2f_48%,#132238_100%)] text-white overflow-hidden">
 
         {/* HERO */}
-        <section className="relative py-32 border-b border-white/10 overflow-hidden">
+        <section className="relative py-32 border-b border-white/10 overflow-hidden"><SiteBackdrop />
 
           <div className="absolute inset-0 bg-gradient-to-br from-cyan-500/5 via-transparent to-blue-500/5"></div>
 

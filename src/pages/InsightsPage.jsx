@@ -90,7 +90,7 @@ export default function InsightsPage() {
   return (
     <main className="min-h-screen bg-[radial-gradient(circle_at_top_right,rgba(0,183,255,0.10),transparent_30%),linear-gradient(135deg,#0d1726_0%,#101b2f_48%,#132238_100%)] text-white">
       <Navbar />
-      <section className="relative overflow-hidden border-b border-white/10 py-24 md:py-32">
+      <section className="relative overflow-hidden border-b border-white/10 pb-28 pt-24 md:pb-36 md:pt-32">
         <SiteBackdrop />
         <div className="container relative z-10 mx-auto px-6 lg:px-12">
           <div className="max-w-4xl">
@@ -104,8 +104,12 @@ export default function InsightsPage() {
                 : "Practical perspectives on accounting, tax, finance, legal compliance and governance for enterprises in Vietnam."}
             </p>
           </div>
+        </div>
+      </section>
 
-          <div className="site-card mt-14 grid gap-4 rounded-[28px] border border-white/10 bg-white/[0.035] p-4 lg:grid-cols-[minmax(260px,1fr)_auto]">
+      <section className="border-b border-white/10 pb-24 pt-14 md:pb-32">
+        <div className="container mx-auto px-6 lg:px-12">
+          <div className="site-card grid gap-4 rounded-[28px] border border-white/10 bg-white/[0.035] p-4 lg:grid-cols-[minmax(260px,1fr)_auto]">
             <label className="flex items-center rounded-2xl border border-white/10 bg-[#081321]/55 px-4 focus-within:border-cyan-300/35">
               <Search size={18} className="text-slate-500" />
               <input

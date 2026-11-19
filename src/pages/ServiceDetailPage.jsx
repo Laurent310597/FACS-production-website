@@ -12,6 +12,7 @@ import {
   UsersRound,
 } from "lucide-react";
 import Navbar from "../components/Navbar";
+import SiteBackdrop from "../components/site/SiteBackdrop";
 import Footer from "../components/Footer";
 import PageTransition from "../components/PageTransition";
 import { useLanguage } from "../components/LanguageContext";
@@ -115,7 +116,7 @@ export default function ServiceDetailPage() {
     <PageTransition>
       <Navbar />
       <main className="overflow-hidden bg-[radial-gradient(circle_at_top_right,rgba(0,183,255,0.10),transparent_30%),linear-gradient(135deg,#0d1726_0%,#101b2f_48%,#132238_100%)] text-white">
-        <section className="relative overflow-hidden border-b border-cyan-200/15 py-28">
+        <section className="relative overflow-hidden border-b border-cyan-200/15 py-28"><SiteBackdrop />
           <div className="absolute inset-0 bg-gradient-to-br from-cyan-500/5 via-transparent to-blue-500/5" />
           <div className="absolute inset-x-0 bottom-0 h-[2px] bg-gradient-to-r from-transparent via-cyan-200/45 to-transparent" />
           <div className="absolute right-0 top-0 h-[520px] w-[520px] rounded-full bg-cyan-500/12 blur-[120px]" />

@@ -4,6 +4,7 @@ import { ArrowLeft, CalendarDays, Check, Clock3, Copy, UserRound } from "lucide-
 import { Link, useNavigate, useParams } from "react-router-dom";
 import Footer from "../components/Footer";
 import Navbar from "../components/Navbar";
+import SiteBackdrop from "../components/site/SiteBackdrop";
 import { useLanguage } from "../components/LanguageContext";
 import {
   fallbackPosts,
@@ -138,8 +139,8 @@ export default function InsightDetailPage() {
       <Navbar />
 
       <article>
-        <header className="border-b border-white/10">
-          <div className="container mx-auto px-6 py-16 lg:px-12 lg:py-24">
+        <header className="overflow-hidden relative border-b border-white/10"><SiteBackdrop />
+          <div className="relative z-10 container mx-auto px-6 py-16 lg:px-12 lg:py-24">
             <Link to="/insights" className="inline-flex items-center gap-2 text-sm text-slate-400 transition hover:text-cyan-200"><ArrowLeft size={16} /> {isVi ? "Tất cả bài viết" : "All Insights"}</Link>
             <div className="mt-10 max-w-4xl">
               <div className="text-sm font-semibold uppercase tracking-[0.18em] text-cyan-300">{getCategoryLabel(post.category, language)}</div>

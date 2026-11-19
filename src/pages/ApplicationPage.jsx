@@ -3,6 +3,7 @@ import { Link, useSearchParams } from "react-router-dom";
 import { motion } from "framer-motion";
 import { CheckCircle2, Loader2 } from "lucide-react";
 import Navbar from "../components/Navbar";
+import SiteBackdrop from "../components/site/SiteBackdrop";
 import Footer from "../components/Footer";
 import { useToast } from "../components/admin/ui/toastContext";
 import { useLanguage } from "../components/LanguageContext";
@@ -48,7 +49,7 @@ export default function ApplicationPage() {
     <>
       <Navbar />
       <main className="min-h-screen overflow-hidden bg-[radial-gradient(circle_at_top_right,rgba(0,183,255,0.10),transparent_30%),linear-gradient(135deg,#0d1726_0%,#101b2f_48%,#132238_100%)] text-white">
-        <section className="relative border-b border-white/10 py-32">
+        <section className="overflow-hidden relative border-b border-white/10 py-32"><SiteBackdrop />
           <div className="absolute left-0 top-0 h-[500px] w-[500px] rounded-full bg-cyan-500/10 blur-[120px]" />
           <div className="container relative z-10 mx-auto px-6 lg:px-12">
             <div className="max-w-5xl">
@@ -64,7 +65,7 @@ export default function ApplicationPage() {
         <section className="py-24 lg:py-32">
           <div className="container mx-auto px-6 lg:px-12">
             {success ? (
-              <div className="mx-auto max-w-3xl rounded-[36px] border border-emerald-300/20 bg-emerald-300/8 p-9 text-center">
+              <div className="site-card mx-auto max-w-3xl rounded-[36px] border border-emerald-300/20 bg-emerald-300/8 p-9 text-center">
                 <CheckCircle2 className="mx-auto text-emerald-300" size={46} />
                 <h2 className="mt-5 text-2xl font-bold">{isVi ? "FACS đã nhận được hồ sơ của bạn" : "FACS has received your application"}</h2>
                 <p className="mt-3 text-slate-300">{isVi ? "Email xác nhận sẽ được gửi tới địa chỉ bạn đã cung cấp. FACS sẽ sớm liên hệ lại với bạn trong thời gian gần nhất." : "A confirmation email will be sent to the address provided. FACS will get back to you as soon as possible."}</p>
@@ -79,7 +80,7 @@ export default function ApplicationPage() {
                   <input name="position" defaultValue={selectedPosition} placeholder={isVi ? "Vị trí ứng tuyển" : "Applied Position"} className="rounded-2xl border border-white/10 bg-white/[0.045] p-5 outline-none transition-all focus:border-cyan-300/50" />
                 </div>
                 <textarea name="message" rows="6" placeholder={isVi ? "Lời nhắn đến FACS" : "Message To FACS"} className="w-full rounded-2xl border border-white/10 bg-white/[0.045] p-5 outline-none transition-all focus:border-cyan-300/50" />
-                <div className="rounded-2xl border border-white/10 bg-white/[0.035] p-5">
+                <div className="site-card rounded-2xl border border-white/10 bg-white/[0.035] p-5">
                   <label className="mb-3 block text-slate-300">{isVi ? "Đính kèm CV *" : "Attach CV *"}</label>
                   <input name="cv" required type="file" accept=".pdf,.doc,.docx,application/pdf,application/msword,application/vnd.openxmlformats-officedocument.wordprocessingml.document" className="block w-full text-slate-400 file:mr-5 file:rounded-xl file:border-0 file:bg-cyan-500 file:px-5 file:py-3 file:text-white hover:file:bg-cyan-400" />
                   <p className="mt-3 text-sm text-slate-500">{isVi ? "PDF, DOC hoặc DOCX — tối đa 5 MB." : "PDF, DOC or DOCX — maximum 5 MB."}</p>

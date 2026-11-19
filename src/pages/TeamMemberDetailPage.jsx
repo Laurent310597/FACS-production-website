@@ -2,6 +2,7 @@ import { Link, useParams } from "react-router-dom";
 import { motion } from "framer-motion";
 import { ArrowLeft, Award, BriefcaseBusiness, CheckCircle2, Mail, Phone, ShieldCheck, Sparkles } from "lucide-react";
 import Navbar from "../components/Navbar";
+import SiteBackdrop from "../components/site/SiteBackdrop";
 import Footer from "../components/Footer";
 import { useLanguage } from "../components/LanguageContext";
 import { leadership } from "../data/team";
@@ -21,7 +22,7 @@ export default function TeamMemberDetailPage() {
     <>
       <Navbar />
       <main className="overflow-hidden bg-[radial-gradient(circle_at_top_right,rgba(0,183,255,0.13),transparent_32%),linear-gradient(135deg,#0d1726_0%,#101b2f_50%,#132238_100%)] text-white">
-        <section className="relative border-b border-white/10 py-24 lg:py-32">
+        <section className="overflow-hidden relative border-b border-white/10 py-24 lg:py-32"><SiteBackdrop />
           <div className="absolute left-0 top-0 h-[520px] w-[520px] rounded-full bg-cyan-500/10 blur-[130px]" />
           <div className="container relative z-10 mx-auto px-6 lg:px-12">
             <Link to="/about" className="inline-flex items-center gap-2 rounded-full border border-cyan-200/20 bg-cyan-400/8 px-4 py-2 text-sm font-bold text-cyan-200 transition-all duration-300 hover:bg-cyan-300 hover:text-[#06111f]">
@@ -74,7 +75,7 @@ export default function TeamMemberDetailPage() {
                 </div>
                 <div className="mt-7 space-y-4">
                   {strengths.map((item) => (
-                    <div key={item} className="flex gap-3 rounded-2xl border border-white/10 bg-[#111827]/55 p-4 text-slate-300">
+                    <div key={item} className="site-card site-tile flex gap-3 rounded-2xl border border-white/10 bg-[#111827]/55 p-4 text-slate-300">
                       <CheckCircle2 size={20} className="mt-0.5 shrink-0 text-cyan-300" />
                       <span className="leading-relaxed">{item}</span>
                     </div>
@@ -92,7 +93,7 @@ export default function TeamMemberDetailPage() {
                     <span key={item} className="rounded-full border border-cyan-200/18 bg-[#0d1726]/50 px-4 py-2 text-sm font-bold text-cyan-100">{item}</span>
                   ))}
                 </div>
-                <div className="mt-10 rounded-3xl border border-cyan-200/15 bg-[#0d1726]/52 p-6">
+                <div className="site-card mt-10 rounded-3xl border border-cyan-200/15 bg-[#0d1726]/52 p-6">
                   <div className="text-2xl font-bold">{isVi ? "Kết nối tư vấn" : "Connect for advisory"}</div>
                   <p className="mt-4 leading-relaxed text-slate-400">{isVi ? "Trao đổi cùng FACS để được tư vấn giải pháp phù hợp với nhu cầu quản trị, kế toán, thuế và vận hành của doanh nghiệp." : "Contact FACS to discuss practical solutions for your enterprise management, accounting, tax and operating needs."}</p>
                   <div className="mt-6 grid gap-3 sm:grid-cols-2">

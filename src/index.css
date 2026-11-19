@@ -37,6 +37,13 @@ body {
   -webkit-font-smoothing: antialiased;
 }
 
+/* Phím tắt (Ctrl K…) dùng cùng font với chữ xung quanh. */
+kbd {
+  font-family: inherit;
+  font-weight: 600;
+  letter-spacing: 0.02em;
+}
+
 /* Tiêu đề website giữ chữ có chân như trước (CMS có quy tắc riêng). */
 :where(h1, h2, h3):not(.facs-cms *) {
   font-family: Cambria, Georgia, serif;
@@ -630,31 +637,13 @@ img {
 
 /* ───────────────────────── Website công khai: chuyển động & tương tác ───────────────────────── */
 @layer components {
-  /* Nền phần đầu trang: lưới chấm, lưới sáng quanh con trỏ, mảng sóng trôi, hạt nhiễu. */
+  /* Nền phần đầu trang (mọi trang): mảng sóng trôi ở đáy và hạt nhiễu. */
   .site-backdrop {
     position: absolute;
     inset: 0;
     z-index: 0;
     overflow: hidden;
     pointer-events: none;
-    --cx: 50%;
-    --cy: -40%;
-    --reveal: 0;
-  }
-  .site-backdrop__grid {
-    position: absolute;
-    inset: 0;
-    background-image: radial-gradient(rgb(103 232 249 / 0.14) 1px, transparent 1.3px);
-    background-size: 26px 26px;
-    -webkit-mask-image: radial-gradient(ellipse 90% 80% at 70% 10%, #000 20%, transparent 78%);
-    mask-image: radial-gradient(ellipse 90% 80% at 70% 10%, #000 20%, transparent 78%);
-  }
-  .site-backdrop__grid--lit {
-    background-image: radial-gradient(rgb(103 232 249 / 0.8) 1.1px, transparent 1.5px);
-    -webkit-mask-image: radial-gradient(240px circle at var(--cx) var(--cy), #000, transparent 75%);
-    mask-image: radial-gradient(240px circle at var(--cx) var(--cy), #000, transparent 75%);
-    opacity: calc(var(--reveal) * 0.85);
-    transition: opacity 0.4s;
   }
   .site-backdrop__waves {
     position: absolute;
@@ -882,4 +871,41 @@ main :has(> table) {
   .site-cta:hover { translate: none; }
   .site-cta::after,
   .site-skeleton::after { display: none; }
+}
+
+/* Căn đều hai bên cho đoạn văn dài của website (giới thiệu, sứ mệnh, nội dung bài viết…).
+   Trong thẻ hẹp giữ căn trái + ngắt dòng cân đối để không tạo khoảng trắng lớn giữa các chữ. */
+@media (min-width: 640px) {
+  main p:not(.facs-cms *):not(:where(.text-center, .text-center *, .text-right, .text-right *, .site-card *, .site-tile *, footer *)),
+  .facs-article :is(p, li) {
+    text-align: justify;
+    text-justify: inter-word;
+  }
+}
+.site-card p,
+.site-tile p {
+  text-wrap: pretty;
+}
+/* Thẻ trong lưới: cao bằng nhau, liên kết "Tìm hiểu thêm" luôn nằm sát đáy thẻ. */
+@layer components {
+  .site-tile:not(.flex):not(.grid):not(.inline-flex) {
+    display: flex;
+    flex-direction: column;
+  }
+}
+.site-tile:not(.flex):not(.grid):not(.inline-flex) > :only-child:is(a, div):not(.flex):not(.grid) {
+  display: flex;
+  flex-direction: column;
+  flex: 1 1 auto;
+}
+:is(.site-tile:not(.flex):not(.grid):not(.inline-flex), .site-tile > :only-child) > :last-child:not(:first-child):is(a, button, [class*="text-cyan"]) {
+  margin-top: auto !important;
+  padding-top: 1.75rem;
+  align-self: flex-start;
+}
+/* Tiếng Anh: cho phép ngắt âm tiết để đoạn căn đều không bị hở (tiếng Việt không cần). */
+@media (min-width: 640px) {
+  html:lang(en) main p:not(.facs-cms *):not(:where(.text-center, .text-center *, .text-right, .text-right *, .site-card *, .site-tile *, footer *)) {
+    hyphens: auto;
+  }
 }

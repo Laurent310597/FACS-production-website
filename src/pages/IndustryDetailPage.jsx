@@ -2,6 +2,7 @@ import { Link, Navigate, useParams } from "react-router-dom";
 import { motion } from "framer-motion";
 import { ArrowLeft, CheckCircle2, Layers3, Sparkles, Target } from "lucide-react";
 import Navbar from "../components/Navbar";
+import SiteBackdrop from "../components/site/SiteBackdrop";
 import Footer from "../components/Footer";
 import PageTransition from "../components/PageTransition";
 import { industries } from "../data/industries";
@@ -46,7 +47,7 @@ export default function IndustryDetailPage() {
     <PageTransition>
       <Navbar />
       <main className="bg-[radial-gradient(circle_at_top_right,rgba(0,183,255,0.10),transparent_30%),linear-gradient(135deg,#0d1726_0%,#101b2f_48%,#132238_100%)] text-white overflow-hidden">
-        <section className="relative py-28 border-b border-cyan-200/15 overflow-hidden">
+        <section className="relative py-28 border-b border-cyan-200/15 overflow-hidden"><SiteBackdrop />
           <div className="absolute inset-0 bg-gradient-to-br from-cyan-500/5 via-transparent to-blue-500/5" />
           <div className="absolute inset-x-0 bottom-0 h-[2px] bg-gradient-to-r from-transparent via-cyan-200/45 to-transparent" />
           <div className="absolute top-0 right-0 w-[520px] h-[520px] bg-cyan-500/12 blur-[120px] rounded-full" />

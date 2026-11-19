@@ -3,6 +3,7 @@ import DOMPurify from "dompurify";
 import { ArrowLeft, ArrowRight, Briefcase, CalendarDays, Loader2, MapPin } from "lucide-react";
 import { Link, useParams } from "react-router-dom";
 import Navbar from "../components/Navbar";
+import SiteBackdrop from "../components/site/SiteBackdrop";
 import Footer from "../components/Footer";
 import { useLanguage } from "../components/LanguageContext";
 import {
@@ -82,8 +83,8 @@ export default function CareerDetailPage() {
           </section>
         ) : (
           <>
-            <section className="border-b border-white/10 py-24 md:py-32">
-              <div className="container mx-auto px-6 lg:px-12">
+            <section className="overflow-hidden relative border-b border-white/10 py-24 md:py-32"><SiteBackdrop />
+              <div className="relative z-10 container mx-auto px-6 lg:px-12">
                 <Link to="/careers" className="inline-flex items-center gap-2 text-sm text-slate-400 transition hover:text-cyan-200">
                   <ArrowLeft size={16} /> {isVi ? "Quay lại danh sách tuyển dụng" : "Back to career opportunities"}
                 </Link>
@@ -112,7 +113,7 @@ export default function CareerDetailPage() {
                   )}
                 </article>
 
-                <aside className="h-fit rounded-[32px] border border-cyan-200/15 bg-gradient-to-br from-cyan-500/10 to-blue-600/10 p-7 lg:sticky lg:top-28">
+                <aside className="site-card h-fit rounded-[32px] border border-cyan-200/15 bg-gradient-to-br from-cyan-500/10 to-blue-600/10 p-7 lg:sticky lg:top-28">
                   <div className="text-sm font-bold uppercase tracking-[0.16em] text-cyan-300">{isVi ? "Ứng tuyển tại FACS" : "Apply To FACS"}</div>
                   <h2 className="mt-4 text-2xl font-bold">{isVi ? "Sẵn sàng cho bước tiếp theo?" : "Ready for your next step?"}</h2>
                   <p className="mt-4 leading-relaxed text-slate-400">

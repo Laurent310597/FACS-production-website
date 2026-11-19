@@ -1,4 +1,5 @@
 import Navbar from "../components/Navbar";
+import SiteBackdrop from "../components/site/SiteBackdrop";
 import Footer from "../components/Footer";
 import PageTransition from "../components/PageTransition";
 import { useLanguage } from "../components/LanguageContext";
@@ -154,7 +155,7 @@ export default function LegalPage({ type }) {
     <PageTransition>
       <Navbar />
       <main className="relative overflow-hidden bg-[radial-gradient(circle_at_top_right,rgba(0,183,255,0.13),transparent_34%),linear-gradient(135deg,#0d1726_0%,#101b2f_52%,#132238_100%)] text-white">
-        <section className="relative py-24 lg:py-28">
+        <section className="overflow-hidden relative py-24 lg:py-28"><SiteBackdrop />
           <div className="absolute -top-24 right-10 h-80 w-80 rounded-full bg-cyan-400/10 blur-[110px]" />
           <div className="absolute bottom-0 left-0 h-72 w-72 rounded-full bg-blue-500/10 blur-[100px]" />
           <div className="container relative z-10 mx-auto px-6 lg:px-12">

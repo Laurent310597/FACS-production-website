@@ -65,7 +65,7 @@ export default function ContactPage() {
               <motion.div initial={{ opacity: 0, x: -40 }} whileInView={{ opacity: 1, x: 0 }} viewport={{ once: true, amount: 0.25 }} transition={{ duration: 0.8 }}>
                 <h2 className="text-4xl font-bold">{isVi ? "Gửi thông tin tư vấn" : "Send Inquiry"}</h2>
                 {success ? (
-                  <div className="mt-10 rounded-[32px] border border-emerald-300/20 bg-emerald-300/8 p-8">
+                  <div className="site-card mt-10 rounded-[32px] border border-emerald-300/20 bg-emerald-300/8 p-8">
                     <CheckCircle2 className="text-emerald-300" size={42} />
                     <h3 className="mt-5 text-2xl font-bold">{isVi ? "FACS đã nhận được yêu cầu của bạn" : "FACS has received your inquiry"}</h3>
                     <p className="mt-3 leading-relaxed text-slate-300">{isVi ? "Email xác nhận sẽ được gửi tới địa chỉ bạn đã cung cấp. FACS sẽ sớm liên hệ lại với bạn trong thời gian gần nhất." : "A confirmation email will be sent to the address provided. FACS will get back to you as soon as possible."}</p>
