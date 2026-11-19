@@ -51,7 +51,7 @@ export default function AdminLoginPage() {
 
       <div className="relative w-full max-w-md facs-card rounded-[24px] border border-cyan-300/[0.16] bg-cms-1/80 p-7 shadow-[0_35px_110px_rgba(0,0,0,0.45)] backdrop-blur-2xl sm:p-9">
         <Link to="/" className="font-serif text-4xl font-black tracking-[-0.05em]">
-          FACS<span className="text-sunset">.</span>
+          FACS<span className="text-facs-logo">.</span>
         </Link>
         <div className="mt-2 text-xs font-bold uppercase tracking-[0.2em] text-sunset">Content CMS</div>
         <h1 className="mt-8 text-3xl font-bold">Đăng nhập quản trị</h1>

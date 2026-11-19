@@ -20,6 +20,7 @@
   --color-brand: #FF6B35; /* nút chính – Sunset Orange, chữ tối */
   --color-brand-hover: #FF8557;
   --color-brand-press: #E9541F;
+  --color-facs-logo: oklch(86.5% 0.127 207.078); /* dấu "." của logo FACS – màu cố định, giống website */
   --font-cms: "Helvetica Neue", Helvetica, Arial, system-ui, sans-serif;
 }
 
@@ -286,18 +287,25 @@ img {
   opacity: calc(var(--reveal) * 0.9);
   transition: opacity 0.4s;
 }
-.facs-backdrop__lines {
+.facs-backdrop__waves {
   position: absolute;
-  bottom: -2vh;
+  inset: auto 0 0 0;
+  height: 40vh;
+  min-height: 260px;
+  -webkit-mask-image: linear-gradient(180deg, transparent 0%, #000 38%);
+  mask-image: linear-gradient(180deg, transparent 0%, #000 38%);
+}
+.facs-backdrop__wave {
+  position: absolute;
+  bottom: 0;
   left: 0;
   width: 200%;
-  height: 34vh;
-  min-height: 220px;
-  animation: facs-lines 90s linear infinite;
-  -webkit-mask-image: linear-gradient(180deg, transparent, #000 45%);
-  mask-image: linear-gradient(180deg, transparent, #000 45%);
+  height: 100%;
+  animation: facs-wave-drift var(--dur, 80s) linear infinite;
+  animation-direction: var(--dir, normal);
 }
-@keyframes facs-lines {
+@keyframes facs-wave-drift {
+  from { transform: translate3d(0, 0, 0); }
   to { transform: translate3d(-50%, 0, 0); }
 }
 .facs-backdrop__grain {
@@ -541,6 +549,18 @@ img {
   border-color: rgb(142 169 255 / 0.7);
 }
 
+/* Trình duyệt tự điền (email, mật khẩu): không hiện hộp nền sáng bên trong ô nhập. */
+.facs-cms input:-webkit-autofill,
+.facs-cms input:-webkit-autofill:hover,
+.facs-cms input:-webkit-autofill:focus,
+.facs-cms input:autofill {
+  -webkit-text-fill-color: var(--color-ink-1);
+  caret-color: var(--color-ink-1);
+  -webkit-background-clip: text;
+  background-clip: text;
+  transition: background-color 600000s 0s, color 600000s 0s;
+}
+
 /* Bảng rộng: cuộn ngang trên màn hình nhỏ thay vì bị cắt. */
 .facs-cms :has(> table) {
   overflow-x: auto;
@@ -570,7 +590,7 @@ img {
 
 @media (prefers-reduced-motion: reduce) {
   .facs-aurora::before,
-  .facs-backdrop__lines,
+  .facs-backdrop__wave,
   .facs-cms h1 { animation: none; }
   .facs-reveal .facs-card:not(.is-in) { opacity: 1; translate: none; scale: none; }
   .facs-card.is-in:hover,

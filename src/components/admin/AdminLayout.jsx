@@ -280,7 +280,7 @@ export default function AdminLayout({ children }) {
               <Orbit size={19} />
             </button>
             <Link to="/admin/posts" className="shrink-0 font-serif text-2xl font-black tracking-[-0.04em]" aria-label="FACS CMS – về trang đầu">
-              FACS<span className="text-sunset">.</span>
+              FACS<span className="text-facs-logo">.</span>
             </Link>
             {trail.group && (
               <nav aria-label="Vị trí hiện tại" className="ml-1 hidden min-w-0 items-center gap-1.5 border-l border-white/[0.08] pl-4 text-sm md:flex">
@@ -422,7 +422,7 @@ export default function AdminLayout({ children }) {
               transition={{ type: "spring", stiffness: 380, damping: 38 }}
             >
               <div className="mb-2 flex items-center justify-between px-2 py-1">
-                <span className="font-serif text-xl font-black">FACS<span className="text-sunset">.</span></span>
+                <span className="font-serif text-xl font-black">FACS<span className="text-facs-logo">.</span></span>
                 <div className="flex gap-1.5">
                   <button type="button" onClick={() => { setDrawerOpen(false); setWheelOpen(true); }} className={iconButtonSm} aria-label="Dùng menu vòng xoay"><Orbit size={15} /></button>
                   <button type="button" onClick={() => setDrawerOpen(false)} className={iconButtonSm} aria-label="Đóng menu"><X size={15} /></button>
