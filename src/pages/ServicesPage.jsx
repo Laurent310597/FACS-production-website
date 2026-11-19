@@ -1,4 +1,5 @@
 import Navbar from "../components/Navbar";
+import HeroInsightPanel from "../components/site/HeroInsightPanel";
 import SiteBackdrop from "../components/site/SiteBackdrop";
 import Footer from "../components/Footer";
 import AnimatedCounter from "../components/AnimatedCounter";
@@ -126,89 +127,14 @@ export default function ServicesPage() {
                 className="relative"
               >
 
-                <div className="site-card rounded-[40px] border border-white/10 bg-white/[0.045] backdrop-blur-xl p-10 h-[700px] flex flex-col justify-between">
-
-                  {/* TOP */}
-                  <div className="grid grid-cols-2 gap-6">
-
-                    <div className="site-card rounded-3xl bg-[#111827]/80 p-8 border border-white/10">
-
-                      <ShieldCheck
-                        size={40}
-                        className="text-cyan-400"
-                      />
-
-                      <AnimatedCounter value="9" className="mt-6 block text-4xl font-bold" />
-
-                      <div className="mt-2 text-slate-400">
-                        Service Pillars
-                      </div>
-
-                    </div>
-
-                    <div className="site-card rounded-3xl bg-[#111827]/80 p-8 border border-white/10">
-
-                      <BarChart3
-                        size={40}
-                        className="text-cyan-400"
-                      />
-
-                      <AnimatedCounter value="360°" className="mt-6 block text-4xl font-bold" />
-
-                      <div className="mt-2 text-slate-400">
-                        Advisory Coverage
-                      </div>
-
-                    </div>
-
-                  </div>
-
-                  {/* CENTER */}
-                  <div className="site-card rounded-[32px] bg-gradient-to-br from-cyan-500/10 to-blue-500/10 border border-cyan-400/10 p-10">
-
-                    <Building2
-                      size={60}
-                      className="text-cyan-400"
-                    />
-
-                    <div className="mt-8 text-3xl font-bold leading-snug">
-
-                      Enterprise Financial
-                      Intelligence
-
-                    </div>
-
-                    <p className="mt-5 text-slate-400 leading-relaxed">
-
-                      Modern consulting systems designed to optimize operations, governance and sustainable business growth.
-
-                    </p>
-
-                  </div>
-
-                  {/* BOTTOM */}
-                  <div className="site-card rounded-3xl bg-[#111827]/80 p-8 border border-white/10 flex items-center justify-between">
-
-                    <div>
-
-                      <div className="text-3xl font-bold">
-                        Strategic Advisory
-                      </div>
-
-                      <div className="mt-3 text-slate-400">
-                        Accounting · Tax · Legal · Governance
-                      </div>
-
-                    </div>
-
-                    <CheckCircle2
-                      size={50}
-                      className="text-cyan-400"
-                    />
-
-                  </div>
-
-                </div>
+                <HeroInsightPanel
+                  feature={{ icon: Building2, title: "Enterprise Financial Intelligence", desc: "Modern consulting systems designed to optimize operations, governance and sustainable business growth." }}
+                  stats={[
+                    { icon: ShieldCheck, value: "9", label: "Service Pillars" },
+                    { icon: BarChart3, value: "360°", label: "Advisory Coverage" },
+                  ]}
+                  scope={{ icon: CheckCircle2, title: "Strategic Advisory", subtitle: "Accounting · Tax · Legal · Governance" }}
+                />
 
               </motion.div>
 

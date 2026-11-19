@@ -1,4 +1,5 @@
 import Navbar from "../components/Navbar";
+import HeroInsightPanel from "../components/site/HeroInsightPanel";
 import SiteBackdrop from "../components/site/SiteBackdrop";
 import Footer from "../components/Footer";
 import AnimatedCounter from "../components/AnimatedCounter";
@@ -58,32 +59,14 @@ export default function AboutPage() {
               </motion.div>
 
               <motion.div initial={{ opacity: 0, scale: 0.95 }} animate={{ opacity: 1, scale: 1 }} transition={{ duration: 0.8 }} className="relative">
-                <div className="site-card rounded-[40px] border border-white/10 bg-white/[0.045] backdrop-blur-xl p-8 lg:p-10 min-h-[640px] flex flex-col justify-between">
-                  <div className="grid grid-cols-2 gap-6">
-                    <div className="site-card rounded-3xl bg-[#111827]/80 p-7 border border-white/10">
-                      <ShieldCheck size={40} className="text-cyan-400" />
-                      <AnimatedCounter value="8" className="mt-6 block text-4xl font-bold" />
-                      <div className="mt-2 text-slate-400">Industry Sectors</div>
-                    </div>
-                    <div className="site-card rounded-3xl bg-[#111827]/80 p-7 border border-white/10">
-                      <Building2 size={40} className="text-cyan-400" />
-                      <AnimatedCounter value="10+" className="mt-6 block text-4xl font-bold" />
-                      <div className="mt-2 text-slate-400">Strategic Partners</div>
-                    </div>
-                  </div>
-                  <div className="site-card rounded-[32px] bg-gradient-to-br from-cyan-500/10 to-blue-500/10 border border-cyan-400/10 p-9">
-                    <BarChart3 size={60} className="text-cyan-400" />
-                    <div className="mt-8 text-3xl font-bold leading-snug text-balance">Enterprise Financial Intelligence</div>
-                    <p className="mt-5 text-slate-400 leading-relaxed text-pretty">Modern consulting systems designed to optimize operations, compliance and sustainable growth.</p>
-                  </div>
-                  <div className="site-card rounded-3xl bg-[#111827]/80 p-7 border border-white/10 flex items-center justify-between gap-6">
-                    <div>
-                      <div className="text-3xl font-bold text-balance">Strategic Advisory</div>
-                      <div className="mt-3 text-slate-400">Accounting · Tax · Legal · Governance</div>
-                    </div>
-                    <Briefcase size={50} className="text-cyan-400 shrink-0" />
-                  </div>
-                </div>
+                <HeroInsightPanel
+                  feature={{ icon: BarChart3, title: "Enterprise Financial Intelligence", desc: "Modern consulting systems designed to optimize operations, compliance and sustainable growth." }}
+                  stats={[
+                    { icon: ShieldCheck, value: "8", label: "Industry Sectors" },
+                    { icon: Building2, value: "10+", label: "Strategic Partners" },
+                  ]}
+                  scope={{ icon: Briefcase, title: "Strategic Advisory", subtitle: "Accounting · Tax · Legal · Governance" }}
+                />
               </motion.div>
             </div>
           </div>
