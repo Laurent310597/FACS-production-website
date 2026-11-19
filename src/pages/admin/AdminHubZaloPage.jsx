@@ -1,6 +1,10 @@
 import { useCallback, useEffect, useMemo, useState } from "react";
 import { AlertTriangle, CheckCircle2, Copy, Loader2, Plus, RefreshCw, Save, ShieldAlert, Trash2, Wifi, WifiOff } from "lucide-react";
 import AdminLayout from "../../components/admin/AdminLayout";
+import { AnimatePresence, motion } from "framer-motion";
+import { useToastSetter } from "../../components/admin/ui/toastContext";
+import { SkeletonRows } from "../../components/admin/ui/Skeleton";
+import { listItem } from "../../components/admin/ui/motionPresets";
 import {
   commandLabel,
   commandStatusLabel,
@@ -12,11 +16,12 @@ import {
   revokeDevice,
   sendCommand,
 } from "../../lib/hubZalo";
+import * as ui from "../../components/admin/ui/styles";
 
-const cardClass = "rounded-[26px] border border-white/10 bg-white/[0.035] p-5 lg:p-6";
-const ghostButton = "inline-flex items-center gap-2 rounded-xl border border-white/10 px-4 py-2 text-sm text-slate-200 transition hover:border-cyan-200/30 hover:text-white disabled:opacity-50";
-const primaryButton = "inline-flex items-center gap-2 rounded-xl bg-cyan-300 px-5 py-2.5 text-sm font-bold text-[#071421] transition hover:bg-cyan-200 disabled:cursor-not-allowed disabled:opacity-50";
-const inputClass = "w-full rounded-xl border border-white/10 bg-[#0b1423] px-3 py-2 text-sm text-white outline-none focus:border-cyan-300/50";
+const cardClass = ui.card;
+const ghostButton = ui.btnSecondary;
+const primaryButton = ui.btnPrimary;
+const inputClass = ui.input;
 
 const fmtTs = (ms) => (ms ? new Date(Number(ms)).toLocaleString("vi-VN", { timeZone: "Asia/Ho_Chi_Minh", hour12: false }) : "—");
 const fmtIso = (value) => (value ? new Date(value).toLocaleString("vi-VN", { timeZone: "Asia/Ho_Chi_Minh", hour12: false }) : "—");
@@ -37,7 +42,7 @@ export default function AdminHubZaloPage() {
   const [tab, setTab] = useState("overview");
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState("");
-  const [notice, setNotice] = useState("");
+  const setNotice = useToastSetter("success");
   const [setupMissing, setSetupMissing] = useState(false);
   const [newKey, setNewKey] = useState("");
   const [newName, setNewName] = useState("Laptop văn phòng");
@@ -98,7 +103,7 @@ export default function AdminHubZaloPage() {
         <div className="flex flex-wrap items-end justify-between gap-3">
           <div>
             <h1 className="text-2xl font-black">AI Zalo — giám sát & cấu hình</h1>
-            <p className="mt-1 text-sm text-slate-400">Xem hoạt động và chỉnh luật của AI Zalo chạy trên laptop. Dữ liệu do laptop gửi lên; lệnh được laptop kiểm tra lại trước khi làm.</p>
+            <p className="mt-1 text-sm text-ink-2">Xem hoạt động và chỉnh luật của AI Zalo chạy trên laptop. Dữ liệu do laptop gửi lên; lệnh được laptop kiểm tra lại trước khi làm.</p>
           </div>
           <button type="button" className={ghostButton} onClick={loadDevices} disabled={loading}>
             {loading ? <Loader2 size={15} className="animate-spin" /> : <RefreshCw size={15} />} Làm mới
@@ -106,13 +111,12 @@ export default function AdminHubZaloPage() {
         </div>
 
         {error && <div className="rounded-2xl border border-rose-400/30 bg-rose-400/10 p-4 text-sm text-rose-100">{error}</div>}
-        {notice && <div className="rounded-2xl border border-emerald-400/30 bg-emerald-400/10 p-4 text-sm text-emerald-100">{notice}</div>}
         {setupMissing && <div className="rounded-2xl border border-amber-400/30 bg-amber-400/10 p-4 text-sm text-amber-100">Bảng AI Zalo chưa có trên Supabase. Cần chạy migration 20261117040000_facs_hub_zalo.sql.</div>}
 
         {newKey && (
           <div className={`${cardClass} border-amber-300/30`}>
             <div className="flex items-center gap-2 font-bold text-amber-200"><AlertTriangle size={18} /> Khóa thiết bị — chỉ hiện một lần</div>
-            <p className="mt-2 text-sm text-slate-300">Sao chép ngay và dán vào file .env của AI Zalo (HUB_DEVICE_KEY). Đóng khung này là không xem lại được; nếu mất, hãy thu hồi và tạo khóa mới.</p>
+            <p className="mt-2 text-sm text-ink-2">Sao chép ngay và dán vào file .env của AI Zalo (HUB_DEVICE_KEY). Đóng khung này là không xem lại được; nếu mất, hãy thu hồi và tạo khóa mới.</p>
             <div className="mt-3 flex flex-wrap items-center gap-2">
               <code className="break-all rounded-xl bg-black/40 px-3 py-2 text-sm text-cyan-100">{newKey}</code>
               <button type="button" className={ghostButton} onClick={() => navigator.clipboard?.writeText(newKey).then(() => setNotice("Đã sao chép khóa."))}><Copy size={15} /> Sao chép</button>
@@ -124,10 +128,10 @@ export default function AdminHubZaloPage() {
         {!setupMissing && !loading && !device && (
           <div className={cardClass}>
             <h2 className="font-bold">Chưa có laptop nào kết nối</h2>
-            <p className="mt-1 text-sm text-slate-400">Tạo khóa thiết bị, rồi điền HUB_SYNC_URL và HUB_DEVICE_KEY vào .env của AI Zalo (xem HUONG-DAN-FACS-HUB.md).</p>
+            <p className="mt-1 text-sm text-ink-2">Tạo khóa thiết bị, rồi điền HUB_SYNC_URL và HUB_DEVICE_KEY vào .env của AI Zalo (xem HUONG-DAN-FACS-HUB.md).</p>
             <div className="mt-4 flex flex-wrap gap-2">
               <input className={`${inputClass} max-w-xs`} value={newName} onChange={(e) => setNewName(e.target.value)} maxLength={80} />
-              <button type="button" className={primaryButton} onClick={add} disabled={busy}><Plus size={16} /> Tạo khóa thiết bị</button>
+              <button type="button" className={ghostButton} onClick={add} disabled={busy}><Plus size={16} /> Tạo khóa thiết bị</button>
             </div>
           </div>
         )}
@@ -147,7 +151,7 @@ export default function AdminHubZaloPage() {
 
             <div className="flex flex-wrap gap-2">
               {tabs.map(([key, label]) => (
-                <button key={key} type="button" onClick={() => setTab(key)} className={`rounded-xl px-4 py-2 text-sm font-semibold transition ${tab === key ? "bg-cyan-300 text-[#071421]" : "border border-white/10 text-slate-300 hover:text-white"}`}>{label}</button>
+                <button key={key} type="button" onClick={() => setTab(key)} className={`rounded-xl px-4 py-2 text-sm font-semibold transition ${tab === key ? "bg-cyan-300/[0.12] text-cyan-100" : "border border-white/10 text-ink-2 hover:text-white"}`}>{label}</button>
               ))}
             </div>
 
@@ -188,8 +192,8 @@ function useMirror(deviceId, kind, options) {
   return { rows, loading, error, reload };
 }
 
-const Empty = ({ children }) => <div className="rounded-2xl border border-dashed border-white/10 p-6 text-center text-sm text-slate-500">{children}</div>;
-const Loading = () => <div className="flex items-center gap-2 text-sm text-slate-400"><Loader2 size={15} className="animate-spin" /> Đang tải…</div>;
+const Empty = ({ children }) => <div className="rounded-2xl border border-dashed border-white/10 p-6 text-center text-sm text-ink-3">{children}</div>;
+const Loading = () => <SkeletonRows rows={3} />;
 
 function Overview({ device, confirmRevoke, setConfirmRevoke, revoke, add, busy, newName, setNewName }) {
   const hb = device.heartbeat || {};
@@ -208,7 +212,7 @@ function Overview({ device, confirmRevoke, setConfirmRevoke, revoke, add, busy, 
   const tile = (label, value) => (
     <div className="rounded-2xl border border-white/10 bg-black/20 p-4">
       <div className="text-2xl font-black text-cyan-200">{value}</div>
-      <div className="mt-1 text-xs text-slate-400">{label}</div>
+      <div className="mt-1 text-xs text-ink-2">{label}</div>
     </div>
   );
   return (
@@ -235,11 +239,11 @@ function Overview({ device, confirmRevoke, setConfirmRevoke, revoke, add, busy, 
           {tile("Việc đang mở", stats.openItems)}
           {tile("Hội thoại đang tắt AI", stats.muted)}
         </div>
-        <p className="mt-3 text-xs text-slate-500">Số liệu tính trên dữ liệu đã đồng bộ lên Hub (tối đa 500 dòng mỗi loại).</p>
+        <p className="mt-3 text-xs text-ink-3">Số liệu tính trên dữ liệu đã đồng bộ lên Hub (tối đa 500 dòng mỗi loại).</p>
       </div>
       <div className={cardClass}>
         <h2 className="font-bold">Quản lý khóa thiết bị</h2>
-        <p className="mt-1 text-sm text-slate-400">Khóa chỉ cho phép laptop gửi/nhận dữ liệu AI Zalo; không phải khóa quản trị. Nghi ngờ lộ khóa thì thu hồi và tạo khóa mới.</p>
+        <p className="mt-1 text-sm text-ink-2">Khóa chỉ cho phép laptop gửi/nhận dữ liệu AI Zalo; không phải khóa quản trị. Nghi ngờ lộ khóa thì thu hồi và tạo khóa mới.</p>
         <div className="mt-4 flex flex-wrap items-center gap-2">
           {confirmRevoke ? (
             <>
@@ -290,7 +294,7 @@ function Conversations({ device, setError, setNotice }) {
                   <span className="font-semibold">{row.data?.display_name || `Khách #${row.key}`}</span>
                   {row.data?.is_muted ? <span className="rounded-full bg-amber-400/15 px-2 py-0.5 text-[11px] text-amber-200">AI đang tắt</span> : null}
                 </div>
-                <div className="mt-1 text-xs text-slate-400">{stateLabel[row.data?.state] || row.data?.state || "—"} · {fmtTs(row.ts)}</div>
+                <div className="mt-1 text-xs text-ink-2">{stateLabel[row.data?.state] || row.data?.state || "—"} · {fmtTs(row.ts)}</div>
               </button>
             </li>
           ))}
@@ -305,13 +309,13 @@ function Conversations({ device, setError, setNotice }) {
                 {selected.data?.is_muted ? "Bật lại AI cho khách này" : "Tắt AI (tôi tự trả lời)"}
               </button>
             </div>
-            {selected.data?.muted_reason && <p className="mt-1 text-xs text-slate-400">Lý do tắt: {selected.data.muted_reason}</p>}
+            {selected.data?.muted_reason && <p className="mt-1 text-xs text-ink-2">Lý do tắt: {selected.data.muted_reason}</p>}
             {msgs.loading ? <Loading /> : !ordered.length ? <div className="mt-3"><Empty>Chưa có tin nhắn nào được đồng bộ (hoặc laptop đang tắt đồng bộ tin nhắn).</Empty></div> : (
               <ul className="mt-4 space-y-2">
                 {ordered.map((m) => (
                   <li key={m.key} className={`max-w-[85%] rounded-2xl px-3 py-2 text-sm ${m.data?.role === "user" ? "bg-white/[0.07]" : "ml-auto bg-cyan-300/15 text-cyan-50"}`}>
                     <div className="whitespace-pre-wrap break-words">{m.data?.content}</div>
-                    <div className="mt-1 text-[11px] text-slate-500">{m.data?.role === "user" ? "Khách" : m.data?.role === "assistant" ? "AI" : m.data?.role} · {fmtTs(m.ts)}{m.data?.flagged ? " · đã gắn cờ" : ""}</div>
+                    <div className="mt-1 text-[11px] text-ink-3">{m.data?.role === "user" ? "Khách" : m.data?.role === "assistant" ? "AI" : m.data?.role} · {fmtTs(m.ts)}{m.data?.flagged ? " · đã gắn cờ" : ""}</div>
                   </li>
                 ))}
               </ul>
@@ -334,15 +338,15 @@ function Leads({ device }) {
         {!leads.rows.length ? <div className="mt-3"><Empty>Chưa có lead.</Empty></div> : (
           <div className="mt-3 overflow-x-auto">
             <table className="w-full min-w-[640px] text-left text-sm">
-              <thead className="text-xs text-slate-400"><tr><th className="py-2">Công ty</th><th>MST</th><th>Liên hệ</th><th>Nhu cầu</th><th>Cập nhật</th></tr></thead>
+              <thead className="text-xs text-ink-2"><tr><th className="py-2">Công ty</th><th>MST</th><th>Liên hệ</th><th>Nhu cầu</th><th>Cập nhật</th></tr></thead>
               <tbody>
                 {leads.rows.map((r) => (
                   <tr key={r.key} className="border-t border-white/10 align-top">
                     <td className="py-2 pr-2 font-semibold">{r.data?.company_name || r.data?.company || "—"}</td>
                     <td className="pr-2">{r.data?.tax_code || "—"}</td>
                     <td className="pr-2">{[r.data?.contact_name, r.data?.phone, r.data?.email].filter(Boolean).join(" · ") || "—"}</td>
-                    <td className="pr-2 text-slate-300">{r.data?.service || r.data?.need || "—"}</td>
-                    <td className="text-xs text-slate-400">{fmtTs(r.ts)}</td>
+                    <td className="pr-2 text-ink-2">{r.data?.service || r.data?.need || "—"}</td>
+                    <td className="text-xs text-ink-2">{fmtTs(r.ts)}</td>
                   </tr>
                 ))}
               </tbody>
@@ -355,10 +359,10 @@ function Leads({ device }) {
         {!handovers.rows.length ? <div className="mt-3"><Empty>Chưa có lượt chuyển giao.</Empty></div> : (
           <ul className="mt-3 space-y-3">
             {handovers.rows.map((r) => (
-              <li key={r.key} className="rounded-2xl border border-white/10 p-3 text-sm">
-                <div className="flex justify-between gap-2"><span className="font-semibold">{r.data?.category || "Chuyển giao"}</span><span className="text-xs text-slate-400">{fmtTs(r.ts)}</span></div>
-                {r.data?.reason && <p className="mt-1 text-slate-300">{r.data.reason}</p>}
-                {r.data?.brief && <p className="mt-1 whitespace-pre-wrap text-xs text-slate-400">{r.data.brief}</p>}
+              <li key={r.key} className="facs-card facs-tile rounded-2xl border border-cyan-300/[0.14] p-3 text-sm">
+                <div className="flex justify-between gap-2"><span className="font-semibold">{r.data?.category || "Chuyển giao"}</span><span className="text-xs text-ink-2">{fmtTs(r.ts)}</span></div>
+                {r.data?.reason && <p className="mt-1 text-ink-2">{r.data.reason}</p>}
+                {r.data?.brief && <p className="mt-1 whitespace-pre-wrap text-xs text-ink-2">{r.data.brief}</p>}
               </li>
             ))}
           </ul>
@@ -390,12 +394,14 @@ function Groups({ device, setError, setNotice }) {
         <h2 className="font-bold">Việc đang mở ({open.length})</h2>
         {!open.length ? <div className="mt-3"><Empty>Không có việc tồn.</Empty></div> : (
           <ul className="mt-3 space-y-2">
+            <AnimatePresence initial={false}>
             {open.map((r) => (
-              <li key={r.key} className="flex flex-wrap items-center justify-between gap-2 rounded-2xl border border-white/10 p-3 text-sm">
-                <div><span className="mr-2 rounded-full bg-white/10 px-2 py-0.5 text-[11px]">{r.data?.priority || "NORMAL"}</span>{r.data?.summary}<div className="mt-1 text-xs text-slate-500">{fmtTs(r.ts)}</div></div>
+              <motion.li key={r.key} layout {...listItem} className="facs-card facs-tile flex flex-wrap items-center justify-between gap-2 rounded-2xl border border-cyan-300/[0.14] p-3 text-sm">
+                <div><span className="mr-2 rounded-full bg-white/10 px-2 py-0.5 text-[11px]">{r.data?.priority || "NORMAL"}</span>{r.data?.summary}<div className="mt-1 text-xs text-ink-3">{fmtTs(r.ts)}</div></div>
                 <button type="button" className={ghostButton} disabled={busy === `i${r.key}`} onClick={() => run(`i${r.key}`, "resolve_item", { local_id: Number(r.key) }, "Đã gửi lệnh đánh dấu xong.")}><CheckCircle2 size={15} /> Xong</button>
-              </li>
+              </motion.li>
             ))}
+            </AnimatePresence>
           </ul>
         )}
       </div>
@@ -404,11 +410,11 @@ function Groups({ device, setError, setNotice }) {
         {!groups.rows.length ? <div className="mt-3"><Empty>Chưa có nhóm.</Empty></div> : (
           <ul className="mt-3 space-y-2">
             {groups.rows.map((r) => (
-              <li key={r.key} className="flex flex-wrap items-center justify-between gap-2 rounded-2xl border border-white/10 p-3 text-sm">
+              <li key={r.key} className="facs-card facs-tile flex flex-wrap items-center justify-between gap-2 rounded-2xl border border-cyan-300/[0.14] p-3 text-sm">
                 <div>
                   <span className="font-semibold">{r.data?.name || r.data?.code}</span>
                   <span className="ml-2 rounded-full bg-white/10 px-2 py-0.5 text-[11px]">{r.data?.kind}</span>
-                  {r.data?.client_company && <div className="text-xs text-slate-400">{r.data.client_company}</div>}
+                  {r.data?.client_company && <div className="text-xs text-ink-2">{r.data.client_company}</div>}
                 </div>
                 {r.data?.kind !== "CONTROL" && (
                   <div className="flex gap-2">
@@ -420,7 +426,7 @@ function Groups({ device, setError, setNotice }) {
             ))}
           </ul>
         )}
-        <p className="mt-3 text-xs text-slate-500">Nhóm quản lý (CONTROL) chỉ đặt được trong Zalo hoặc dashboard trên laptop, không đổi từ xa.</p>
+        <p className="mt-3 text-xs text-ink-3">Nhóm quản lý (CONTROL) chỉ đặt được trong Zalo hoặc dashboard trên laptop, không đổi từ xa.</p>
       </div>
     </div>
   );
@@ -429,7 +435,7 @@ function Groups({ device, setError, setNotice }) {
 function Security({ device }) {
   const { rows, loading } = useMirror(device.id, "security", { limit: 200 });
   if (loading) return <Loading />;
-  const sev = { INFO: "text-slate-300", WARN: "text-amber-200", HIGH: "text-rose-200", CRITICAL: "text-rose-300" };
+  const sev = { INFO: "text-ink-2", WARN: "text-amber-200", HIGH: "text-rose-200", CRITICAL: "text-rose-300" };
   return (
     <div className={cardClass}>
       <h2 className="flex items-center gap-2 font-bold"><ShieldAlert size={18} /> Nhật ký bảo mật ({rows.length})</h2>
@@ -437,9 +443,9 @@ function Security({ device }) {
         <ul className="mt-3 divide-y divide-white/10 text-sm">
           {rows.map((r) => (
             <li key={r.key} className="py-2">
-              <span className={`mr-2 text-xs font-bold ${sev[r.data?.severity] || "text-slate-300"}`}>{r.data?.severity}</span>
-              <span className="mr-2 text-xs text-slate-500">{r.data?.type}</span>{r.data?.detail}
-              <div className="text-xs text-slate-500">{fmtTs(r.ts)}</div>
+              <span className={`mr-2 text-xs font-bold ${sev[r.data?.severity] || "text-ink-2"}`}>{r.data?.severity}</span>
+              <span className="mr-2 text-xs text-ink-3">{r.data?.type}</span>{r.data?.detail}
+              <div className="text-xs text-ink-3">{fmtTs(r.ts)}</div>
             </li>
           ))}
         </ul>
@@ -494,7 +500,7 @@ function ConfigForm({ deviceId, current, setError, setNotice }) {
 
   return (
     <div className={`${cardClass} space-y-5`}>
-      <p className="text-sm text-slate-400">Khóa OpenAI và model chỉ đổi được trực tiếp trên laptop (vì an toàn), không có ở đây. Laptop sẽ từ chối prompt sai quy tắc (thiếu {"{{CANARY}}"}, quá ngắn/dài).</p>
+      <p className="text-sm text-ink-2">Khóa OpenAI và model chỉ đổi được trực tiếp trên laptop (vì an toàn), không có ở đây. Laptop sẽ từ chối prompt sai quy tắc (thiếu {"{{CANARY}}"}, quá ngắn/dài).</p>
       <label className="flex items-center gap-3 text-sm font-semibold">
         <input type="checkbox" checked={aiEnabled} onChange={(e) => setAiEnabled(e.target.checked)} /> AI được phép trả lời khách (công tắc tổng)
       </label>
@@ -549,21 +555,23 @@ function Commands({ device }) {
     return () => clearInterval(timer);
   }, [load]);
   if (loading) return <Loading />;
-  const style = { pending: "text-slate-300", delivered: "text-cyan-200", done: "text-emerald-200", failed: "text-rose-200" };
+  const style = { pending: "text-ink-2", delivered: "text-cyan-200", done: "text-emerald-200", failed: "text-rose-200" };
   return (
     <div className={cardClass}>
       <h2 className="font-bold">Lệnh gần đây</h2>
       {error && <div className="mt-2 text-sm text-rose-200">{error}</div>}
       {!rows.length ? <div className="mt-3"><Empty>Chưa gửi lệnh nào.</Empty></div> : (
         <ul className="mt-3 divide-y divide-white/10 text-sm">
+          <AnimatePresence initial={false}>
           {rows.map((r) => (
-            <li key={r.id} className="py-2">
+            <motion.li key={r.id} layout {...listItem} className="py-2">
               <span className="font-semibold">{commandLabel[r.type] || r.type}</span>
               <span className={`ml-2 text-xs font-bold ${style[r.status]}`}>{commandStatusLabel[r.status] || r.status}</span>
-              {r.result && <div className="text-xs text-slate-400">{r.result}</div>}
-              <div className="text-xs text-slate-500">{fmtIso(r.created_at)}</div>
-            </li>
+              {r.result && <div className="text-xs text-ink-2">{r.result}</div>}
+              <div className="text-xs text-ink-3">{fmtIso(r.created_at)}</div>
+            </motion.li>
           ))}
+          </AnimatePresence>
         </ul>
       )}
     </div>

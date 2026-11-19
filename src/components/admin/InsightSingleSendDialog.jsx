@@ -28,24 +28,24 @@ export default function InsightSingleSendDialog({ preview, busy, error, onClose,
     <div role="presentation" onClick={onClose} className="fixed inset-0 z-[140] flex items-center justify-center bg-[#020811]/90 p-3 backdrop-blur-md md:p-6">
       <section ref={dialog} tabIndex={-1} role="dialog" aria-modal="true" aria-labelledby="single-send-title"
         onClick={(event) => event.stopPropagation()}
-        className="flex max-h-[94dvh] w-full max-w-3xl flex-col overflow-hidden rounded-3xl border border-cyan-200/20 bg-[#0b1625] shadow-2xl outline-none">
+        className="flex max-h-[94dvh] w-full max-w-3xl flex-col overflow-hidden rounded-3xl border border-cyan-200/20 bg-cms-2 shadow-2xl outline-none">
         <div className="flex items-start justify-between gap-4 p-5">
           <div className="min-w-0">
             <h2 id="single-send-title" className="text-xl font-bold text-white">{selected ? "Xác nhận gửi khách đã chọn" : "Xác nhận gửi riêng bài viết"}</h2>
-            <p className="mt-2 break-words text-sm text-slate-300">{preview.subject}</p>
+            <p className="mt-2 break-words text-sm text-ink-2">{preview.subject}</p>
             <p className="mt-2 text-sm font-semibold text-cyan-100">Bcc: {selected ? `${preview.recipients.bcc_count} khách hàng đã chọn` : preview.contact.email}</p>
             {selected && <ul aria-label="Khách hàng Bcc đã chọn" className="mt-2 max-h-28 overflow-y-auto break-all text-xs text-cyan-100">{preview.recipients.bcc.map((email) => <li key={email}>{email}</li>)}</ul>}
-            <p className="mt-1 text-xs text-slate-400">To: tunguyen@facs.vn · Cc: {selected ? "yendoan@facs.vn, thanhhuynh@facs.vn" : "không có"}</p>
+            <p className="mt-1 text-xs text-ink-2">To: tunguyen@facs.vn · Cc: {selected ? "yendoan@facs.vn, thanhhuynh@facs.vn" : "không có"}</p>
           </div>
-          <button type="button" disabled={busy} onClick={onClose} aria-label="Đóng gửi riêng" className="rounded-xl border border-white/10 p-2 text-slate-300 disabled:opacity-30"><X size={19} /></button>
+          <button type="button" disabled={busy} onClick={onClose} aria-label="Đóng gửi riêng" className="rounded-xl border border-white/10 p-2 text-ink-2 disabled:opacity-30"><X size={19} /></button>
         </div>
         <iframe title="Nội dung email gửi riêng" sandbox="" tabIndex={-1}
           srcDoc={DOMPurify.sanitize(preview.body_html || "", { WHOLE_DOCUMENT: true })}
           className="min-h-48 flex-1 bg-white" style={{ colorScheme: "light", height: "48vh" }} />
         {error && <p role="alert" className="px-5 pt-4 text-sm text-red-200">{error}</p>}
         <div className="flex flex-wrap justify-end gap-3 p-5">
-          <button type="button" disabled={busy} onClick={onClose} className="rounded-xl border border-white/10 px-4 py-3 text-sm font-semibold text-slate-200 disabled:opacity-30">Hủy</button>
-          <button type="button" disabled={busy} onClick={onSend} className="inline-flex items-center gap-2 rounded-xl bg-cyan-300 px-5 py-3 text-sm font-bold text-[#071421] disabled:opacity-40">
+          <button type="button" disabled={busy} onClick={onClose} className="rounded-xl border border-white/10 px-4 py-3 text-sm font-semibold text-ink-1 disabled:opacity-30">Hủy</button>
+          <button type="button" disabled={busy} onClick={onSend} className="inline-flex items-center gap-2 rounded-xl bg-cyan-300/[0.12] px-5 py-3 text-sm font-bold text-cyan-100 disabled:opacity-40">
             {busy ? <Loader2 size={17} className="animate-spin" /> : <Mail size={17} />} {selected ? "Gửi cho khách đã chọn" : "Gửi riêng cho khách hàng này"}
           </button>
         </div>

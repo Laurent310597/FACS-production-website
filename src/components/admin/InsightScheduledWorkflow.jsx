@@ -127,11 +127,11 @@ export default function InsightScheduledWorkflow({
         </div>
       )}
       {!active && (
-        <fieldset className="rounded-2xl border border-white/10 bg-[#081321]/60 p-4">
+        <fieldset className="rounded-2xl border border-white/10 bg-cms-2 p-4">
           <legend className="px-2 font-semibold text-white">
             Gửi email cùng thời điểm đăng bài?
           </legend>
-          <p className="text-sm text-slate-300">
+          <p className="text-sm text-ink-2">
             Bài viết hẹn đăng lúc{" "}
             <strong className="text-cyan-100">{when}</strong> (giờ Việt Nam).
           </p>
@@ -166,7 +166,7 @@ export default function InsightScheduledWorkflow({
       {!active && (
         <div className="grid gap-4 lg:grid-cols-3">
           <Step title="1. Xem trước email" complete={previewReady}>
-            <p className="mt-2 text-sm text-slate-300">
+            <p className="mt-2 text-sm text-ink-2">
               Kiểm tra nội dung và đường dẫn bài viết.
             </p>
             <button
@@ -180,7 +180,7 @@ export default function InsightScheduledWorkflow({
             </button>
           </Step>
           <Step title="2. Gửi thử nội bộ" complete={testReady}>
-            <p className="mt-2 text-sm text-slate-300">
+            <p className="mt-2 text-sm text-ink-2">
               Gửi bản thử đến tunguyen@facs.vn.
             </p>
             <button
@@ -200,14 +200,14 @@ export default function InsightScheduledWorkflow({
                 : "3. Xác nhận gửi Audience"
             }
           >
-            <p className="mt-2 text-sm text-slate-300">
+            <p className="mt-2 text-sm text-ink-2">
               {choice === "yes"
                 ? `Gửi ${selectedIds.length ? `${selectedIds.length} khách đã chọn` : "toàn bộ Audience"} dưới dạng Bcc.`
                 : "Tú có thể xác nhận gửi thủ công sau khi bài đã công khai."}
             </p>
             <button
               type="button"
-              className={`${button} bg-cyan-300 !text-[#071421]`}
+              className={`${button} bg-cyan-300/[0.12] !text-cyan-100`}
               disabled={
                 disabled || choice !== "yes" || !previewReady || !testReady
               }
@@ -222,7 +222,7 @@ export default function InsightScheduledWorkflow({
         </div>
       )}
       {!active && choice === "yes" && (
-        <p className="text-sm leading-relaxed text-slate-300">
+        <p className="text-sm leading-relaxed text-ink-2">
           Lịch gửi chỉ được lưu sau bước xác nhận cuối. Hệ thống xử lý từ giờ đã
           hẹn, thường trong vòng một phút. Danh sách người nhận được chốt khi
           xác nhận và loại người đã huỷ đăng ký khi gửi.
@@ -239,7 +239,7 @@ export default function InsightScheduledWorkflow({
             role="dialog"
             aria-modal="true"
             aria-label="Xác nhận lịch gửi Audience"
-            className="max-h-[90vh] w-full max-w-xl overflow-y-auto rounded-[28px] border border-cyan-200/25 bg-[#0b1625] p-6 md:p-8"
+            className="max-h-[90vh] w-full max-w-xl overflow-y-auto rounded-[20px] border border-cyan-200/25 bg-cms-2 p-6 md:p-8"
           >
             <div className="flex items-start justify-between gap-4">
               <h2 className="text-2xl font-bold">Xác nhận lịch gửi Audience</h2>
@@ -258,7 +258,7 @@ export default function InsightScheduledWorkflow({
             <p className="mt-3 font-semibold text-cyan-100">
               {formatVietnamDateTime(plan.scheduled_at)} · Giờ Việt Nam (UTC+7)
             </p>
-            <div className="mt-4 rounded-2xl bg-[#081321] p-4 text-sm leading-7 text-slate-300">
+            <div className="mt-4 rounded-2xl bg-cms-2 p-4 text-sm leading-7 text-ink-2">
               <p>From: infor@facs.vn</p>
               <p>To: tunguyen@facs.vn</p>
               <p>Cc: yendoan@facs.vn, thanhhuynh@facs.vn</p>
@@ -276,7 +276,7 @@ export default function InsightScheduledWorkflow({
                 </ul>
               </details>
             </div>
-            <p className="mt-4 text-sm text-slate-300">
+            <p className="mt-4 text-sm text-ink-2">
               Sau khi xác nhận, hệ thống sẽ tự gửi khi đến hạn. Sửa nội dung
               hoặc giờ đăng sẽ yêu cầu xác nhận lịch lại.
             </p>
@@ -291,12 +291,12 @@ export default function InsightScheduledWorkflow({
                 autoFocus
                 value={confirmation}
                 onChange={(event) => setConfirmation(event.target.value)}
-                className="mt-2 w-full rounded-xl border border-white/20 bg-[#081321] p-3 text-white"
+                className="mt-2 w-full rounded-xl border border-white/20 bg-cms-2 p-3 text-white"
               />
             </label>
             <button
               type="button"
-              className={`${button} bg-cyan-300 !text-[#071421]`}
+              className={`${button} bg-cyan-300/[0.12] !text-cyan-100`}
               disabled={working || confirmation !== "SCHEDULE-AUDIENCE"}
               onClick={confirm}
             >
@@ -314,7 +314,7 @@ export default function InsightScheduledWorkflow({
 function Step({ title, complete, children }) {
   return (
     <div
-      className={`rounded-2xl border p-4 ${complete ? "border-emerald-300/25 bg-emerald-300/5" : "border-white/10 bg-[#081321]/45"}`}
+      className={`rounded-2xl border p-4 ${complete ? "border-emerald-300/25 bg-emerald-300/5" : "border-white/10 bg-cms-2"}`}
     >
       <div className="flex items-center justify-between gap-2">
         <strong>{title}</strong>

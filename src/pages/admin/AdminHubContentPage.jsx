@@ -2,6 +2,8 @@ import { useCallback, useEffect, useMemo, useRef, useState } from "react";
 import { Link, useSearchParams } from "react-router-dom";
 import { AlertTriangle, Archive, BadgeCheck, Check, Copy, Download, FileText, ImagePlus, Library, Loader2, RefreshCw, Save, Sparkles, X } from "lucide-react";
 import AdminLayout from "../../components/admin/AdminLayout";
+import { useConfirm } from "../../components/admin/ui/confirmContext";
+import { useToastSetter } from "../../components/admin/ui/toastContext";
 import { insightCategories, slugify } from "../../lib/insights";
 import {
   approveHubItem,
@@ -20,12 +22,13 @@ import {
 } from "../../lib/hub";
 import { DEFAULT_TEMPLATE, INFOGRAPHIC_TEMPLATES, downloadCanvasPng, drawInfographic, preloadInfographicAssets } from "../../lib/hubInfographic";
 import HubSchedulePanel from "../../components/admin/HubSchedulePanel";
+import * as ui from "../../components/admin/ui/styles";
 
-const inputClass = "w-full rounded-2xl border border-white/10 bg-[#0d1726]/70 px-4 py-3 text-sm text-white outline-none transition placeholder:text-slate-600 focus:border-cyan-300/50";
-const cardClass = "rounded-[26px] border border-white/10 bg-white/[0.035] p-5 lg:p-6";
-const labelClass = "mb-2 block text-sm font-semibold text-slate-200";
-const ghostButton = "inline-flex items-center gap-2 rounded-xl border border-white/10 px-4 py-2 text-sm text-slate-200 transition hover:border-cyan-200/30 hover:text-white disabled:opacity-50";
-const primaryButton = "inline-flex items-center gap-2 rounded-xl bg-cyan-300 px-5 py-2.5 text-sm font-bold text-[#071421] transition hover:bg-cyan-200 disabled:cursor-not-allowed disabled:opacity-50";
+const inputClass = ui.input;
+const cardClass = ui.card;
+const labelClass = ui.label;
+const ghostButton = ui.btnSecondary;
+const primaryButton = ui.btnPrimary;
 
 const emptyOutputs = {
   website: { category: "business", title_vi: "", title_en: "", excerpt_vi: "", excerpt_en: "", content_vi: "", content_en: "", seo_description_vi: "", seo_description_en: "" },
@@ -82,6 +85,7 @@ function CopyButton({ text }) {
 }
 
 export default function AdminHubContentPage() {
+  const askConfirm = useConfirm();
   const [urlsText, setUrlsText] = useState("");
   const [sourceText, setSourceText] = useState("");
   const [brief, setBrief] = useState("");
@@ -96,7 +100,7 @@ export default function AdminHubContentPage() {
   const [saving, setSaving] = useState(false);
   const [creatingPost, setCreatingPost] = useState(false);
   const [error, setError] = useState("");
-  const [notice, setNotice] = useState("");
+  const setNotice = useToastSetter("success");
   const [warnings, setWarnings] = useState([]);
   const [items, setItems] = useState([]);
   const [setupMissing, setSetupMissing] = useState(false);
@@ -211,7 +215,7 @@ export default function AdminHubContentPage() {
       setError("Hãy chọn ít nhất một loại nội dung cần tạo.");
       return;
     }
-    if (outputs && !window.confirm("Tạo lại sẽ thay thế nội dung đang hiển thị (kể cả phần anh/chị đã sửa). Tiếp tục?")) return;
+    if (outputs && !(await askConfirm("Tạo lại sẽ thay thế nội dung đang hiển thị (kể cả phần anh/chị đã sửa). Tiếp tục?"))) return;
     setGenerating(true);
     setError("");
     setNotice("");
@@ -286,7 +290,7 @@ export default function AdminHubContentPage() {
     const message = itemStatus === "approved"
       ? "Cập nhật bản đã duyệt bằng nội dung hiện tại?"
       : "Duyệt bộ nội dung này?\n\nBản hiện tại của từng kênh sẽ được lưu vào thư mục \"Kết quả đã duyệt\" và AI sẽ tham khảo cho các lần sau. Việc duyệt không đăng bài và không gửi email.";
-    if (!window.confirm(message)) return;
+    if (!(await askConfirm(message))) return;
     setApproving(true);
     setError("");
     try {
@@ -305,7 +309,7 @@ export default function AdminHubContentPage() {
   };
 
   const createDraft = async () => {
-    if (!window.confirm("Tạo một BÀI NHÁP trong CMS Insights từ nội dung website này?\n\nBài chưa được đăng và chưa gửi email. Anh/chị rà soát, đăng và gửi email trong trình soạn bài như bình thường.")) return;
+    if (!(await askConfirm("Tạo một BÀI NHÁP trong CMS Insights từ nội dung website này?\n\nBài chưa được đăng và chưa gửi email. Anh/chị rà soát, đăng và gửi email trong trình soạn bài như bình thường."))) return;
     setCreatingPost(true);
     setError("");
     try {
@@ -358,7 +362,7 @@ export default function AdminHubContentPage() {
   });
 
   const archive = async (id) => {
-    if (!window.confirm("Lưu trữ bộ nội dung này? (Bài nháp trong CMS, nếu có, vẫn được giữ nguyên.)")) return;
+    if (!(await askConfirm("Lưu trữ bộ nội dung này? (Bài nháp trong CMS, nếu có, vẫn được giữ nguyên.)"))) return;
     try {
       await archiveHubItem(id);
       if (id === itemId) resetForm();
@@ -376,9 +380,9 @@ export default function AdminHubContentPage() {
       <div className="space-y-6">
         <div className="flex flex-wrap items-end justify-between gap-4">
           <div>
-            <div className="text-xs font-bold uppercase tracking-[0.18em] text-cyan-300">FACS Hub</div>
+            <div className="text-xs font-bold uppercase tracking-[0.18em] text-sunset">FACS Hub</div>
             <h1 className="mt-1 text-3xl font-bold tracking-[-0.02em]">Tạo nội dung</h1>
-            <p className="mt-2 max-w-3xl text-sm text-slate-400">
+            <p className="mt-2 max-w-3xl text-sm text-ink-2">
               Gửi link bài báo, văn bản hoặc ghi chú. Trợ lý soạn bài website song ngữ, bài mạng xã hội và infographic để anh/chị rà soát. Không có gì được đăng hay gửi email tự động từ trang này.
             </p>
           </div>
@@ -398,7 +402,6 @@ export default function AdminHubContentPage() {
           </div>
         )}
         {error && <div className="rounded-2xl border border-red-300/30 bg-red-300/10 p-4 text-sm text-red-100">{error}</div>}
-        {notice && !error && <div className="rounded-2xl border border-emerald-300/30 bg-emerald-300/10 p-4 text-sm text-emerald-100">{notice}</div>}
         {warnings.length > 0 && (
           <div className="rounded-2xl border border-amber-300/30 bg-amber-300/10 p-4 text-sm text-amber-100">
             <div className="font-semibold">Một số nguồn không đọc được:</div>
@@ -425,7 +428,7 @@ export default function AdminHubContentPage() {
               <div className="flex flex-wrap items-center gap-3">
                 {inputFiles.map((file) => (
                   <div key={file.path} className="relative h-24 w-24 overflow-hidden rounded-xl border border-white/10 bg-white/5">
-                    {previews[file.path] ? <img src={previews[file.path]} alt={file.name} className="h-full w-full object-cover" /> : <div className="p-2 text-xs text-slate-400">{file.name}</div>}
+                    {previews[file.path] ? <img src={previews[file.path]} alt={file.name} className="h-full w-full object-cover" /> : <div className="p-2 text-xs text-ink-2">{file.name}</div>}
                     <button type="button" onClick={() => removeImage(file.path)} className="absolute right-1 top-1 rounded-full bg-black/70 p-1 text-white" aria-label={`Bỏ ảnh ${file.name}`}>
                       <X size={12} />
                     </button>
@@ -451,7 +454,7 @@ export default function AdminHubContentPage() {
                     type="button"
                     aria-pressed={active}
                     onClick={() => toggleOutput(option.value)}
-                    className={`rounded-xl border px-4 py-2 text-sm font-semibold transition ${active ? "border-cyan-300 bg-cyan-300/15 text-cyan-100" : "border-white/10 text-slate-400 hover:text-white"}`}
+                    className={`rounded-xl border px-4 py-2 text-sm font-semibold transition ${active ? "border-cyan-300 bg-cyan-300/15 text-cyan-100" : "border-white/10 text-ink-2 hover:text-white"}`}
                   >
                     {active ? "✓ " : ""}{option.label}
                   </button>
@@ -463,7 +466,7 @@ export default function AdminHubContentPage() {
             <button type="button" className={primaryButton} onClick={generate} disabled={generating || uploading || setupMissing}>
               {generating ? <Loader2 size={16} className="animate-spin" /> : <Sparkles size={16} />} {generating ? "Đang soạn (30–90 giây)…" : outputs ? "Tạo lại" : "Tạo nội dung"}
             </button>
-            <span className="text-xs text-slate-500">Bài được viết mới theo góc nhìn FACS và có ghi nguồn; không chép lại bài gốc.</span>
+            <span className="text-xs text-ink-3">Bài được viết mới theo góc nhìn FACS và có ghi nguồn; không chép lại bài gốc.</span>
           </div>
         </div>
 
@@ -483,7 +486,7 @@ export default function AdminHubContentPage() {
 
             <div className="mt-6 flex flex-wrap gap-2 border-b border-white/10 pb-3">
               {visibleTabs.map((name) => (
-                <button key={name} type="button" onClick={() => setActiveTab(name)} className={`rounded-xl px-4 py-2 text-sm font-semibold transition ${currentTab === name ? "bg-cyan-300 text-[#071421]" : "text-slate-300 hover:bg-white/[0.07]"}`}>
+                <button key={name} type="button" onClick={() => setActiveTab(name)} className={`rounded-xl px-4 py-2 text-sm font-semibold transition ${currentTab === name ? "bg-cyan-300/[0.12] text-cyan-100" : "text-ink-2 hover:bg-white/[0.07]"}`}>
                   {tabLabels[name]}
                 </button>
               ))}
@@ -494,7 +497,7 @@ export default function AdminHubContentPage() {
                 <div className="flex flex-wrap items-center gap-3">
                   <div className="flex rounded-xl border border-white/10 p-1">
                     {["vi", "en"].map((code) => (
-                      <button key={code} type="button" onClick={() => setLanguage(code)} className={`rounded-lg px-4 py-1.5 text-sm font-semibold ${language === code ? "bg-white/15 text-white" : "text-slate-400"}`}>
+                      <button key={code} type="button" onClick={() => setLanguage(code)} className={`rounded-lg px-4 py-1.5 text-sm font-semibold ${language === code ? "bg-white/15 text-white" : "text-ink-2"}`}>
                         {code === "vi" ? "Tiếng Việt" : "English"}
                       </button>
                     ))}
@@ -526,7 +529,7 @@ export default function AdminHubContentPage() {
                       {creatingPost ? <Loader2 size={16} className="animate-spin" /> : <FileText size={16} />} Tạo bài nháp trong CMS
                     </button>
                   )}
-                  <span className="text-xs text-slate-500">Bài nháp chưa đăng và chưa gửi email. Đăng bài, hẹn giờ và gửi email vẫn làm trong trình soạn bài như hiện tại.</span>
+                  <span className="text-xs text-ink-3">Bài nháp chưa đăng và chưa gửi email. Đăng bài, hẹn giờ và gửi email vẫn làm trong trình soạn bài như hiện tại.</span>
                 </div>
               </div>
             )}
@@ -536,7 +539,7 @@ export default function AdminHubContentPage() {
                 <textarea value={outputs[currentTab] || ""} onChange={(e) => updateOutput(currentTab, e.target.value)} rows={12} className={inputClass} />
                 <div className="flex flex-wrap items-center gap-3">
                   <CopyButton text={outputs[currentTab]} />
-                  <span className="text-xs text-slate-500">{(outputs[currentTab] || "").length} ký tự · Có thể chép để đăng tay, hoặc đăng/hẹn giờ trực tiếp ở khung bên dưới.</span>
+                  <span className="text-xs text-ink-3">{(outputs[currentTab] || "").length} ký tự · Có thể chép để đăng tay, hoặc đăng/hẹn giờ trực tiếp ở khung bên dưới.</span>
                 </div>
                 <HubSchedulePanel key={`${currentTab}-${itemId || "new"}`} channel={currentTab} caption={outputs[currentTab] || ""} infographic={outputs.infographic} itemId={itemId} />
               </div>
@@ -599,14 +602,14 @@ export default function AdminHubContentPage() {
         <div className={cardClass}>
           <h2 className="text-lg font-bold">Bộ nội dung đã lưu</h2>
           {items.length === 0 ? (
-            <p className="mt-3 text-sm text-slate-500">Chưa có bộ nội dung nào.</p>
+            <p className="mt-3 text-sm text-ink-3">Chưa có bộ nội dung nào.</p>
           ) : (
             <ul className="mt-4 divide-y divide-white/10">
               {items.map((item) => (
                 <li key={item.id} className="flex flex-wrap items-center justify-between gap-3 py-3">
                   <button type="button" onClick={() => openItem(item.id)} className="min-w-0 flex-1 text-left">
                     <div className="truncate font-semibold text-white hover:text-cyan-200">{item.title || "Nội dung chưa đặt tên"}</div>
-                    <div className="mt-1 text-xs text-slate-500">
+                    <div className="mt-1 text-xs text-ink-3">
                       {new Date(item.updated_at).toLocaleString("vi-VN")} · {(item.requested_outputs || []).map((name) => tabLabels[name] || name).join(", ")}
                       {item.post_id ? " · đã có bài nháp CMS" : ""}
                       {item.status === "approved" ? " · đã duyệt" : ""}

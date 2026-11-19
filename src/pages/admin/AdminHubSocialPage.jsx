@@ -2,6 +2,10 @@ import { useCallback, useEffect, useState } from "react";
 import { Link, useSearchParams } from "react-router-dom";
 import { AlertTriangle, CheckCircle2, ExternalLink, Loader2, Plug, RefreshCw, Unplug, XCircle } from "lucide-react";
 import AdminLayout from "../../components/admin/AdminLayout";
+import { AnimatePresence, motion } from "framer-motion";
+import { useToastSetter } from "../../components/admin/ui/toastContext";
+import { SkeletonRows } from "../../components/admin/ui/Skeleton";
+import { listItem } from "../../components/admin/ui/motionPresets";
 import {
   cancelSocialPost,
   disconnectSocialAccount,
@@ -13,19 +17,19 @@ import {
   postStatusLabel,
   startSocialConnect,
 } from "../../lib/hubSocial";
+import * as ui from "../../components/admin/ui/styles";
 
-const cardClass = "rounded-[26px] border border-white/10 bg-white/[0.035] p-5 lg:p-6";
-const ghostButton = "inline-flex items-center gap-2 rounded-xl border border-white/10 px-4 py-2 text-sm text-slate-200 transition hover:border-cyan-200/30 hover:text-white disabled:opacity-50";
-const primaryButton = "inline-flex items-center gap-2 rounded-xl bg-cyan-300 px-5 py-2.5 text-sm font-bold text-[#071421] transition hover:bg-cyan-200 disabled:cursor-not-allowed disabled:opacity-50";
+const cardClass = ui.card;
+const ghostButton = ui.btnSecondary;
 
 const fmt = (value) => (value ? new Date(value).toLocaleString("vi-VN", { timeZone: "Asia/Ho_Chi_Minh", hour12: false }) : "—");
 const statusStyle = {
-  draft: "bg-slate-500/20 text-slate-300",
+  draft: "bg-slate-500/20 text-ink-2",
   scheduled: "bg-cyan-400/15 text-cyan-200",
   publishing: "bg-amber-400/15 text-amber-200",
   published: "bg-emerald-400/15 text-emerald-200",
   failed: "bg-rose-400/15 text-rose-200",
-  cancelled: "bg-slate-500/20 text-slate-400",
+  cancelled: "bg-slate-500/20 text-ink-2",
 };
 const accountStatusLabel = { connected: "Đã kết nối", expired: "Hết hạn – cần kết nối lại", error: "Lỗi", disconnected: "Đã gỡ" };
 
@@ -44,10 +48,11 @@ export default function AdminHubSocialPage() {
   const [busy, setBusy] = useState("");
   // Kết quả quay về sau khi kết nối (Facebook/LinkedIn chuyển hướng về trang này) được đọc một lần khi mở trang.
   const [error, setError] = useState(() => searchParams.get("error") || "");
-  const [notice, setNotice] = useState(() => {
+  const [connectedNotice] = useState(() => {
     const connected = searchParams.get("connected");
     return connected ? `Đã kết nối ${connected === "linkedin" ? "LinkedIn" : "Facebook/Instagram"} (${searchParams.get("count") || 1} tài khoản).` : "";
   });
+  const setNotice = useToastSetter("success", connectedNotice);
   const [confirmId, setConfirmId] = useState("");
   const [setupMissing, setSetupMissing] = useState(false);
 
@@ -125,9 +130,9 @@ export default function AdminHubSocialPage() {
     <AdminLayout>
       <div className="mb-8 flex flex-wrap items-start justify-between gap-4">
         <div>
-          <div className="text-[11px] font-bold uppercase tracking-[0.22em] text-cyan-300">FACS Hub</div>
+          <div className="text-xs font-bold uppercase tracking-[0.18em] text-sunset">FACS Hub</div>
           <h1 className="mt-2 font-serif text-3xl font-bold text-white">Đăng & lịch đăng mạng xã hội</h1>
-          <p className="mt-2 max-w-2xl text-sm leading-6 text-slate-400">
+          <p className="mt-2 max-w-2xl text-sm leading-6 text-ink-2">
             Kết nối Facebook Fanpage, Instagram và LinkedIn cá nhân bằng quyền chính thức. Bài chỉ được đăng khi anh/chị bấm “Duyệt & hẹn giờ” hoặc “Đăng ngay” trong trang Tạo nội dung; không có gì tự đăng.
           </p>
         </div>
@@ -137,7 +142,6 @@ export default function AdminHubSocialPage() {
       </div>
 
       {error && <div className="mb-5 rounded-2xl border border-rose-300/25 bg-rose-400/10 p-4 text-sm text-rose-100">{error}</div>}
-      {notice && <div className="mb-5 rounded-2xl border border-emerald-300/25 bg-emerald-400/10 p-4 text-sm text-emerald-100">{notice}</div>}
       {setupMissing && (
         <div className="mb-5 rounded-2xl border border-amber-300/25 bg-amber-400/10 p-4 text-sm text-amber-100">
           Cơ sở dữ liệu chưa có các bảng đăng bài (migration 20261117020000_facs_hub_social.sql). Cần chạy migration này trên Supabase.
@@ -145,12 +149,12 @@ export default function AdminHubSocialPage() {
       )}
 
       <section className={cardClass}>
-        <h2 className="font-serif text-xl font-bold text-white">1. Tài khoản đã kết nối</h2>
+        <h2 className="text-xl font-semibold text-ink-1">1. Tài khoản đã kết nối</h2>
         <div className="mt-4 flex flex-wrap gap-3">
-          <button type="button" className={primaryButton} onClick={() => connect("facebook")} disabled={busy === "facebook" || status?.meta_configured === false}>
+          <button type="button" className={ghostButton} onClick={() => connect("facebook")} disabled={busy === "facebook" || status?.meta_configured === false}>
             {busy === "facebook" ? <Loader2 size={16} className="animate-spin" /> : <Plug size={16} />} Kết nối Facebook & Instagram
           </button>
-          <button type="button" className={primaryButton} onClick={() => connect("linkedin")} disabled={busy === "linkedin" || status?.linkedin_configured === false}>
+          <button type="button" className={ghostButton} onClick={() => connect("linkedin")} disabled={busy === "linkedin" || status?.linkedin_configured === false}>
             {busy === "linkedin" ? <Loader2 size={16} className="animate-spin" /> : <Plug size={16} />} Kết nối LinkedIn
           </button>
         </div>
@@ -165,15 +169,15 @@ export default function AdminHubSocialPage() {
         )}
 
         <div className="mt-5 space-y-3">
-          {!activeAccounts.length && !loading && <p className="text-sm text-slate-500">Chưa có tài khoản nào được kết nối.</p>}
+          {!activeAccounts.length && !loading && <p className="text-sm text-ink-3">Chưa có tài khoản nào được kết nối.</p>}
           {activeAccounts.map((account) => {
             const left = daysLeft(account.token_expires_at);
             const soon = left !== null && left <= 10;
             return (
-              <div key={account.id} className="flex flex-wrap items-center gap-3 rounded-2xl border border-white/10 bg-[#0d1726]/50 px-4 py-3">
+              <div key={account.id} className="flex flex-wrap items-center gap-3 rounded-2xl border border-white/10 bg-cms-2 px-4 py-3">
                 <div className="min-w-0 flex-1">
                   <div className="font-semibold text-white">{platformName[account.platform]} · {account.display_name}</div>
-                  <div className="mt-0.5 text-xs text-slate-500">
+                  <div className="mt-0.5 text-xs text-ink-3">
                     {account.status === "connected" ? <span className="inline-flex items-center gap-1 text-emerald-300"><CheckCircle2 size={12} /> {accountStatusLabel.connected}</span> : <span className="inline-flex items-center gap-1 text-rose-300"><XCircle size={12} /> {accountStatusLabel[account.status]}</span>}
                     {account.token_expires_at && <span className={soon ? "ml-3 text-amber-300" : "ml-3"}>Hết hạn {fmt(account.token_expires_at)}{left !== null && left >= 0 ? ` (còn ${left} ngày)` : ""}</span>}
                     {account.last_error && <span className="ml-3 text-rose-300">{account.last_error}</span>}
@@ -194,20 +198,22 @@ export default function AdminHubSocialPage() {
             );
           })}
         </div>
-        <p className="mt-4 text-xs leading-5 text-slate-500">LinkedIn cấp mã có hiệu lực khoảng 60 ngày; hết hạn cần bấm “Kết nối lại”. Mã kết nối được lưu ở bảng chỉ máy chủ đọc được, trình duyệt không thấy.</p>
+        <p className="mt-4 text-xs leading-5 text-ink-3">LinkedIn cấp mã có hiệu lực khoảng 60 ngày; hết hạn cần bấm “Kết nối lại”. Mã kết nối được lưu ở bảng chỉ máy chủ đọc được, trình duyệt không thấy.</p>
       </section>
 
       <section className={`${cardClass} mt-6`}>
-        <h2 className="font-serif text-xl font-bold text-white">2. Hàng đợi & lịch sử đăng</h2>
-        <p className="mt-1 text-sm text-slate-400">Hệ thống kiểm tra giờ hẹn mỗi phút. Bài lỗi sẽ không tự đăng lại, để tránh đăng trùng.</p>
+        <h2 className="text-xl font-semibold text-ink-1">2. Hàng đợi & lịch sử đăng</h2>
+        <p className="mt-1 text-sm text-ink-2">Hệ thống kiểm tra giờ hẹn mỗi phút. Bài lỗi sẽ không tự đăng lại, để tránh đăng trùng.</p>
         <div className="mt-4 space-y-3">
-          {!posts.length && !loading && <p className="text-sm text-slate-500">Chưa có bài đăng nào.</p>}
+          {loading && !posts.length && <SkeletonRows rows={3} />}
+          {!posts.length && !loading && <p className="text-sm text-ink-3">Chưa có bài đăng nào.</p>}
+          <AnimatePresence initial={false}>
           {posts.map((post) => (
-            <div key={post.id} className="rounded-2xl border border-white/10 bg-[#0d1726]/50 p-4">
+            <motion.div key={post.id} layout {...listItem} className="facs-card facs-tile rounded-2xl border border-cyan-300/[0.14] bg-cms-2 p-4">
               <div className="flex flex-wrap items-center gap-3">
                 <span className={`rounded-full px-3 py-1 text-xs font-bold ${statusStyle[post.status]}`}>{postStatusLabel[post.status]}</span>
                 <span className="text-sm font-semibold text-white">{accountName(post.account_id)}</span>
-                <span className="text-xs text-slate-500">
+                <span className="text-xs text-ink-3">
                   {post.status === "published" ? `Đăng lúc ${fmt(post.published_at)}` : post.scheduled_at ? `Hẹn ${fmt(post.scheduled_at)}` : `Tạo ${fmt(post.created_at)}`}
                 </span>
                 <span className="ml-auto flex items-center gap-2">
@@ -218,11 +224,12 @@ export default function AdminHubSocialPage() {
                   )}
                 </span>
               </div>
-              <p className="mt-3 line-clamp-3 whitespace-pre-wrap text-sm leading-6 text-slate-300">{post.caption}</p>
-              {post.image_path && <div className="mt-1 text-xs text-slate-500">Kèm 1 ảnh</div>}
+              <p className="mt-3 line-clamp-3 whitespace-pre-wrap text-sm leading-6 text-ink-2">{post.caption}</p>
+              {post.image_path && <div className="mt-1 text-xs text-ink-3">Kèm 1 ảnh</div>}
               {post.error && <div className="mt-2 rounded-xl bg-rose-400/10 px-3 py-2 text-sm text-rose-200">{post.error}</div>}
-            </div>
+            </motion.div>
           ))}
+          </AnimatePresence>
         </div>
       </section>
     </AdminLayout>

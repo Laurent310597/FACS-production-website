@@ -1,5 +1,29 @@
 @import "tailwindcss";
 
+/* Bảng màu & font của CMS quản trị (Đợt 2b): Midnight Black 50% · Electric Dark Blue 40% · Sunset Orange 10%.
+   Chỉ tạo thêm tiện ích mới, không đổi màu website công khai. */
+@theme {
+  --color-cms-0: #05070D; /* Midnight Black – nền trang */
+  --color-midnight: #05070D;
+  --color-midnight-2: #0A0D17; /* thanh đầu trang, menu trái */
+  --color-cms-1: #0A1536; /* Electric Dark Blue – thẻ */
+  --color-cms-2: #0E1B45; /* ô nhập, khối bên trong */
+  --color-cms-3: #132254; /* hộp thoại, bảng nổi */
+  --color-electric: #2B5BFF; /* xanh điện – trạng thái chọn, liên kết */
+  --color-electric-soft: #8EA9FF;
+  --color-sunset: #FF6B35; /* Sunset Orange – điểm nhấn 10% */
+  --color-sunset-hover: #FF8557;
+  --color-sunset-press: #E9541F;
+  --color-ink-1: #EEF2FB; /* chữ chính */
+  --color-ink-2: #AAB7D6; /* chữ thứ cấp */
+  --color-ink-3: #8A9AC0; /* chữ phụ (tương phản ≥ 5:1 trên nền thẻ) */
+  --color-brand: #FF6B35; /* nút chính – Sunset Orange, chữ tối */
+  --color-brand-hover: #FF8557;
+  --color-brand-press: #E9541F;
+  --color-facs-logo: oklch(86.5% 0.127 207.078); /* dấu "." của logo FACS – màu cố định, giống website */
+  --font-cms: "Helvetica Neue", Helvetica, Arial, system-ui, sans-serif;
+}
+
 html {
   scroll-behavior: smooth;
 }
@@ -156,3 +180,443 @@ img {
 .admin-rich-editor ul { list-style: disc; }
 .admin-rich-editor ol { list-style: decimal; }
 .admin-rich-editor a { color: rgb(103 232 249); text-decoration: underline; }
+
+/* CMS: khung chờ tải nhấp nháy */
+.facs-skeleton {
+  background: linear-gradient(90deg, rgba(255,255,255,0.04) 0%, rgba(148,226,255,0.11) 45%, rgba(255,255,255,0.04) 90%);
+  background-size: 220% 100%;
+  animation: facsSkeleton 1.4s ease-in-out infinite;
+}
+@keyframes facsSkeleton {
+  from { background-position: 120% 0; }
+  to { background-position: -120% 0; }
+}
+@media (prefers-reduced-motion: reduce) {
+  .facs-skeleton { animation: none; }
+}
+
+/* CMS: font không chân cho nội dung, tiêu đề trang giữ chữ có chân của thương hiệu; số thẳng cột */
+/* ───────────── CMS quản trị: bảng màu Midnight / Electric / Sunset + chuyển động ───────────── */
+.facs-cms {
+  font-family: var(--font-cms);
+  color: var(--color-ink-1);
+  -webkit-font-smoothing: antialiased;
+  /* Toàn bộ sắc cyan cũ trong CMS chuyển sang thang Electric Blue (website công khai không bị ảnh hưởng). */
+  --color-cyan-50: #EEF3FF;
+  --color-cyan-100: #DDE6FF;
+  --color-cyan-200: #BACBFF;
+  --color-cyan-300: #8EA9FF;
+  --color-cyan-400: #5F85FF;
+  --color-cyan-500: #3A66FF;
+  --color-cyan-600: #2B53E6;
+  --color-cyan-700: #2242B8;
+  --color-cyan-800: #1D368F;
+  --color-cyan-900: #1A2F6E;
+  --color-cyan-950: #0F1A45;
+  accent-color: var(--color-electric);
+}
+.facs-cms kbd {
+  font-family: inherit;
+}
+.facs-cms h1 {
+  font-family: Cambria, Georgia, serif;
+  letter-spacing: -0.01em;
+}
+.facs-cms table,
+.facs-cms .tabular-nums {
+  font-variant-numeric: tabular-nums;
+}
+@layer base {
+  /* Vòng focus mặc định khi dùng bàn phím; ô nào tự có kiểu focus (outline-none + ring) sẽ ghi đè được. */
+  .facs-cms :focus-visible {
+    outline: 2px solid rgb(142 169 255 / 0.8);
+    outline-offset: 2px;
+  }
+}
+.facs-cms ::selection {
+  background: rgb(255 107 53 / 0.35);
+  color: #fff;
+}
+
+@layer components {
+/* Nền: Midnight Black với quầng sáng Electric Blue và chút Sunset trôi rất chậm. */
+.facs-aurora {
+  position: relative;
+  isolation: isolate;
+  background-color: var(--color-midnight);
+}
+.facs-aurora::before {
+  content: "";
+  position: fixed;
+  inset: -15%;
+  z-index: -1;
+  pointer-events: none;
+  background:
+    radial-gradient(52rem 36rem at 84% 0%, rgb(43 91 255 / 0.26), transparent 62%),
+    radial-gradient(42rem 30rem at 4% 100%, rgb(255 107 53 / 0.11), transparent 62%),
+    radial-gradient(38rem 30rem at 42% 55%, rgb(20 44 140 / 0.2), transparent 70%),
+    radial-gradient(30rem 22rem at 100% 70%, rgb(43 91 255 / 0.08), transparent 70%);
+  animation: facs-drift 38s ease-in-out infinite alternate;
+}
+@keyframes facs-drift {
+  0% { transform: translate3d(0, 0, 0) scale(1); }
+  50% { transform: translate3d(-3%, 2%, 0) scale(1.05); }
+  100% { transform: translate3d(2%, -2%, 0) scale(1.02); }
+}
+
+/* Lớp nền: lưới chấm, lưới sáng theo con trỏ, đường đồng mức trôi chậm, hạt nhiễu. */
+.facs-backdrop {
+  position: fixed;
+  inset: 0;
+  z-index: -1;
+  pointer-events: none;
+  overflow: hidden;
+  --cx: 50vw;
+  --cy: -30vh;
+  --reveal: 0;
+}
+.facs-backdrop__grid {
+  position: absolute;
+  inset: 0;
+  background-image: radial-gradient(rgb(142 169 255 / 0.16) 1px, transparent 1.3px);
+  background-size: 24px 24px;
+  -webkit-mask-image: radial-gradient(ellipse 85% 75% at 60% 0%, #000 25%, transparent 80%);
+  mask-image: radial-gradient(ellipse 85% 75% at 60% 0%, #000 25%, transparent 80%);
+}
+.facs-backdrop__grid--lit {
+  background-image: radial-gradient(rgb(142 169 255 / 0.75) 1.1px, transparent 1.5px);
+  -webkit-mask-image: radial-gradient(220px circle at var(--cx) var(--cy), #000, transparent 75%);
+  mask-image: radial-gradient(220px circle at var(--cx) var(--cy), #000, transparent 75%);
+  opacity: calc(var(--reveal) * 0.9);
+  transition: opacity 0.4s;
+}
+.facs-backdrop__waves {
+  position: absolute;
+  inset: auto 0 0 0;
+  height: 40vh;
+  min-height: 260px;
+  -webkit-mask-image: linear-gradient(180deg, transparent 0%, #000 38%);
+  mask-image: linear-gradient(180deg, transparent 0%, #000 38%);
+}
+.facs-backdrop__wave {
+  position: absolute;
+  bottom: 0;
+  left: 0;
+  width: 200%;
+  height: 100%;
+  animation: facs-wave-drift var(--dur, 80s) linear infinite;
+  animation-direction: var(--dir, normal);
+}
+@keyframes facs-wave-drift {
+  from { transform: translate3d(0, 0, 0); }
+  to { transform: translate3d(-50%, 0, 0); }
+}
+.facs-backdrop__grain {
+  position: absolute;
+  inset: 0;
+  opacity: 0.045;
+  mix-blend-mode: overlay;
+}
+
+/* Thẻ: ánh sáng theo con trỏ + viền chuyển màu Sunset → Electric khi rê chuột, hiện dần khi cuộn tới. */
+.facs-card {
+  position: relative;
+  isolation: isolate;
+  background-image: linear-gradient(180deg, rgb(142 169 255 / 0.06), transparent 38%);
+  box-shadow: 0 1px 0 rgb(255 255 255 / 0.05) inset, 0 18px 40px -28px rgb(0 0 0 / 0.9);
+  transition:
+    border-color 0.35s,
+    box-shadow 0.4s,
+    opacity 0.65s cubic-bezier(0.2, 0.8, 0.2, 1),
+    translate 0.5s cubic-bezier(0.2, 0.8, 0.2, 1),
+    scale 0.45s cubic-bezier(0.2, 0.8, 0.2, 1),
+    transform 0.45s cubic-bezier(0.2, 0.8, 0.2, 1);
+}
+.facs-reveal .facs-card:not(.is-in) {
+  opacity: 0;
+  translate: 0 26px;
+  scale: 0.97;
+}
+.facs-card::before,
+.facs-card::after {
+  content: "";
+  position: absolute;
+  inset: 0;
+  border-radius: inherit;
+  pointer-events: none;
+  opacity: 0;
+  transition: opacity 0.35s;
+}
+.facs-card::before {
+  z-index: -1;
+  background: radial-gradient(460px circle at var(--mx, 50%) var(--my, 0%), rgb(43 91 255 / 0.16), transparent 65%);
+}
+.facs-card::after {
+  padding: 1px;
+  background: radial-gradient(300px circle at var(--mx, 50%) var(--my, 0%), rgb(255 107 53 / 0.85), rgb(43 91 255 / 0.5) 45%, transparent 75%);
+  -webkit-mask: linear-gradient(#000 0 0) content-box, linear-gradient(#000 0 0);
+  -webkit-mask-composite: xor;
+  mask: linear-gradient(#000 0 0) content-box exclude, linear-gradient(#000 0 0);
+}
+.facs-card:hover::before,
+.facs-card:hover::after {
+  opacity: 1;
+}
+/* Thẻ lớn (khu vực nhập liệu): nổi lên nhẹ, không phóng to để chữ và ô nhập không bị nhoè. */
+.facs-card.is-in:hover:not(:has(.fixed)) {
+  translate: 0 -3px;
+  box-shadow: 0 1px 0 rgb(255 255 255 / 0.06) inset, 0 30px 60px -30px rgb(43 91 255 / 0.55), 0 0 0 1px rgb(142 169 255 / 0.08);
+}
+/* Thẻ nhỏ trong danh sách: phóng to, nghiêng 3D theo con trỏ, bóng đổ sâu hơn. */
+.facs-tile {
+  transform-style: preserve-3d;
+  will-change: transform;
+}
+.facs-tile.is-in:not([open]):not(:has(.fixed)):hover,
+.facs-cms .facs-tile:not(.facs-card):not([open]):not(:has(.fixed)):hover {
+  z-index: 2;
+  translate: 0 -4px;
+  scale: 1.035;
+  transform: perspective(900px) rotateX(var(--rx, 0deg)) rotateY(var(--ry, 0deg));
+  box-shadow: 0 1px 0 rgb(255 255 255 / 0.07) inset, 0 34px 70px -28px rgb(0 0 0 / 0.95), 0 18px 50px -24px rgb(43 91 255 / 0.6);
+}
+.facs-tile:hover :is(svg, img) {
+  transition: scale 0.35s cubic-bezier(0.3, 1.5, 0.5, 1);
+}
+.facs-tile:hover > :first-child svg:first-child {
+  scale: 1.12;
+}
+/* Dòng danh sách (bài viết, tuyển dụng…): nhô lên khỏi danh sách khi rê. */
+.facs-row {
+  position: relative;
+  border-radius: 16px;
+  transition: background-color 0.25s, box-shadow 0.3s, scale 0.35s cubic-bezier(0.2, 0.8, 0.2, 1);
+}
+.facs-row:not(:has(.fixed)):hover {
+  z-index: 2;
+  scale: 1.012;
+  background-color: rgb(19 34 84 / 0.95) !important;
+  box-shadow: inset 3px 0 0 var(--color-sunset), 0 24px 50px -24px rgb(0 0 0 / 0.95), 0 0 0 1px rgb(142 169 255 / 0.14);
+}
+/* Gợn sóng khi bấm nút. */
+.facs-ripple-host {
+  position: relative;
+  overflow: hidden;
+}
+.facs-ripple {
+  position: absolute;
+  border-radius: 999px;
+  pointer-events: none;
+  background: currentColor;
+  opacity: 0.28;
+  translate: -50% -50%;
+  scale: 0;
+  animation: facs-ripple 0.6s cubic-bezier(0.2, 0.8, 0.2, 1) forwards;
+}
+@keyframes facs-ripple {
+  to { scale: 1; opacity: 0; }
+}
+/* Tiêu đề trang trượt nhẹ vào. */
+.facs-cms h1 {
+  animation: facs-title 0.7s cubic-bezier(0.2, 0.8, 0.2, 1) backwards;
+}
+@keyframes facs-title {
+  from { opacity: 0; translate: 0 10px; letter-spacing: 0.01em; }
+}
+/* Màn hình cảm ứng: không giữ trạng thái phóng to/nổi sau khi chạm. */
+@media (hover: none) {
+  .facs-card.is-in:hover:not(:has(.fixed)),
+  .facs-tile.is-in:not([open]):not(:has(.fixed)):hover,
+  .facs-cms .facs-tile:not(.facs-card):not([open]):not(:has(.fixed)):hover,
+  .facs-row:not(:has(.fixed)):hover {
+    translate: none;
+    scale: none;
+    transform: none;
+  }
+  .facs-card:hover::before,
+  .facs-card:hover::after {
+    opacity: 0;
+  }
+}
+}
+
+/* Nút chính Sunset: chữ tối cho đủ tương phản, ánh sáng lướt qua, nổi lên khi rê, nhún khi bấm. */
+.facs-cms :is(button, a).bg-brand:not(:disabled) {
+  position: relative;
+  overflow: hidden;
+  isolation: isolate;
+  color: #160800;
+  box-shadow: 0 8px 22px -10px rgb(255 107 53 / 0.75);
+  transition: background-color 0.2s, box-shadow 0.25s, translate 0.2s, scale 0.12s;
+}
+.facs-cms :is(button, a).bg-brand:not(:disabled)::after {
+  content: "";
+  position: absolute;
+  inset: 0;
+  z-index: -1;
+  pointer-events: none;
+  background: linear-gradient(110deg, transparent 30%, rgb(255 255 255 / 0.5) 50%, transparent 70%);
+  translate: -120% 0;
+  transition: translate 0.7s ease;
+}
+.facs-cms :is(button, a).bg-brand:not(:disabled):hover {
+  translate: 0 -1px;
+  box-shadow: 0 14px 30px -10px rgb(255 107 53 / 0.85);
+}
+.facs-cms :is(button, a).bg-brand:not(:disabled):hover::after {
+  translate: 120% 0;
+}
+.facs-cms :is(button, a).bg-brand:not(:disabled):active {
+  translate: 0 0;
+  scale: 0.97;
+}
+
+/* Ô chọn, nút radio, danh sách thả xuống, chọn tệp: đồng bộ tông tối thay cho kiểu trắng mặc định. */
+.facs-cms {
+  color-scheme: dark;
+}
+.facs-cms input[type="checkbox"],
+.facs-cms input[type="radio"] {
+  appearance: none;
+  -webkit-appearance: none;
+  display: inline-grid;
+  place-content: center;
+  flex-shrink: 0;
+  width: 18px;
+  height: 18px;
+  margin: 0;
+  border: 1.5px solid rgb(142 169 255 / 0.45);
+  border-radius: 6px;
+  background-color: var(--color-cms-2);
+  cursor: pointer;
+  transition: background-color 0.15s, border-color 0.15s, box-shadow 0.15s;
+}
+.facs-cms input[type="radio"] {
+  border-radius: 999px;
+}
+.facs-cms input[type="checkbox"]::before,
+.facs-cms input[type="radio"]::before {
+  content: "";
+  width: 10px;
+  height: 10px;
+  scale: 0;
+  background: #fff;
+  transition: scale 0.18s cubic-bezier(0.3, 1.6, 0.5, 1);
+}
+.facs-cms input[type="checkbox"]::before {
+  clip-path: polygon(14% 44%, 0 65%, 50% 100%, 100% 16%, 80% 0%, 43% 62%);
+}
+.facs-cms input[type="checkbox"]:indeterminate::before {
+  clip-path: inset(40% 5% 40% 5%);
+}
+.facs-cms input[type="radio"]::before {
+  width: 8px;
+  height: 8px;
+  border-radius: 999px;
+}
+.facs-cms input[type="checkbox"]:hover:not(:disabled),
+.facs-cms input[type="radio"]:hover:not(:disabled) {
+  border-color: rgb(142 169 255 / 0.85);
+  box-shadow: 0 0 0 4px rgb(43 91 255 / 0.14);
+}
+.facs-cms input[type="checkbox"]:is(:checked, :indeterminate),
+.facs-cms input[type="radio"]:checked {
+  border-color: var(--color-electric);
+  background-color: var(--color-electric);
+}
+.facs-cms input[type="checkbox"]:is(:checked, :indeterminate)::before,
+.facs-cms input[type="radio"]:checked::before {
+  scale: 1;
+}
+.facs-cms input[type="checkbox"]:disabled,
+.facs-cms input[type="radio"]:disabled {
+  cursor: not-allowed;
+  opacity: 0.45;
+}
+.facs-cms select {
+  appearance: none;
+  -webkit-appearance: none;
+  padding-right: 2.25rem;
+  background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='16' height='16' viewBox='0 0 24 24' fill='none' stroke='%238EA9FF' stroke-width='2' stroke-linecap='round' stroke-linejoin='round'%3E%3Cpath d='m6 9 6 6 6-6'/%3E%3C/svg%3E");
+  background-repeat: no-repeat;
+  background-position: right 0.75rem center;
+  background-size: 16px;
+  cursor: pointer;
+}
+.facs-cms select[multiple] {
+  background-image: none;
+  padding-right: 0.75rem;
+}
+.facs-cms option {
+  background-color: var(--color-cms-2);
+  color: var(--color-ink-1);
+}
+.facs-cms input[type="file"]::file-selector-button {
+  margin-right: 0.75rem;
+  border: 1px solid rgb(142 169 255 / 0.3);
+  border-radius: 0.6rem;
+  background: var(--color-cms-3);
+  color: var(--color-ink-1);
+  padding: 0.4rem 0.8rem;
+  font: inherit;
+  font-weight: 600;
+  cursor: pointer;
+  transition: border-color 0.2s;
+}
+.facs-cms input[type="file"]::file-selector-button:hover {
+  border-color: rgb(142 169 255 / 0.7);
+}
+
+/* Trình duyệt tự điền (email, mật khẩu): không hiện hộp nền sáng bên trong ô nhập. */
+.facs-cms input:-webkit-autofill,
+.facs-cms input:-webkit-autofill:hover,
+.facs-cms input:-webkit-autofill:focus,
+.facs-cms input:autofill {
+  -webkit-text-fill-color: var(--color-ink-1);
+  caret-color: var(--color-ink-1);
+  -webkit-background-clip: text;
+  background-clip: text;
+  transition: background-color 600000s 0s, color 600000s 0s;
+}
+
+/* Bảng rộng: cuộn ngang trên màn hình nhỏ thay vì bị cắt. */
+.facs-cms :has(> table) {
+  overflow-x: auto;
+  -webkit-overflow-scrolling: touch;
+}
+
+/* Bảng: dòng sáng nhẹ khi rê chuột, có vạch Sunset ở cạnh trái. */
+.facs-cms tbody tr {
+  transition: background-color 0.2s, box-shadow 0.2s;
+}
+.facs-cms tbody tr:hover {
+  background-color: rgb(43 91 255 / 0.07);
+  box-shadow: inset 3px 0 0 var(--color-sunset);
+}
+
+/* Biểu tượng trong nút/liên kết nhích nhẹ khi rê. */
+.facs-cms :is(button, a):not(:disabled):hover > svg:first-child {
+  transition: translate 0.25s cubic-bezier(0.2, 0.8, 0.2, 1);
+  translate: 0 -1px;
+}
+
+/* Thanh cuộn mảnh trong các khung cuộn của CMS. */
+.facs-cms * {
+  scrollbar-width: thin;
+  scrollbar-color: rgb(142 169 255 / 0.25) transparent;
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .facs-aurora::before,
+  .facs-backdrop__wave,
+  .facs-cms h1 { animation: none; }
+  .facs-reveal .facs-card:not(.is-in) { opacity: 1; translate: none; scale: none; }
+  .facs-card.is-in:hover,
+  .facs-row:hover { translate: none; scale: none; }
+  .facs-tile.is-in:not([open]):hover,
+  .facs-cms .facs-tile:not(.facs-card):not([open]):hover { translate: none; scale: none; transform: none; }
+  .facs-ripple { display: none; }
+  .facs-tile:hover,
+  .facs-cms :is(button, a).bg-brand:not(:disabled):hover { translate: none; }
+  .facs-cms :is(button, a).bg-brand:not(:disabled)::after { display: none; }
+}

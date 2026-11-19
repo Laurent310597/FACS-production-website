@@ -18,6 +18,8 @@ import {
 
 type AdminClient = ReturnType<typeof createClient<any>>;
 const SEND_GAP_MS = 2100; // Exchange Online: tối đa ~30 email/phút mỗi hộp thư
+// Bản gửi thử luôn đi tới hộp thư nội bộ cố định (không gửi ra email cá nhân bên ngoài).
+const TEST_RECIPIENT = (Deno.env.get("AR_TEST_RECIPIENT") || "tunguyen@facs.vn").trim().toLowerCase();
 
 function json(body: unknown, status = 200) {
   return new Response(JSON.stringify(body), { status, headers: { ...corsHeaders, "Content-Type": "application/json; charset=utf-8" } });
@@ -42,6 +44,73 @@ async function loadSettings(admin: AdminClient): Promise<{ settings: ArSettings;
 
 const sleep = (ms: number) => new Promise((r) => setTimeout(r, ms));
 
+// Hộp thư trung gian khi Microsoft 365 chưa cho ứng dụng gửi trực tiếp từ accounting@ (lỗi 403).
+// Hộp thư này phải có quyền "Send as" trên accounting@facs.vn (cấp trong Exchange admin center → accounting → Delegation).
+const RELAY_MAILBOX = (Deno.env.get("AR_RELAY_MAILBOX") || "infor@facs.vn").trim().toLowerCase();
+
+type Addr = { mail_address: string; name?: string };
+const graphAddr = (a: Addr) => ({ emailAddress: { address: a.mail_address, name: a.name || undefined } });
+
+/** Gửi qua hộp thư `mailbox` nhưng người gửi hiển thị là accounting@ (cần quyền Send As). */
+async function sendViaRelay(params: { accessToken: string; mailbox: string; subject: string; bodyHtml: string; to: Addr[]; cc: Addr[]; dedupeKey: string }) {
+  const requestId = crypto.randomUUID();
+  const message = {
+    subject: params.subject,
+    body: { contentType: "HTML", content: params.bodyHtml },
+    from: graphAddr({ mail_address: AR_SENDER, name: AR_SENDER_NAME }),
+    sender: graphAddr({ mail_address: AR_SENDER, name: AR_SENDER_NAME }),
+    toRecipients: params.to.map(graphAddr),
+    ccRecipients: params.cc.map(graphAddr),
+    // Bản lưu: gửi ẩn một bản về chính accounting@ để phòng kế toán có lịch sử trong hộp thư của mình.
+    bccRecipients: [graphAddr({ mail_address: AR_SENDER, name: AR_SENDER_NAME })],
+    replyTo: [graphAddr({ mail_address: AR_SENDER, name: AR_SENDER_NAME })],
+    internetMessageHeaders: [
+      { name: "X-FACS-Dedupe-Key", value: params.dedupeKey },
+      { name: "X-FACS-Request-Id", value: requestId },
+    ],
+  };
+  const response = await fetch(`https://graph.microsoft.com/v1.0/users/${encodeURIComponent(params.mailbox)}/sendMail`, {
+    method: "POST",
+    headers: { Authorization: `Bearer ${params.accessToken}`, "Content-Type": "application/json; charset=utf-8", "client-request-id": requestId },
+    body: JSON.stringify({ message, saveToSentItems: true }),
+  });
+  if (!response.ok) {
+    const payload = await response.json().catch(() => ({}));
+    const code = payload?.error?.code || "";
+    const detail = payload?.error?.message || response.statusText;
+    if (response.status === 403 || /SendAs/i.test(code)) {
+      throw new Error(`Microsoft 365 chưa cho phép ${params.mailbox} gửi thay accounting@facs.vn. Vào Exchange admin center → Mailboxes → Internal Accounting - FACS → Delegation → Send as, thêm ${params.mailbox}, rồi đợi khoảng 1 giờ. (Chi tiết: ${response.status} ${code} ${detail})`);
+    }
+    throw new Error(`Microsoft Graph Mail.Send failed (${response.status}): ${detail}`);
+  }
+  return { message_id: requestId };
+}
+
+/** Thử gửi thẳng từ accounting@; nếu bị chặn quyền (403) thì gửi qua hộp thư trung gian. Lỗi 403 nghĩa là chưa có email nào đi ra, nên thử lại không gây gửi trùng. */
+async function sendArMail(params: { accessToken: string; subject: string; bodyHtml: string; to: Addr[]; cc: Addr[]; dedupeKey: string }) {
+  try {
+    const result = await sendMicrosoftMail({
+      accessToken: params.accessToken,
+      senderEmail: AR_SENDER,
+      senderName: AR_SENDER_NAME,
+      subject: params.subject,
+      bodyHtml: params.bodyHtml,
+      to: params.to,
+      cc: params.cc,
+      replyTo: [{ mail_address: AR_SENDER }],
+      dedupeKey: params.dedupeKey,
+    });
+    return { ...result, route: "direct" as const };
+  } catch (error) {
+    const message = error instanceof Error ? error.message : String(error);
+    if (!/Mail\.Send failed \(403\)/.test(message) || !RELAY_MAILBOX || RELAY_MAILBOX === AR_SENDER) throw error;
+    const result = await sendViaRelay({ ...params, mailbox: RELAY_MAILBOX });
+    return { ...result, route: "relay" as const };
+  }
+}
+
+const routeText = (route: "direct" | "relay") => (route === "direct" ? "gửi trực tiếp từ accounting@facs.vn" : `gửi qua ${RELAY_MAILBOX} với tên người gửi accounting@facs.vn`);
+
 Deno.serve(async (req) => {
   if (req.method === "OPTIONS") return new Response("ok", { headers: corsHeaders });
   if (req.method !== "POST") return json({ error: "Method not allowed" }, 405);
@@ -58,7 +127,7 @@ Deno.serve(async (req) => {
 
     if (action === "status") {
       const { settings } = await loadSettings(admin);
-      return json({ ...getMicrosoftMailStatus(), sender: AR_SENDER, bank_ready: !bankMissing(settings), user_email: user.email || null });
+      return json({ ...getMicrosoftMailStatus(), sender: AR_SENDER, relay_mailbox: RELAY_MAILBOX, test_recipient: TEST_RECIPIENT, bank_ready: !bankMissing(settings), user_email: user.email || null });
     }
 
     if (action === "get_settings") {
@@ -126,9 +195,8 @@ Deno.serve(async (req) => {
     }
 
     if (action === "test") {
-      // Bản thử chỉ gửi tới email của chính người đang đăng nhập.
+      // Bản thử luôn gửi tới hộp thư nội bộ cố định (mặc định tunguyen@facs.vn), không theo email đăng nhập CMS.
       if (!getMicrosoftMailStatus().connected) return json({ error: "Chưa cấu hình Microsoft 365 trên Supabase." }, 400);
-      if (!user.email) return json({ error: "Tài khoản quản trị không có email." }, 400);
       const { settings } = await loadSettings(admin);
       let reminder: ArReminder = SAMPLE_REMINDER;
       if (body.id) {
@@ -137,17 +205,15 @@ Deno.serve(async (req) => {
       }
       const mail = buildArReminderEmail(reminder, settings, siteUrl);
       const token = await getMicrosoftGraphToken();
-      await sendMicrosoftMail({
+      const sent = await sendArMail({
         accessToken: token,
-        senderEmail: AR_SENDER,
-        senderName: AR_SENDER_NAME,
         subject: `[THỬ] ${mail.subject}`,
         bodyHtml: mail.html,
-        to: [{ mail_address: user.email }],
-        replyTo: [{ mail_address: AR_SENDER }],
+        to: [{ mail_address: TEST_RECIPIENT }],
+        cc: [],
         dedupeKey: `facs-ar-test-${crypto.randomUUID()}`,
       });
-      return json({ sent_to: user.email });
+      return json({ sent_to: TEST_RECIPIENT, route: sent.route, route_text: routeText(sent.route) });
     }
 
     if (action === "send") {
@@ -162,22 +228,19 @@ Deno.serve(async (req) => {
       if (claimError) throw new Error(claimError.message);
       const rows = (claimed || []) as (ArReminder & { id: string })[];
       const token = rows.length ? await getMicrosoftGraphToken() : "";
-      const results: { id: string; status: "sent" | "failed"; error?: string }[] = [];
+      const results: { id: string; status: "sent" | "failed"; route?: "direct" | "relay"; error?: string }[] = [];
 
       for (let i = 0; i < rows.length; i++) {
         const row = rows[i];
         if (i > 0) await sleep(SEND_GAP_MS);
         try {
           const mail = buildArReminderEmail(row, settings, siteUrl);
-          const result = await sendMicrosoftMail({
+          const result = await sendArMail({
             accessToken: token,
-            senderEmail: AR_SENDER,
-            senderName: AR_SENDER_NAME,
             subject: mail.subject,
             bodyHtml: mail.html,
             to: row.recipient_emails.map((e) => ({ mail_address: e, name: row.recipient_name })),
             cc: (row.cc_emails || []).map((e) => ({ mail_address: e })),
-            replyTo: [{ mail_address: AR_SENDER }],
             dedupeKey: `facs-ar-${row.id}-${Date.now()}`,
           });
           await admin.from("ar_reminders").update({
@@ -187,7 +250,7 @@ Deno.serve(async (req) => {
             message_id: result.message_id,
             last_error: null,
           }).eq("id", row.id);
-          results.push({ id: row.id, status: "sent" });
+          results.push({ id: row.id, status: "sent", route: result.route });
         } catch (sendError) {
           const message = (sendError instanceof Error ? sendError.message : String(sendError)).slice(0, 2000);
           await admin.from("ar_reminders").update({ status: "failed", last_error: message }).eq("id", row.id);
@@ -195,7 +258,7 @@ Deno.serve(async (req) => {
         }
       }
       const skipped = ids.filter((id: string) => !rows.some((r) => r.id === id));
-      return json({ results, skipped });
+      return json({ results, skipped, relay_mailbox: RELAY_MAILBOX });
     }
 
     return json({ error: "Hành động không hợp lệ." }, 400);

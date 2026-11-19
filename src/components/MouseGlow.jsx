@@ -1,7 +1,10 @@
 import { useEffect, useState } from "react";
 import { motion, useMotionValue, useSpring } from "framer-motion";
+import { useLocation } from "react-router-dom";
 
 export default function MouseGlow() {
+  // Không hiện vệt sáng theo chuột trong CMS quản trị (gây phân tâm khi làm việc với bảng biểu).
+  const isAdmin = useLocation().pathname.startsWith("/admin");
   const [visible, setVisible] = useState(false);
   const x = useMotionValue(-200);
   const y = useMotionValue(-200);
@@ -24,6 +27,7 @@ export default function MouseGlow() {
     };
   }, [x, y]);
 
+  if (isAdmin) return null;
   return (
     <motion.div
       aria-hidden="true"

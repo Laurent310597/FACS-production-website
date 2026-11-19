@@ -13,6 +13,7 @@ import {
 } from "lucide-react";
 import { Link } from "react-router-dom";
 import AdminLayout from "../../components/admin/AdminLayout";
+import CountUp from "../../components/admin/ui/CountUp";
 import { formatLegalDate, getCategory, legalCalendarCategories } from "../../lib/legalCalendar";
 import { supabase } from "../../lib/supabaseClient";
 
@@ -40,10 +41,10 @@ function StatCard({ icon: Icon, label, value, note, tone = "cyan" }) {
     red: "border-red-300/15 bg-red-300/[0.055] text-red-300",
   };
   return (
-    <div className={`rounded-[24px] border p-5 ${tones[tone]}`}>
-      <div className="flex items-start justify-between gap-4"><Icon size={21} /><span className="text-3xl font-black text-white">{value}</span></div>
-      <div className="mt-5 text-sm font-semibold text-slate-200">{label}</div>
-      <div className="mt-1 text-xs leading-relaxed text-slate-500">{note}</div>
+    <div className={`facs-card facs-tile rounded-[20px] border p-5 ${tones[tone]}`}>
+      <div className="flex items-start justify-between gap-4"><Icon size={21} /><CountUp value={value} className="text-3xl font-black text-white" /></div>
+      <div className="mt-5 text-sm font-semibold text-ink-1">{label}</div>
+      <div className="mt-1 text-xs leading-relaxed text-ink-3">{note}</div>
     </div>
   );
 }
@@ -114,18 +115,18 @@ export default function AdminLegalDashboardPage() {
     <AdminLayout>
       <div className="flex flex-col gap-5 xl:flex-row xl:items-end xl:justify-between">
         <div>
-          <div className="text-xs font-bold uppercase tracking-[0.18em] text-cyan-300/80">Legal Calendar CMS</div>
+          <div className="text-xs font-bold uppercase tracking-[0.18em] text-sunset">Legal Calendar CMS</div>
           <h1 className="mt-3 text-3xl font-bold md:text-4xl">Dashboard vận hành</h1>
-          <p className="mt-2 max-w-3xl text-sm leading-relaxed text-slate-400">Theo dõi tiến độ rà soát, chất lượng dữ liệu và các mốc cần ưu tiên xử lý.</p>
+          <p className="mt-2 max-w-3xl text-sm leading-relaxed text-ink-2">Theo dõi tiến độ rà soát, chất lượng dữ liệu và các mốc cần ưu tiên xử lý.</p>
         </div>
         <div className="flex flex-wrap gap-3">
-          <button type="button" onClick={load} disabled={loading} className="inline-flex items-center gap-2 rounded-2xl border border-white/10 px-5 py-3 font-semibold text-slate-200 transition hover:border-cyan-200/30 disabled:opacity-50"><RefreshCw size={17} className={loading ? "animate-spin" : ""} /> Làm mới</button>
-          <Link to="/admin/legal-calendar" className="inline-flex items-center gap-2 rounded-2xl bg-cyan-300 px-5 py-3 font-bold text-[#071421] transition hover:bg-cyan-200">Quản lý mốc <ArrowRight size={17} /></Link>
+          <button type="button" onClick={load} disabled={loading} className="inline-flex items-center gap-2 rounded-2xl border border-white/10 px-5 py-3 font-semibold text-ink-1 transition hover:border-cyan-200/30 disabled:opacity-50"><RefreshCw size={17} className={loading ? "animate-spin" : ""} /> Làm mới</button>
+          <Link to="/admin/legal-calendar" className="inline-flex items-center gap-2 rounded-2xl bg-brand px-5 py-3 font-bold text-white transition hover:bg-brand-hover">Quản lý mốc <ArrowRight size={17} /></Link>
         </div>
       </div>
 
       {error && <div className="mt-6 rounded-2xl border border-red-300/20 bg-red-400/8 px-5 py-4 text-sm text-red-200">{error}</div>}
-      {loading ? <div className="mt-7 flex items-center justify-center gap-3 rounded-[28px] border border-white/10 bg-white/[0.035] px-6 py-24 text-slate-500"><Loader2 className="animate-spin" size={20} /> Đang tổng hợp dữ liệu...</div> : (
+      {loading ? <div className="mt-7 flex items-center justify-center gap-3 facs-card rounded-[20px] border border-cyan-300/[0.14] bg-cms-1 px-6 py-24 text-ink-3"><Loader2 className="animate-spin" size={20} /> Đang tổng hợp dữ liệu...</div> : (
         <>
           <div className="mt-7 grid gap-4 sm:grid-cols-2 xl:grid-cols-4">
             <StatCard icon={CheckCircle2} label="Đang công khai" value={metrics.published.length} note={`${events.length} mốc đang được quản lý`} tone="emerald" />
@@ -142,36 +143,36 @@ export default function AdminLegalDashboardPage() {
           </div>
 
           <div className="mt-7 grid gap-6 xl:grid-cols-[1.1fr_0.9fr]">
-            <section className="rounded-[28px] border border-white/10 bg-white/[0.035] p-5 md:p-6">
-              <div className="flex items-center justify-between gap-4"><div><h2 className="text-xl font-bold">Theo lĩnh vực</h2><p className="mt-1 text-sm text-slate-500">Tổng số mốc và số chưa xác minh</p></div><Link to="/admin/legal-calendar" className="text-sm font-semibold text-cyan-300 hover:text-cyan-200">Mở danh sách</Link></div>
+            <section className="facs-card rounded-[20px] border border-cyan-300/[0.14] bg-cms-1 p-5 md:p-6">
+              <div className="flex items-center justify-between gap-4"><div><h2 className="text-xl font-bold">Theo lĩnh vực</h2><p className="mt-1 text-sm text-ink-3">Tổng số mốc và số chưa xác minh</p></div><Link to="/admin/legal-calendar" className="text-sm font-semibold text-cyan-300 hover:text-cyan-200">Mở danh sách</Link></div>
               <div className="mt-6 space-y-4">
                 {byCategory.map((item) => <div key={item.value}>
-                  <div className="mb-2 flex items-center justify-between gap-4 text-sm"><span className="font-semibold text-slate-200">{item.vi}</span><span className="text-slate-500"><strong className="text-white">{item.total}</strong>{item.pending ? ` · ${item.pending} chờ duyệt` : ""}</span></div>
+                  <div className="mb-2 flex items-center justify-between gap-4 text-sm"><span className="font-semibold text-ink-1">{item.vi}</span><span className="text-ink-3"><strong className="text-white">{item.total}</strong>{item.pending ? ` · ${item.pending} chờ duyệt` : ""}</span></div>
                   <div className="h-2 overflow-hidden rounded-full bg-white/[0.06]"><div className="h-full rounded-full" style={{ width: `${(item.total / maxCategory) * 100}%`, backgroundColor: item.color }} /></div>
                 </div>)}
               </div>
             </section>
 
-            <section className="rounded-[28px] border border-white/10 bg-white/[0.035] p-5 md:p-6">
+            <section className="facs-card rounded-[20px] border border-cyan-300/[0.14] bg-cms-1 p-5 md:p-6">
               <h2 className="text-xl font-bold">Phân bổ theo tháng {dashboardYear}</h2>
-              <p className="mt-1 text-sm text-slate-500">Nhận diện tháng cao điểm để bố trí nguồn lực</p>
+              <p className="mt-1 text-sm text-ink-3">Nhận diện tháng cao điểm để bố trí nguồn lực</p>
               <div className="mt-7 flex h-56 items-end gap-2 sm:gap-3">
                 {byMonth.map((item) => <div key={item.month} className="flex h-full min-w-0 flex-1 flex-col justify-end text-center">
-                  <span className="mb-2 text-xs font-bold text-slate-300">{item.total || ""}</span>
+                  <span className="mb-2 text-xs font-bold text-ink-2">{item.total || ""}</span>
                   <div className="min-h-1 rounded-t-lg bg-gradient-to-t from-cyan-500/60 to-cyan-200" style={{ height: `${Math.max(3, (item.total / maxMonth) * 82)}%` }} title={`Tháng ${item.month}: ${item.total} mốc`} />
-                  <span className="mt-2 text-[10px] text-slate-500">T{item.month}</span>
+                  <span className="mt-2 text-[10px] text-ink-3">T{item.month}</span>
                 </div>)}
               </div>
             </section>
           </div>
 
-          <section className="mt-6 rounded-[28px] border border-white/10 bg-white/[0.035] p-5 md:p-6">
-            <div className="flex flex-col gap-3 sm:flex-row sm:items-end sm:justify-between"><div><h2 className="text-xl font-bold">Danh sách cần ưu tiên</h2><p className="mt-1 text-sm text-slate-500">Mốc sắp đến hạn hoặc chưa được rà soát, xếp theo ngày gần nhất</p></div><span className="text-xs text-slate-600">Tối đa 8 mốc</span></div>
+          <section className="mt-6 facs-card rounded-[20px] border border-cyan-300/[0.14] bg-cms-1 p-5 md:p-6">
+            <div className="flex flex-col gap-3 sm:flex-row sm:items-end sm:justify-between"><div><h2 className="text-xl font-bold">Danh sách cần ưu tiên</h2><p className="mt-1 text-sm text-ink-3">Mốc sắp đến hạn hoặc chưa được rà soát, xếp theo ngày gần nhất</p></div><span className="text-xs text-ink-3">Tối đa 8 mốc</span></div>
             {attention.length === 0 ? <div className="mt-6 rounded-2xl border border-emerald-300/10 bg-emerald-300/[0.04] px-5 py-8 text-center text-sm text-emerald-200">Không có mốc cần ưu tiên trong phạm vi hiện tại.</div> : <div className="mt-5 divide-y divide-white/8">
               {attention.map((item) => { const itemCategory = getCategory(item.category); return <div key={item.id} className="flex flex-col gap-3 py-4 md:flex-row md:items-center">
                 <div className="w-28 shrink-0 text-sm font-bold text-cyan-200">{formatLegalDate(item.event_date, "vi")}</div>
-                <div className="min-w-0 flex-1"><div className="font-semibold text-slate-100">{item.title_vi || item.title_en}</div><div className="mt-1 flex flex-wrap gap-2 text-xs text-slate-500"><span style={{ color: itemCategory.color }}>{itemCategory.vi}</span><span>·</span><span>{item.verification_status === "verified" ? "Đã xác minh" : "Chưa xác minh"}</span><span>·</span><span>{item.status === "published" ? "Đang công khai" : item.status === "archived" ? "Đang ẩn" : "Bản nháp"}</span></div></div>
-                <Link to={`/admin/legal-calendar/${item.id}/edit`} className="inline-flex items-center gap-2 self-start rounded-xl border border-white/10 px-3 py-2 text-xs font-semibold text-slate-300 hover:border-cyan-200/30 hover:text-cyan-200">Kiểm tra <ArrowRight size={14} /></Link>
+                <div className="min-w-0 flex-1"><div className="font-semibold text-ink-1">{item.title_vi || item.title_en}</div><div className="mt-1 flex flex-wrap gap-2 text-xs text-ink-3"><span style={{ color: itemCategory.color }}>{itemCategory.vi}</span><span>·</span><span>{item.verification_status === "verified" ? "Đã xác minh" : "Chưa xác minh"}</span><span>·</span><span>{item.status === "published" ? "Đang công khai" : item.status === "archived" ? "Đang ẩn" : "Bản nháp"}</span></div></div>
+                <Link to={`/admin/legal-calendar/${item.id}/edit`} className="inline-flex items-center gap-2 self-start rounded-xl border border-white/10 px-3 py-2 text-xs font-semibold text-ink-2 hover:border-cyan-200/30 hover:text-cyan-200">Kiểm tra <ArrowRight size={14} /></Link>
               </div>; })}
             </div>}
           </section>

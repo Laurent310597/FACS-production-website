@@ -1,6 +1,7 @@
 import { useEffect, useRef, useState } from "react";
 import { Link } from "react-router-dom";
-import { CalendarClock, CheckCircle2, ImagePlus, Loader2, Save, Send, X } from "lucide-react";
+import { CalendarClock, ImagePlus, Loader2, Save, Send, X } from "lucide-react";
+import { useToastSetter } from "./ui/toastContext";
 import {
   captionLimits,
   defaultScheduleValue,
@@ -15,11 +16,12 @@ import {
   saveSocialPost,
   uploadSocialJpeg,
 } from "../../lib/hubSocial";
+import * as ui from "./ui/styles";
 
-const inputClass = "w-full rounded-2xl border border-white/10 bg-[#0d1726]/70 px-4 py-3 text-sm text-white outline-none transition placeholder:text-slate-600 focus:border-cyan-300/50";
-const labelClass = "mb-2 block text-sm font-semibold text-slate-200";
-const ghostButton = "inline-flex items-center gap-2 rounded-xl border border-white/10 px-4 py-2 text-sm text-slate-200 transition hover:border-cyan-200/30 hover:text-white disabled:opacity-50";
-const primaryButton = "inline-flex items-center gap-2 rounded-xl bg-cyan-300 px-5 py-2.5 text-sm font-bold text-[#071421] transition hover:bg-cyan-200 disabled:cursor-not-allowed disabled:opacity-50";
+const inputClass = ui.input;
+const labelClass = ui.label;
+const ghostButton = ui.btnSecondary;
+const primaryButton = ui.btnPrimary;
 
 // Ảnh tự tải lên được nhớ theo bộ nội dung để dùng chung giữa các tab Facebook / LinkedIn / Instagram.
 const uploadedByItem = new Map();
@@ -45,7 +47,7 @@ export default function HubSchedulePanel({ channel, caption, infographic, itemId
   const [busy, setBusy] = useState("");
   const [confirmNow, setConfirmNow] = useState(false);
   const [error, setError] = useState("");
-  const [notice, setNotice] = useState("");
+  const setNotice = useToastSetter("success");
   const [loaded, setLoaded] = useState(false);
   const imageCache = useRef({ key: "", path: "" });
 
@@ -151,14 +153,14 @@ export default function HubSchedulePanel({ channel, caption, infographic, itemId
     }
   };
 
-  if (!loaded) return <div className="mt-6 text-sm text-slate-500"><Loader2 size={14} className="mr-2 inline animate-spin" />Đang tải…</div>;
+  if (!loaded) return <div className="mt-6 text-sm text-ink-3"><Loader2 size={14} className="mr-2 inline animate-spin" />Đang tải…</div>;
 
   return (
-    <div className="mt-6 rounded-2xl border border-white/10 bg-[#0d1726]/40 p-5">
-      <div className="flex items-center gap-2 font-serif text-lg font-bold text-white"><CalendarClock size={18} className="text-cyan-300" /> Đăng lên {platformName[channel]}</div>
+    <div className="mt-6 rounded-2xl bg-white/[0.03] p-5 ring-1 ring-inset ring-white/[0.05]">
+      <div className="flex items-center gap-2 text-lg font-semibold text-ink-1"><CalendarClock size={18} className="text-cyan-300" /> Đăng lên {platformName[channel]}</div>
 
       {!accounts.length ? (
-        <p className="mt-3 text-sm text-slate-400">
+        <p className="mt-3 text-sm text-ink-2">
           Chưa có tài khoản {platformName[channel]} nào được kết nối. <Link to="/admin/hub/social" className="font-semibold text-cyan-300 underline">Kết nối tại trang Đăng & lịch đăng</Link>.
         </p>
       ) : (
@@ -174,26 +176,26 @@ export default function HubSchedulePanel({ channel, caption, infographic, itemId
             <span className={labelClass}>Nội dung sẽ đăng</span>
             <textarea value={text} onChange={(e) => setText(e.target.value)} rows={8} className={inputClass} />
             <div className="mt-1 flex flex-wrap items-center gap-3 text-xs">
-              <span className={text.length > limit ? "text-rose-300" : "text-slate-500"}>{text.length}/{limit} ký tự</span>
+              <span className={text.length > limit ? "text-rose-300" : "text-ink-3"}>{text.length}/{limit} ký tự</span>
               <button type="button" className="text-cyan-300 underline" onClick={() => setText(caption || "")}>Lấy lại nội dung ở trên</button>
             </div>
           </label>
 
           <div>
             <span className={labelClass}>Ảnh đính kèm{channel === "instagram" && " (Instagram bắt buộc có ảnh)"}</span>
-            <div className="space-y-2 text-sm text-slate-200">
+            <div className="space-y-2 text-sm text-ink-1">
               {channel !== "instagram" && (
                 <label className="flex items-center gap-2"><input type="radio" name={`img-${channel}`} checked={imageMode === "none"} onChange={() => setImageMode("none")} className="accent-cyan-300" /> Không kèm ảnh</label>
               )}
               <label className="flex items-center gap-2">
                 <input type="radio" name={`img-${channel}`} checked={imageMode === "uploaded"} onChange={() => setImageMode("uploaded")} disabled={!uploaded} className="accent-cyan-300" />
                 Ảnh infographic của tôi (tải lên)
-                {!uploaded && <span className="text-xs text-slate-500">— chọn ảnh ở bên dưới</span>}
+                {!uploaded && <span className="text-xs text-ink-3">— chọn ảnh ở bên dưới</span>}
               </label>
               <label className="flex items-center gap-2">
                 <input type="radio" name={`img-${channel}`} checked={imageMode === "generated"} onChange={() => setImageMode("generated")} disabled={!hasInfographic} className="accent-cyan-300" />
                 Infographic tạo trong Hub (JPG 1080 × 1350)
-                {!hasInfographic && <span className="text-xs text-slate-500">— chưa có</span>}
+                {!hasInfographic && <span className="text-xs text-ink-3">— chưa có</span>}
               </label>
             </div>
             <div className="mt-3 flex flex-wrap items-center gap-3">
@@ -204,12 +206,12 @@ export default function HubSchedulePanel({ channel, caption, infographic, itemId
               {uploaded && (
                 <span className="flex items-center gap-3">
                   <img src={uploaded.previewUrl} alt="Ảnh sẽ đăng" className="h-24 w-auto rounded-lg border border-white/10" />
-                  <span className="text-xs text-slate-400">{uploaded.name}<br />{uploaded.width} × {uploaded.height}px</span>
-                  <button type="button" onClick={clearUploaded} className="text-slate-400 hover:text-white" aria-label="Bỏ ảnh"><X size={16} /></button>
+                  <span className="text-xs text-ink-2">{uploaded.name}<br />{uploaded.width} × {uploaded.height}px</span>
+                  <button type="button" onClick={clearUploaded} className="text-ink-2 hover:text-white" aria-label="Bỏ ảnh"><X size={16} /></button>
                 </span>
               )}
             </div>
-            <p className="mt-2 text-xs text-slate-500">Nhận JPG, PNG, WebP (tối đa 15 MB); hệ thống tự đổi sang JPG. Nên dùng khổ đứng 1080 × 1350 (4:5).</p>
+            <p className="mt-2 text-xs text-ink-3">Nhận JPG, PNG, WebP (tối đa 15 MB); hệ thống tự đổi sang JPG. Nên dùng khổ đứng 1080 × 1350 (4:5).</p>
           </div>
 
           {!withImage && channel !== "instagram" && (
@@ -242,16 +244,15 @@ export default function HubSchedulePanel({ channel, caption, infographic, itemId
               <button type="button" className={ghostButton} onClick={() => setConfirmNow(true)} disabled={!!busy}><Send size={15} /> Đăng ngay</button>
             )}
           </div>
-          <p className="text-xs leading-5 text-slate-500">Bài sẽ hiển thị công khai trên {platformName[channel]}. Hãy rà soát số liệu và mục “Cần chuyên gia kiểm tra” trước khi duyệt.</p>
+          <p className="text-xs leading-5 text-ink-3">Bài sẽ hiển thị công khai trên {platformName[channel]}. Hãy rà soát số liệu và mục “Cần chuyên gia kiểm tra” trước khi duyệt.</p>
         </div>
       )}
 
       {error && <div className="mt-4 rounded-xl border border-rose-300/25 bg-rose-400/10 p-3 text-sm text-rose-100">{error}</div>}
-      {notice && <div className="mt-4 flex items-start gap-2 rounded-xl border border-emerald-300/25 bg-emerald-400/10 p-3 text-sm text-emerald-100"><CheckCircle2 size={16} className="mt-0.5 shrink-0" /> {notice}</div>}
 
       {recent.length > 0 && (
-        <div className="mt-4 space-y-1 text-xs text-slate-400">
-          <div className="font-semibold text-slate-300">Bài gần đây của bộ nội dung này</div>
+        <div className="mt-4 space-y-1 text-xs text-ink-2">
+          <div className="font-semibold text-ink-2">Bài gần đây của bộ nội dung này</div>
           {recent.map((p) => (
             <div key={p.id}>
               {postStatusLabel[p.status]} · {p.status === "published" ? fmt(p.published_at) : p.scheduled_at ? fmt(p.scheduled_at) : fmt(p.created_at)}

@@ -4,8 +4,10 @@ Trang `/admin/ar` gửi email nhắc công nợ song ngữ từ **accounting@fac
 
 ## Lần đầu sử dụng
 1. Bấm **Mẫu email & tài khoản ngân hàng** → điền Ngân hàng, Số tài khoản, Chủ tài khoản (bắt buộc), Chi nhánh/SWIFT (tùy chọn), chỉnh tiêu đề và nội dung nếu muốn → **Cập nhật xem trước** → **Lưu**.
-2. Bấm **Gửi thử cho tôi**: bản thử đi từ accounting@facs.vn tới email đăng nhập CMS của anh/chị.
-   - Nếu báo lỗi `Mail.Send failed (403/404)`: hộp thư accounting@facs.vn chưa tồn tại trong Microsoft 365, hoặc ứng dụng Graph đang bị giới hạn bằng Application Access Policy — cần thêm accounting@facs.vn vào nhóm được phép (giống infor@ và contact@).
+2. **Cấp quyền gửi (làm một lần, trên web):** Exchange admin center (https://admin.exchange.microsoft.com) → **Recipients → Mailboxes** → bấm **Internal Accounting - FACS** (accounting@facs.vn) → tab **Delegation** → mục **Send as** → **Edit** → **Add members** → chọn **Infor - FACS** (infor@facs.vn) → **Save**. Đợi khoảng 1 giờ.
+   - Lý do: ứng dụng gửi mail của website hiện chỉ được Microsoft cho gửi trực tiếp từ infor@/contact@/hr@. Khi gửi trực tiếp từ accounting@ bị từ chối (403), website tự gửi qua infor@ nhưng người gửi hiển thị là **accounting@facs.vn**, khách trả lời sẽ về accounting@. Một bản ẩn (BCC) được gửi về accounting@ để lưu lịch sử.
+   - Nếu sau này quản trị viên cho phép ứng dụng gửi trực tiếp từ accounting@, website tự chuyển sang gửi trực tiếp, không cần sửa gì. Hộp thư trung gian đổi được bằng secret `AR_RELAY_MAILBOX` trên Supabase.
+3. Bấm **Gửi thử tới tunguyen@facs.vn**: bản thử luôn đi từ accounting@facs.vn tới tunguyen@facs.vn (đổi được bằng secret `AR_TEST_RECIPIENT` trên Supabase), không gửi ra email cá nhân; thông báo cho biết đã gửi trực tiếp hay qua infor@.
 
 ## Gửi nhắc nợ
 - **Ít khách:** tab *Nhập trực tiếp* → điền Người nhận, Email (nhiều email ngăn bằng `;`), Email CC, Tên công ty, MST, Số tiền nợ, Giai đoạn nợ, Ghi chú → **Lưu vào danh sách**.

@@ -48,8 +48,8 @@ export default function RichTextEditor({ value, onChange, placeholder }) {
   };
 
   return (
-    <div className="overflow-hidden rounded-2xl border border-white/10 bg-[#081321]/70 focus-within:border-cyan-300/35">
-      <div className="flex flex-wrap gap-1 border-b border-white/10 bg-white/[0.035] p-2">
+    <div className="overflow-hidden rounded-2xl border border-white/10 bg-cms-2 focus-within:border-cyan-300/35">
+      <div className="flex flex-wrap gap-1 border-b border-white/10 bg-cms-1 p-2">
         {tools.map(([Icon, label, command, commandValue]) => (
           <button
             key={label}
@@ -60,7 +60,7 @@ export default function RichTextEditor({ value, onChange, placeholder }) {
               event.preventDefault();
               runCommand(command, commandValue);
             }}
-            className="flex h-9 w-9 items-center justify-center rounded-lg text-slate-300 transition hover:bg-cyan-300/12 hover:text-cyan-100"
+            className="flex h-9 w-9 items-center justify-center rounded-lg text-ink-2 transition hover:bg-cyan-300/12 hover:text-cyan-100"
           >
             <Icon size={17} />
           </button>
@@ -73,7 +73,7 @@ export default function RichTextEditor({ value, onChange, placeholder }) {
             event.preventDefault();
             addLink();
           }}
-          className="flex h-9 w-9 items-center justify-center rounded-lg text-slate-300 transition hover:bg-cyan-300/12 hover:text-cyan-100"
+          className="flex h-9 w-9 items-center justify-center rounded-lg text-ink-2 transition hover:bg-cyan-300/12 hover:text-cyan-100"
         >
           <LinkIcon size={17} />
         </button>
@@ -84,7 +84,7 @@ export default function RichTextEditor({ value, onChange, placeholder }) {
         suppressContentEditableWarning
         data-placeholder={placeholder}
         onInput={(event) => onChange(event.currentTarget.innerHTML)}
-        className="admin-rich-editor min-h-[360px] px-5 py-5 text-[16px] leading-8 text-slate-100 outline-none"
+        className="admin-rich-editor min-h-[360px] px-5 py-5 text-[16px] leading-8 text-ink-1 outline-none"
       />
     </div>
   );
