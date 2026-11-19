@@ -1,8 +1,8 @@
 import { useCallback, useEffect, useRef, useState } from "react";
 import { useLocation } from "react-router-dom";
 
-const SIZE = 440; // đường kính vòng (px)
-const R = 200; // bán kính vòng chặng
+const SIZE = 330; // đường kính khung vòng (px)
+const R = 145; // bán kính vòng chặng
 const C = SIZE / 2;
 const GAP = 4; // khoảng hở giữa các chặng (độ)
 
@@ -127,23 +127,34 @@ export default function SiteSideDecor() {
           </defs>
           {/* Vòng trang trí bên trong (tự xoay chậm) */}
           <g className="site-ring__spin">
-            <circle cx={C} cy={C} r={R - 34} fill="none" stroke="#60A5FA" strokeOpacity="0.35" strokeWidth="1" strokeDasharray="2 9" />
-            <circle cx={C + R - 34} cy={C} r="2.5" fill="#60A5FA" />
+            <circle cx={C} cy={C} r={R - 26} fill="none" stroke="#60A5FA" strokeOpacity="0.3" strokeWidth="1" strokeDasharray="2 8" />
+            <circle cx={C + R - 26} cy={C} r="2" fill="#60A5FA" />
           </g>
-          <circle cx={C} cy={C} r={R - 70} fill="none" stroke="#67E8F9" strokeOpacity="0.12" />
+          <circle cx={C} cy={C} r={R - 52} fill="none" stroke="#67E8F9" strokeOpacity="0.1" />
           {/* Các chặng: xoay theo vị trí cuộn */}
           <g className="site-ring__rot">
             {sections.map((s, i) => {
               const from = 180 + i * seg + GAP / 2;
               const to = 180 + (i + 1) * seg - GAP / 2;
               const on = i === active;
-              const [tx, ty] = polar(180 + (i + 0.5) * seg, R + 16);
+              const [tx, ty] = polar(180 + (i + 0.5) * seg, R + 15);
               return (
                 <g key={`${i}-${s.label}`} className="site-ring__seg" onClick={() => jump(i)}>
                   <title>{s.label}</title>
                   <path d={arc(from, to)} fill="none" stroke="transparent" strokeWidth="22" />
-                  <path d={arc(from, to)} fill="none" stroke={on ? "url(#site-ring-grad)" : "#67E8F9"} strokeOpacity={on ? 1 : 0.28} strokeWidth={on ? 4 : 2} strokeLinecap="round" />
-                  <text x={tx} y={ty} fill={on ? "#CFFAFE" : "#67E8F9"} fillOpacity={on ? 1 : 0.45} fontSize="11" fontWeight="700" textAnchor="middle" dominantBaseline="middle">
+                  <path d={arc(from, to)} fill="none" stroke={on ? "url(#site-ring-grad)" : "#67E8F9"} strokeOpacity={on ? 1 : 0.28} strokeWidth={on ? 3.5 : 1.8} strokeLinecap="round" />
+                  <text
+                    x={tx}
+                    y={ty}
+                    className="site-ring__num"
+                    style={{ transformOrigin: `${tx.toFixed(1)}px ${ty.toFixed(1)}px` }}
+                    fill={on ? "#CFFAFE" : "#67E8F9"}
+                    fillOpacity={on ? 1 : 0.45}
+                    fontSize="10.5"
+                    fontWeight="700"
+                    textAnchor="middle"
+                    dominantBaseline="central"
+                  >
                     {String(i + 1).padStart(2, "0")}
                   </text>
                 </g>
@@ -151,8 +162,8 @@ export default function SiteSideDecor() {
             })}
           </g>
           {/* Kim chỉ cố định ở giữa màn hình */}
-          <circle cx={C - R} cy={C} r="7" fill="#0d1726" stroke="#67E8F9" strokeWidth="2" />
-          <circle cx={C - R} cy={C} r="2.5" fill="#67E8F9" />
+          <circle cx={C - R} cy={C} r="6" fill="#0d1726" stroke="#67E8F9" strokeWidth="2" />
+          <circle cx={C - R} cy={C} r="2.2" fill="#67E8F9" />
         </svg>
       </nav>
     </div>

@@ -155,7 +155,7 @@ export default function AboutPage() {
 
             <div className="grid md:grid-cols-3 gap-8 mt-16">
               {leadership.map((member) => (
-                <motion.article key={member.slug} whileHover={{ y: -10 }} transition={{ duration: 0.3 }} className="site-card site-tile site-glass group h-full overflow-hidden rounded-[36px] border border-white/10 bg-white/[0.045] backdrop-blur-xl transition-all duration-500 hover:border-cyan-300/25 hover:shadow-[0_0_50px_rgba(34,211,238,0.12)]">
+                <motion.article key={member.slug} whileHover={{ y: -10 }} transition={{ duration: 0.3 }} className="site-card site-tile site-acrylic site-acrylic--gold group h-full overflow-hidden rounded-[32px] border border-white/[0.12] bg-transparent backdrop-blur-[2px] transition-all duration-300">
                   <Link to={`/about/team/${member.slug}`} className="block h-full">
                     <div className="relative h-[420px] overflow-hidden bg-[#1f242c]">
                       <img src={member.photo} alt={getName(member)} className="h-full w-full object-cover object-top transition-all duration-700 group-hover:scale-105" />

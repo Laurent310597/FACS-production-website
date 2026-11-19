@@ -1013,22 +1013,32 @@ html:not(:has(.facs-cms)) {
 .site-ring {
   position: absolute;
   top: 50%;
-  /* kim chỉ (điểm x=20 của vòng) nằm cách mép phải màn hình đúng (lề – 16px) */
-  left: calc(-1 * (var(--gutter) - 16px) - 20px);
+  /* kim chỉ (điểm x=20 của vòng) nằm ở khoảng giữa phần lề phải, gọn sát mép màn hình */
+  left: calc(-1 * clamp(64px, var(--gutter) * 0.55, 150px) - 20px);
   translate: 0 -50%;
 }
 .site-ring__svg {
   display: block;
   overflow: visible;
+  opacity: 0.85;
+  transition: opacity 0.3s;
+}
+.site-ring:hover .site-ring__svg {
+  opacity: 1;
 }
 .site-ring__rot {
-  transform-origin: 220px 220px;
+  transform-origin: 165px 165px;
   rotate: var(--ring-rot, 0deg);
   transition: rotate 0.7s cubic-bezier(0.2, 0.8, 0.2, 1);
 }
 .site-ring__spin {
-  transform-origin: 220px 220px;
+  transform-origin: 165px 165px;
   animation: site-spin 90s linear infinite;
+}
+/* Số trên vòng luôn quay đúng chiều (xoay ngược lại đúng bằng góc của vòng). */
+.site-ring__num {
+  rotate: calc(var(--ring-rot, 0deg) * -1);
+  transition: rotate 0.7s cubic-bezier(0.2, 0.8, 0.2, 1);
 }
 .site-ring__seg {
   cursor: pointer;
@@ -1039,15 +1049,14 @@ html:not(:has(.facs-cms)) {
 }
 .site-ring__label {
   position: absolute;
-  top: calc(50% + 20px);
-  left: 46px;
-  width: calc(var(--gutter) - 74px);
-  max-width: 170px;
+  top: calc(50% + 16px);
+  left: 36px;
+  width: 80px;
   pointer-events: none;
 }
 .site-ring__count {
   display: block;
-  font-size: 18px;
+  font-size: 15px;
   font-weight: 700;
   color: #cffafe;
   letter-spacing: 0.04em;
@@ -1155,4 +1164,32 @@ html:not(:has(.facs-cms)) {
     0 12px 0 -2px rgb(165 220 255 / 0.05),
     0 44px 90px -36px rgb(0 0 0 / 0.95),
     0 20px 60px -30px rgb(34 211 238 / 0.4) !important;
+}
+
+/* Thẻ ban lãnh đạo: như thẻ Insights; khi rê/chọn, viền vàng ấm sáng lên và thẻ phóng to nhẹ. */
+.site-acrylic--gold::after {
+  background: radial-gradient(320px circle at var(--mx, 50%) var(--my, 0%), rgb(253 224 138 / 0.95), rgb(245 176 66 / 0.55) 45%, transparent 75%) !important;
+}
+.site-acrylic.site-acrylic--gold:is(:hover, :focus-within) {
+  border-color: rgb(250 204 104 / 0.55) !important;
+  box-shadow:
+    inset 0 1.5px 0 rgb(255 236 179 / 0.45),
+    inset 1.5px 0 0 rgb(255 236 179 / 0.16),
+    inset 0 -2px 0 rgb(250 204 104 / 0.22),
+    inset 0 0 30px rgb(250 204 104 / 0.08),
+    0 4px 0 -0.5px rgb(250 214 140 / 0.28),
+    0 8px 0 -1px rgb(250 214 140 / 0.13),
+    0 12px 0 -2px rgb(250 214 140 / 0.06),
+    0 0 0 1px rgb(250 204 104 / 0.18),
+    0 0 46px -8px rgb(245 176 66 / 0.45),
+    0 44px 90px -36px rgb(0 0 0 / 0.95) !important;
+}
+.site-acrylic--gold.is-in:is(:hover, :focus-within) {
+  scale: 1.025;
+}
+/* Chân trang: mảng sóng chéo nhạt hơn để không lấn át các liên kết. */
+.ib-diag--soft {
+  opacity: 0.55;
+  -webkit-mask-image: radial-gradient(ellipse 70% 70% at 70% 45%, #000 40%, transparent 100%);
+  mask-image: radial-gradient(ellipse 70% 70% at 70% 45%, #000 40%, transparent 100%);
 }

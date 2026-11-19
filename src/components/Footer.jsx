@@ -1,3 +1,4 @@
+import DiagonalWaves from "./site/DiagonalWaves";
 import { Link } from "react-router-dom";
 import { Mail } from "lucide-react";
 import { services } from "../data/services";
@@ -55,6 +56,7 @@ export default function Footer() {
       <div className="absolute inset-x-0 top-0 h-[2px] bg-gradient-to-r from-transparent via-cyan-200/70 to-transparent" />
       <div className="absolute inset-x-0 top-0 h-10 bg-gradient-to-r from-transparent via-cyan-400/12 to-transparent blur-xl" />
       <div className="absolute -top-32 left-10 h-80 w-80 rounded-full bg-cyan-400/14 blur-[110px]" />
+      <DiagonalWaves soft />
 
       <div className="container relative z-10 mx-auto px-6 lg:px-12">
         <div className="grid gap-12 lg:grid-cols-[1.25fr_1fr_1fr_1fr_1.35fr]">
