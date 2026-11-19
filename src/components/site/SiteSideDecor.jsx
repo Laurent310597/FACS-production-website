@@ -111,14 +111,12 @@ export default function SiteSideDecor() {
   if (hidden || sections.length < 2) return null;
   const n = sections.length;
   const seg = 360 / n;
-  const current = sections[Math.min(active, n - 1)];
 
   return (
     <div className="site-side" aria-hidden="false">
       <nav className="site-ring" aria-label="Các phần của trang">
         <div className="site-ring__label">
           <span className="site-ring__count">{String(active + 1).padStart(2, "0")}<span>/{String(n).padStart(2, "0")}</span></span>
-          <span className="site-ring__title">{current?.label}</span>
         </div>
         <svg ref={ringRef} className="site-ring__svg" viewBox={`0 0 ${SIZE} ${SIZE}`} width={SIZE} height={SIZE}>
           <defs>

@@ -1087,73 +1087,72 @@ html:not(:has(.facs-cms)) {
 /* A: quầng sáng lấy từ ảnh bìa bài đang rê chuột */
 .ib-glow {
   position: absolute;
-  width: 560px;
-  height: 460px;
+  width: 300px;
+  height: 240px;
   translate: -50% -50%;
   border-radius: 50%;
   background-color: rgb(34 211 238 / 0.25);
   background-size: cover;
   background-position: center;
-  filter: blur(80px) saturate(1.8) brightness(0.85);
+  filter: blur(70px) saturate(1.6) brightness(0.7);
   transition: opacity 0.6s ease, left 0.6s cubic-bezier(0.2, 0.8, 0.2, 1), top 0.6s cubic-bezier(0.2, 0.8, 0.2, 1);
   mix-blend-mode: screen;
 }
-/* B: quầng sáng trôi chậm */
-.ib-aurora__blob {
+/* D: các mảng sóng chéo từ góc phải trên xuống góc trái dưới, chồng lên nhau, trôi chậm và nhấp nhô. */
+.ib-diag {
   position: absolute;
-  border-radius: 50%;
-  filter: blur(100px);
-  opacity: 0.9;
+  inset: -45% -35%;
+  rotate: -24deg;
+  -webkit-mask-image: radial-gradient(ellipse 60% 55% at 50% 50%, #000 55%, transparent 100%);
+  mask-image: radial-gradient(ellipse 60% 55% at 50% 50%, #000 55%, transparent 100%);
 }
-.ib-aurora__blob--1 {
-  width: 620px;
-  height: 520px;
-  left: -8%;
-  top: 6%;
-  background: rgb(34 211 238 / 0.3);
-  animation: ib-drift-1 38s ease-in-out infinite alternate;
-}
-.ib-aurora__blob--2 {
-  width: 700px;
-  height: 560px;
-  right: -10%;
-  top: 30%;
-  background: rgb(59 130 246 / 0.36);
-  animation: ib-drift-2 46s ease-in-out infinite alternate;
-}
-.ib-aurora__blob--3 {
-  width: 560px;
-  height: 460px;
-  left: 30%;
-  bottom: -10%;
-  background: rgb(20 184 166 / 0.26);
-  animation: ib-drift-3 52s ease-in-out infinite alternate;
-}
-@keyframes ib-drift-1 { to { translate: 22vw 18vh; } }
-@keyframes ib-drift-2 { to { translate: -26vw -12vh; } }
-@keyframes ib-drift-3 { to { translate: 14vw -22vh; } }
-/* C: mạng lưới tri thức */
-.ib-network {
+.ib-diag__band {
   position: absolute;
-  inset: 0;
+  left: 0;
   width: 100%;
-  height: 100%;
-  -webkit-mask-image: linear-gradient(180deg, transparent, #000 12%, #000 88%, transparent);
-  mask-image: linear-gradient(180deg, transparent, #000 12%, #000 88%, transparent);
+  height: 26%;
+  animation: ib-bob var(--bob, 12s) ease-in-out infinite alternate;
 }
-/* D: đường đồng mức */
-.ib-contours {
-  position: absolute;
-  inset: 0;
-  -webkit-mask-image: linear-gradient(180deg, transparent, #000 10%, #000 90%, transparent);
-  mask-image: linear-gradient(180deg, transparent, #000 10%, #000 90%, transparent);
-}
-.ib-contours svg {
+.ib-diag__wave {
   width: 200%;
   height: 100%;
-  animation: facs-wave-drift 140s linear infinite;
+  animation: facs-wave-drift var(--dur, 120s) linear infinite;
+  animation-direction: var(--dir, normal);
+}
+@keyframes ib-bob {
+  from { translate: 0 -14px; }
+  to { translate: 0 14px; }
 }
 @media (prefers-reduced-motion: reduce) {
-  .ib-aurora__blob,
-  .ib-contours svg { animation: none; }
+  .ib-diag__band,
+  .ib-diag__wave { animation: none; }
+}
+
+/* Thẻ bài Insights: như tấm thẻ nhựa trong suốt có độ dày (mép sáng, cạnh dày phía dưới). */
+.site-acrylic {
+  border-color: rgb(186 230 253 / 0.2) !important;
+  box-shadow:
+    inset 0 1.5px 0 rgb(255 255 255 / 0.28),
+    inset 1.5px 0 0 rgb(255 255 255 / 0.1),
+    inset -1px 0 0 rgb(255 255 255 / 0.05),
+    inset 0 -2px 0 rgb(103 232 249 / 0.12),
+    inset 0 0 24px rgb(103 232 249 / 0.05),
+    0 3px 0 -0.5px rgb(165 220 255 / 0.16),
+    0 6px 0 -1px rgb(165 220 255 / 0.08),
+    0 9px 0 -2px rgb(165 220 255 / 0.04),
+    0 34px 70px -34px rgb(0 0 0 / 0.9) !important;
+}
+.site-acrylic:hover {
+  border-color: rgb(186 230 253 / 0.32) !important;
+  box-shadow:
+    inset 0 1.5px 0 rgb(255 255 255 / 0.36),
+    inset 1.5px 0 0 rgb(255 255 255 / 0.14),
+    inset -1px 0 0 rgb(255 255 255 / 0.07),
+    inset 0 -2px 0 rgb(103 232 249 / 0.2),
+    inset 0 0 30px rgb(103 232 249 / 0.08),
+    0 4px 0 -0.5px rgb(165 220 255 / 0.22),
+    0 8px 0 -1px rgb(165 220 255 / 0.11),
+    0 12px 0 -2px rgb(165 220 255 / 0.05),
+    0 44px 90px -36px rgb(0 0 0 / 0.95),
+    0 20px 60px -30px rgb(34 211 238 / 0.4) !important;
 }

@@ -36,11 +36,6 @@ export default function InsightsPage() {
   const [loading, setLoading] = useState(isSupabaseConfigured);
   const [query, setQuery] = useState("");
   const [category, setCategory] = useState("all");
-  // Nền phía sau danh sách bài: thử nghiệm qua ?bg=b | c | d (mặc định b).
-  const [bgVariant] = useState(() => {
-    const v = new URLSearchParams(window.location.search).get("bg");
-    return ["b", "c", "d"].includes(v) ? v : "b";
-  });
   const listRef = useRef(null);
   const [glow, setGlow] = useState(null);
   const showGlow = (event, image) => {
@@ -124,7 +119,7 @@ export default function InsightsPage() {
       </section>
 
       <section ref={listRef} className="relative overflow-hidden border-b border-white/10 pb-24 pt-14 md:pb-32">
-        <InsightsBackdrop variant={bgVariant} glow={glow} />
+        <InsightsBackdrop glow={glow} />
         <div className="container relative z-10 mx-auto px-6 lg:px-12">
           <div className="site-card grid gap-4 rounded-[28px] border border-white/10 bg-white/[0.035] p-4 lg:grid-cols-[minmax(260px,1fr)_auto]">
             <label className="flex items-center rounded-2xl border border-white/10 bg-[#081321]/55 px-4 focus-within:border-cyan-300/35">
@@ -171,7 +166,7 @@ export default function InsightsPage() {
                     whileHover={{ y: -9 }}
                     onMouseEnter={(event) => showGlow(event, post.cover_image_url)}
                     onMouseLeave={() => setGlow(null)}
-                    className="site-card site-tile group overflow-hidden rounded-[32px] border border-white/[0.12] bg-transparent backdrop-blur-[2px] transition-all duration-300 hover:border-cyan-300/25 hover:shadow-[0_0_48px_rgba(34,211,238,0.14)]"
+                    className="site-card site-tile site-acrylic group overflow-hidden rounded-[32px] border border-white/[0.12] bg-transparent backdrop-blur-[2px] transition-all duration-300 hover:border-cyan-300/25 hover:shadow-[0_0_48px_rgba(34,211,238,0.14)]"
                   >
                     <Link to={`/insights/${localized.slug}`} className="block h-full">
                       <div className="relative h-56 overflow-hidden bg-[#0d1726]">
@@ -187,7 +182,7 @@ export default function InsightsPage() {
                       <div className="flex min-h-[290px] flex-col p-7 md:p-8">
                         <div className="flex flex-wrap items-center justify-between gap-3">
                           <div className="text-sm uppercase tracking-[0.16em] text-cyan-400">{getCategoryLabel(post.category, language)}</div>
-                          {post.published_at && <div className="flex items-center gap-1.5 text-xs text-slate-500"><CalendarDays size={14} /> {formatPostDate(post.published_at, language)}</div>}
+                          {post.published_at && <div className="flex items-center gap-1.5 text-xs text-slate-400"><CalendarDays size={14} /> {formatPostDate(post.published_at, language)}</div>}
                         </div>
                         <h2 className="mt-4 text-balance text-2xl font-semibold leading-snug">{localized.title}</h2>
                         {localized.excerpt && <p className="mt-4 line-clamp-3 leading-relaxed text-slate-400">{localized.excerpt}</p>}
