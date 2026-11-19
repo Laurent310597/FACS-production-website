@@ -1,9 +1,10 @@
-import { useEffect, useMemo, useState } from "react";
+import { useEffect, useMemo, useRef, useState } from "react";
 import { ArrowRight, CalendarDays, Search } from "lucide-react";
 import { motion } from "framer-motion";
 import { Link } from "react-router-dom";
 import Footer from "../components/Footer";
 import SiteBackdrop from "../components/site/SiteBackdrop";
+import InsightsBackdrop from "../components/site/InsightsBackdrop";
 import Navbar from "../components/Navbar";
 import { useLanguage } from "../components/LanguageContext";
 import {
@@ -35,6 +36,19 @@ export default function InsightsPage() {
   const [loading, setLoading] = useState(isSupabaseConfigured);
   const [query, setQuery] = useState("");
   const [category, setCategory] = useState("all");
+  // Nền phía sau danh sách bài: thử nghiệm qua ?bg=b | c | d (mặc định b).
+  const [bgVariant] = useState(() => {
+    const v = new URLSearchParams(window.location.search).get("bg");
+    return ["b", "c", "d"].includes(v) ? v : "b";
+  });
+  const listRef = useRef(null);
+  const [glow, setGlow] = useState(null);
+  const showGlow = (event, image) => {
+    const host = listRef.current?.getBoundingClientRect();
+    const card = event.currentTarget.getBoundingClientRect();
+    if (!host) return;
+    setGlow({ x: card.left - host.left + card.width / 2, y: card.top - host.top + card.height / 2, image });
+  };
 
   useEffect(() => {
     let active = true;
@@ -109,8 +123,9 @@ export default function InsightsPage() {
         </div>
       </section>
 
-      <section className="border-b border-white/10 pb-24 pt-14 md:pb-32">
-        <div className="container mx-auto px-6 lg:px-12">
+      <section ref={listRef} className="relative overflow-hidden border-b border-white/10 pb-24 pt-14 md:pb-32">
+        <InsightsBackdrop variant={bgVariant} glow={glow} />
+        <div className="container relative z-10 mx-auto px-6 lg:px-12">
           <div className="site-card grid gap-4 rounded-[28px] border border-white/10 bg-white/[0.035] p-4 lg:grid-cols-[minmax(260px,1fr)_auto]">
             <label className="flex items-center rounded-2xl border border-white/10 bg-[#081321]/55 px-4 focus-within:border-cyan-300/35">
               <Search size={18} className="text-slate-500" />
@@ -154,6 +169,8 @@ export default function InsightsPage() {
                     viewport={{ once: true, amount: 0.15 }}
                     transition={{ duration: 0.5, delay: Math.min(index * 0.06, 0.24) }}
                     whileHover={{ y: -9 }}
+                    onMouseEnter={(event) => showGlow(event, post.cover_image_url)}
+                    onMouseLeave={() => setGlow(null)}
                     className="site-card site-tile group overflow-hidden rounded-[32px] border border-white/[0.12] bg-transparent backdrop-blur-[2px] transition-all duration-300 hover:border-cyan-300/25 hover:shadow-[0_0_48px_rgba(34,211,238,0.14)]"
                   >
                     <Link to={`/insights/${localized.slug}`} className="block h-full">

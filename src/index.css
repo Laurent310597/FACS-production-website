@@ -1063,7 +1063,7 @@ html:not(:has(.facs-cms)) {
   line-height: 1.35;
   color: rgb(148 163 184);
 }
-@media (min-width: 1600px) {
+@media (min-width: 1840px) {
   .site-ring__title {
     display: block;
   }
@@ -1074,4 +1074,86 @@ html:not(:has(.facs-cms)) {
 @media (prefers-reduced-motion: reduce) {
   .site-ring__spin { animation: none; }
   .site-ring__rot { transition: none; }
+}
+
+/* ───────── Nền phía sau danh sách Insights ───────── */
+.ib {
+  position: absolute;
+  inset: 0;
+  z-index: 0;
+  overflow: hidden;
+  pointer-events: none;
+}
+/* A: quầng sáng lấy từ ảnh bìa bài đang rê chuột */
+.ib-glow {
+  position: absolute;
+  width: 560px;
+  height: 460px;
+  translate: -50% -50%;
+  border-radius: 50%;
+  background-color: rgb(34 211 238 / 0.25);
+  background-size: cover;
+  background-position: center;
+  filter: blur(80px) saturate(1.8) brightness(0.85);
+  transition: opacity 0.6s ease, left 0.6s cubic-bezier(0.2, 0.8, 0.2, 1), top 0.6s cubic-bezier(0.2, 0.8, 0.2, 1);
+  mix-blend-mode: screen;
+}
+/* B: quầng sáng trôi chậm */
+.ib-aurora__blob {
+  position: absolute;
+  border-radius: 50%;
+  filter: blur(100px);
+  opacity: 0.9;
+}
+.ib-aurora__blob--1 {
+  width: 620px;
+  height: 520px;
+  left: -8%;
+  top: 6%;
+  background: rgb(34 211 238 / 0.3);
+  animation: ib-drift-1 38s ease-in-out infinite alternate;
+}
+.ib-aurora__blob--2 {
+  width: 700px;
+  height: 560px;
+  right: -10%;
+  top: 30%;
+  background: rgb(59 130 246 / 0.36);
+  animation: ib-drift-2 46s ease-in-out infinite alternate;
+}
+.ib-aurora__blob--3 {
+  width: 560px;
+  height: 460px;
+  left: 30%;
+  bottom: -10%;
+  background: rgb(20 184 166 / 0.26);
+  animation: ib-drift-3 52s ease-in-out infinite alternate;
+}
+@keyframes ib-drift-1 { to { translate: 22vw 18vh; } }
+@keyframes ib-drift-2 { to { translate: -26vw -12vh; } }
+@keyframes ib-drift-3 { to { translate: 14vw -22vh; } }
+/* C: mạng lưới tri thức */
+.ib-network {
+  position: absolute;
+  inset: 0;
+  width: 100%;
+  height: 100%;
+  -webkit-mask-image: linear-gradient(180deg, transparent, #000 12%, #000 88%, transparent);
+  mask-image: linear-gradient(180deg, transparent, #000 12%, #000 88%, transparent);
+}
+/* D: đường đồng mức */
+.ib-contours {
+  position: absolute;
+  inset: 0;
+  -webkit-mask-image: linear-gradient(180deg, transparent, #000 10%, #000 90%, transparent);
+  mask-image: linear-gradient(180deg, transparent, #000 10%, #000 90%, transparent);
+}
+.ib-contours svg {
+  width: 200%;
+  height: 100%;
+  animation: facs-wave-drift 140s linear infinite;
+}
+@media (prefers-reduced-motion: reduce) {
+  .ib-aurora__blob,
+  .ib-contours svg { animation: none; }
 }
