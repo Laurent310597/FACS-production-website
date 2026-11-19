@@ -259,7 +259,7 @@ export default function AdminLegalSourcesPage() {
                         ? "Chưa biên soạn AI"
                         : "Có lỗi";
                   return (
-                    <div key={`${item.source || "source"}-${index}`} className="rounded-2xl border border-white/10 bg-cms-2 px-4 py-3">
+                    <div key={`${item.source || "source"}-${index}`} className="facs-tile rounded-2xl border border-white/10 bg-cms-2 px-4 py-3 transition duration-300">
                       <div className="flex flex-wrap items-center justify-between gap-2">
                         <span className="text-sm font-semibold text-slate-200">{item.source || `Nguồn ${index + 1}`}</span>
                         <span className={`rounded-full border px-2.5 py-1 text-[11px] font-semibold ${item.status === "error" ? "border-red-300/20 text-red-200" : item.status === "unchanged" ? "border-slate-300/15 text-slate-400" : "border-emerald-300/20 text-emerald-200"}`}>{statusLabel}</span>

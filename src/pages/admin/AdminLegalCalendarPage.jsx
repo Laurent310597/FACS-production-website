@@ -288,7 +288,7 @@ export default function AdminLegalCalendarPage() {
           [CalendarRange, "Sắp đến hạn", counts.upcoming, "text-cyan-300", "bg-cyan-300/[0.06] border-cyan-300/15"],
           [Archive, "Mốc thuộc năm cũ", counts.archivedYears, "text-violet-300", "bg-violet-300/[0.06] border-violet-300/15"],
         ].map(([Icon, label, value, iconClass, cardClass]) => (
-          <div key={label} className={`rounded-[20px] border p-5 ${cardClass}`}><Icon size={20} className={iconClass} /><div className="mt-5 text-3xl font-bold">{value}</div><div className="mt-1 text-sm text-slate-400">{label}</div></div>
+          <div key={label} className={`facs-card facs-tile rounded-[20px] border p-5 ${cardClass}`}><Icon size={20} className={iconClass} /><div className="mt-5 text-3xl font-bold">{value}</div><div className="mt-1 text-sm text-slate-400">{label}</div></div>
         ))}
       </div>
 
@@ -335,7 +335,7 @@ export default function AdminLegalCalendarPage() {
               const eventCategory = getCategory(event.category);
               const selected = selectedIds.has(event.id);
               return (
-                <article key={event.id} className={`facs-card rounded-[20px] border p-5 transition md:p-6 ${selected ? "border-cyan-300/40 bg-cyan-300/[0.07]" : "border-cyan-300/[0.14] bg-cms-1 hover:border-cyan-200/20"}`}>
+                <article key={event.id} className={`facs-card facs-tile rounded-[20px] border p-5 transition md:p-6 ${selected ? "border-cyan-300/40 bg-cyan-300/[0.07]" : "border-cyan-300/[0.14] bg-cms-1 hover:border-cyan-200/20"}`}>
                   <div className="flex flex-col gap-5 xl:flex-row xl:items-center">
                     <label className="flex cursor-pointer items-center self-start pt-1 xl:self-center"><input type="checkbox" checked={selected} onChange={() => toggleOne(event.id)} aria-label={`Chọn ${event.title_vi || event.title_en}`} className="h-5 w-5 rounded border-white/20 accent-cyan-300" /></label>
                     <div className="flex h-16 w-16 shrink-0 flex-col items-center justify-center rounded-2xl border border-cyan-200/15 bg-cms-2"><span className="text-xl font-black text-cyan-200">{event.event_date?.slice(-2)}</span><span className="text-[10px] font-bold uppercase text-ink-3">{event.event_date?.slice(5, 7)}/{event.event_date?.slice(0, 4)}</span></div>

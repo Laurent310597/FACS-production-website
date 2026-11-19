@@ -359,7 +359,7 @@ function Leads({ device }) {
         {!handovers.rows.length ? <div className="mt-3"><Empty>Chưa có lượt chuyển giao.</Empty></div> : (
           <ul className="mt-3 space-y-3">
             {handovers.rows.map((r) => (
-              <li key={r.key} className="facs-card rounded-2xl border border-cyan-300/[0.14] p-3 text-sm">
+              <li key={r.key} className="facs-card facs-tile rounded-2xl border border-cyan-300/[0.14] p-3 text-sm">
                 <div className="flex justify-between gap-2"><span className="font-semibold">{r.data?.category || "Chuyển giao"}</span><span className="text-xs text-slate-400">{fmtTs(r.ts)}</span></div>
                 {r.data?.reason && <p className="mt-1 text-slate-300">{r.data.reason}</p>}
                 {r.data?.brief && <p className="mt-1 whitespace-pre-wrap text-xs text-slate-400">{r.data.brief}</p>}
@@ -396,7 +396,7 @@ function Groups({ device, setError, setNotice }) {
           <ul className="mt-3 space-y-2">
             <AnimatePresence initial={false}>
             {open.map((r) => (
-              <motion.li key={r.key} layout {...listItem} className="facs-card flex flex-wrap items-center justify-between gap-2 rounded-2xl border border-cyan-300/[0.14] p-3 text-sm">
+              <motion.li key={r.key} layout {...listItem} className="facs-card facs-tile flex flex-wrap items-center justify-between gap-2 rounded-2xl border border-cyan-300/[0.14] p-3 text-sm">
                 <div><span className="mr-2 rounded-full bg-white/10 px-2 py-0.5 text-[11px]">{r.data?.priority || "NORMAL"}</span>{r.data?.summary}<div className="mt-1 text-xs text-ink-3">{fmtTs(r.ts)}</div></div>
                 <button type="button" className={ghostButton} disabled={busy === `i${r.key}`} onClick={() => run(`i${r.key}`, "resolve_item", { local_id: Number(r.key) }, "Đã gửi lệnh đánh dấu xong.")}><CheckCircle2 size={15} /> Xong</button>
               </motion.li>
@@ -410,7 +410,7 @@ function Groups({ device, setError, setNotice }) {
         {!groups.rows.length ? <div className="mt-3"><Empty>Chưa có nhóm.</Empty></div> : (
           <ul className="mt-3 space-y-2">
             {groups.rows.map((r) => (
-              <li key={r.key} className="facs-card flex flex-wrap items-center justify-between gap-2 rounded-2xl border border-cyan-300/[0.14] p-3 text-sm">
+              <li key={r.key} className="facs-card facs-tile flex flex-wrap items-center justify-between gap-2 rounded-2xl border border-cyan-300/[0.14] p-3 text-sm">
                 <div>
                   <span className="font-semibold">{r.data?.name || r.data?.code}</span>
                   <span className="ml-2 rounded-full bg-white/10 px-2 py-0.5 text-[11px]">{r.data?.kind}</span>

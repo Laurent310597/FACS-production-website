@@ -6,14 +6,15 @@ import { supabase } from "../../lib/supabaseClient";
 import AdminNavWheel from "./AdminNavWheel";
 import CommandPalette from "./CommandPalette";
 import HeaderWave from "./HeaderWave";
+import CmsBackdrop from "./CmsBackdrop";
 import { ADMIN_NAV, PUBLIC_SITE_LINKS, activeGroupId, activeItemPath, activeTrail, loadNavMode, loadOpenGroups, saveNavMode, saveOpenGroups } from "./adminNav";
 
 const itemClass = (active) =>
-  `flex items-center gap-3 rounded-xl px-4 py-2.5 text-sm font-semibold transition-colors ${
-    active ? "bg-cyan-300/[0.1] text-cyan-100 shadow-[inset_3px_0_0_#FF6B35]" : "text-ink-2 hover:bg-white/[0.06] hover:text-ink-1"
+  `group/nav flex items-center gap-3 rounded-xl px-4 py-2.5 text-sm font-semibold transition-all duration-200 [&>svg:first-child]:transition-transform [&>svg:first-child]:duration-300 hover:[&>svg:first-child]:scale-115 hover:[&>svg:first-child]:-rotate-6 ${
+    active ? "bg-cyan-300/[0.12] text-cyan-50 shadow-[inset_3px_0_0_#FF6B35,0_10px_30px_-18px_rgba(43,91,255,0.9)]" : "text-ink-2 hover:translate-x-1 hover:bg-white/[0.06] hover:text-ink-1 hover:shadow-[inset_2px_0_0_rgba(255,107,53,0.6)]"
   }`;
-const iconButton = "flex h-10 w-10 items-center justify-center rounded-xl border border-white/[0.1] text-ink-2 transition hover:border-cyan-200/40 hover:bg-white/[0.05] hover:text-ink-1";
-const iconButtonSm = "flex h-8 w-8 items-center justify-center rounded-lg border border-white/[0.1] text-ink-2 transition hover:border-cyan-200/40 hover:bg-white/[0.05] hover:text-ink-1";
+const iconButton = "facs-ripple-host flex h-10 w-10 items-center justify-center rounded-xl border border-white/[0.1] text-ink-2 transition duration-200 hover:scale-[1.07] hover:border-cyan-300/50 hover:bg-white/[0.06] hover:text-ink-1 active:scale-95";
+const iconButtonSm = "facs-ripple-host flex h-8 w-8 items-center justify-center rounded-lg border border-white/[0.1] text-ink-2 transition duration-200 hover:scale-[1.08] hover:border-cyan-300/50 hover:bg-white/[0.06] hover:text-ink-1 active:scale-95";
 
 function NavItem({ item, currentPath, compact = false }) {
   const Icon = item.icon;
@@ -109,19 +110,32 @@ function CollapsedNav({ currentPath, activeId }) {
   );
 }
 
-// Ánh sáng theo con trỏ cho mọi thẻ .facs-card (một bộ lắng nghe chung, cập nhật theo khung hình).
-function useCardSpotlight() {
+// Chuyển động chung cho CMS (một bộ lắng nghe cho cả trang):
+// - ánh sáng theo con trỏ trên .facs-card, nghiêng 3D trên .facs-tile;
+// - thẻ hiện dần khi cuộn tới (lần lượt từng thẻ);
+// - gợn sóng khi bấm nút.
+function useCmsMotion(rootRef) {
   useEffect(() => {
+    const root = rootRef.current;
+    if (!root) return undefined;
+    const reduce = window.matchMedia?.("(prefers-reduced-motion: reduce)").matches;
     let frame = 0;
     let last = null;
+
     const apply = () => {
       frame = 0;
-      let el = last?.target instanceof Element ? last.target.closest(".facs-card") : null;
+      let el = last?.target instanceof Element ? last.target.closest(".facs-card, .facs-tile") : null;
       while (el) {
         const r = el.getBoundingClientRect();
-        el.style.setProperty("--mx", `${last.clientX - r.left}px`);
-        el.style.setProperty("--my", `${last.clientY - r.top}px`);
-        el = el.parentElement?.closest(".facs-card") || null;
+        const x = last.clientX - r.left;
+        const y = last.clientY - r.top;
+        el.style.setProperty("--mx", `${x}px`);
+        el.style.setProperty("--my", `${y}px`);
+        if (el.classList.contains("facs-tile") && !reduce) {
+          el.style.setProperty("--rx", `${((0.5 - y / r.height) * 7).toFixed(2)}deg`);
+          el.style.setProperty("--ry", `${((x / r.width - 0.5) * 9).toFixed(2)}deg`);
+        }
+        el = el.parentElement?.closest(".facs-card, .facs-tile") || null;
       }
     };
     const onMove = (e) => {
@@ -130,15 +144,65 @@ function useCardSpotlight() {
       if (!frame) frame = requestAnimationFrame(apply);
     };
     window.addEventListener("pointermove", onMove, { passive: true });
+
+    const onDown = (e) => {
+      if (reduce || e.button !== 0) return;
+      const host = e.target instanceof Element ? e.target.closest(".facs-ripple-host, button.bg-brand, a.bg-brand") : null;
+      if (!host || host.disabled) return;
+      const r = host.getBoundingClientRect();
+      const size = Math.hypot(r.width, r.height) * 2;
+      const dot = document.createElement("span");
+      dot.className = "facs-ripple";
+      dot.style.cssText = `left:${e.clientX - r.left}px;top:${e.clientY - r.top}px;width:${size}px;height:${size}px`;
+      host.appendChild(dot);
+      setTimeout(() => dot.remove(), 650);
+    };
+    root.addEventListener("pointerdown", onDown);
+
+    let io = null;
+    let mo = null;
+    if (!reduce && "IntersectionObserver" in window) {
+      root.classList.add("facs-reveal");
+      io = new IntersectionObserver(
+        (entries) => {
+          entries
+            .filter((en) => en.isIntersecting)
+            .forEach((en, i) => {
+              const el = en.target;
+              el.style.transitionDelay = `${Math.min(i, 6) * 70}ms`;
+              el.classList.add("is-in");
+              io.unobserve(el);
+              setTimeout(() => (el.style.transitionDelay = ""), 900);
+            });
+        },
+        { rootMargin: "0px 0px -6% 0px" },
+      );
+      const watch = (scope) => scope.querySelectorAll?.(".facs-card:not(.is-in)").forEach((el) => io.observe(el));
+      watch(root);
+      mo = new MutationObserver((records) => {
+        for (const rec of records)
+          rec.addedNodes.forEach((n) => {
+            if (!(n instanceof Element)) return;
+            if (n.matches(".facs-card:not(.is-in)")) io.observe(n);
+            watch(n);
+          });
+      });
+      mo.observe(root, { childList: true, subtree: true });
+    }
+
     return () => {
       window.removeEventListener("pointermove", onMove);
+      root.removeEventListener("pointerdown", onDown);
       cancelAnimationFrame(frame);
+      io?.disconnect();
+      mo?.disconnect();
     };
-  }, []);
+  }, [rootRef]);
 }
 
 export default function AdminLayout({ children }) {
-  useCardSpotlight();
+  const rootRef = useRef(null);
+  useCmsMotion(rootRef);
   const navigate = useNavigate();
   const location = useLocation();
   const currentPath = activeItemPath(location.pathname);
@@ -204,7 +268,8 @@ export default function AdminLayout({ children }) {
 
   return (
     <MotionConfig reducedMotion="user">
-    <div data-no-translate className="facs-cms facs-aurora min-h-screen text-ink-1">
+    <div ref={rootRef} data-no-translate className="facs-cms facs-aurora min-h-screen text-ink-1">
+      <CmsBackdrop />
       <header className="sticky top-0 z-40 bg-midnight-2/80 backdrop-blur-xl">
         <div className="mx-auto flex h-[68px] max-w-[1500px] items-center justify-between gap-3 px-4 sm:px-5 lg:px-8">
           <div className="flex min-w-0 items-center gap-2 sm:gap-3">

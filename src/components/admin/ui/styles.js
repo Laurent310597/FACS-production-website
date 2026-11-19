@@ -7,10 +7,10 @@ const focus = "focus-visible:outline-none focus-visible:ring-2 focus-visible:rin
 export const btnPrimary = `inline-flex h-10 shrink-0 items-center justify-center gap-2 rounded-xl bg-brand px-4 text-sm font-semibold text-[#160800] transition hover:bg-brand-hover active:bg-brand-press disabled:cursor-not-allowed disabled:bg-white/[0.07] disabled:text-ink-3 ${focus}`;
 
 /** Nút phụ: viền, nền ô nhập. */
-export const btnSecondary = `inline-flex h-10 shrink-0 items-center justify-center gap-2 rounded-xl border border-white/[0.12] bg-cms-2 px-4 text-sm font-semibold text-ink-1 transition hover:border-cyan-300/50 hover:bg-cms-3 active:scale-[0.98] disabled:cursor-not-allowed disabled:opacity-40 ${focus}`;
+export const btnSecondary = `facs-ripple-host inline-flex h-10 shrink-0 items-center justify-center gap-2 rounded-xl border border-white/[0.12] bg-cms-2 px-4 text-sm font-semibold text-ink-1 transition hover:-translate-y-px hover:border-cyan-300/50 hover:bg-cms-3 hover:shadow-[0_10px_24px_-14px_rgba(43,91,255,0.8)] active:translate-y-0 active:scale-[0.97] disabled:cursor-not-allowed disabled:opacity-40 ${focus}`;
 
 /** Nút nhẹ: chỉ chữ, dùng trong hàng thao tác dày. */
-export const btnGhost = `inline-flex h-10 shrink-0 items-center justify-center gap-2 rounded-xl px-3 text-sm font-semibold text-ink-2 transition hover:bg-white/[0.06] hover:text-ink-1 disabled:cursor-not-allowed disabled:opacity-40 ${focus}`;
+export const btnGhost = `facs-ripple-host inline-flex h-10 shrink-0 items-center justify-center gap-2 rounded-xl px-3 text-sm font-semibold text-ink-2 transition hover:bg-white/[0.06] hover:text-ink-1 disabled:cursor-not-allowed disabled:opacity-40 ${focus}`;
 
 /** Nút nguy hiểm (xoá). */
 export const btnDanger = `inline-flex h-10 shrink-0 items-center justify-center gap-2 rounded-xl bg-rose-500 px-4 text-sm font-semibold text-white transition hover:bg-rose-400 disabled:cursor-not-allowed disabled:opacity-40 ${focus}`;

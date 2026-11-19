@@ -248,9 +248,10 @@ img {
   z-index: -1;
   pointer-events: none;
   background:
-    radial-gradient(48rem 34rem at 82% 4%, rgb(43 91 255 / 0.22), transparent 62%),
-    radial-gradient(40rem 30rem at 8% 96%, rgb(255 107 53 / 0.085), transparent 62%),
-    radial-gradient(36rem 28rem at 46% 58%, rgb(20 44 140 / 0.16), transparent 70%);
+    radial-gradient(52rem 36rem at 84% 0%, rgb(43 91 255 / 0.26), transparent 62%),
+    radial-gradient(42rem 30rem at 4% 100%, rgb(255 107 53 / 0.11), transparent 62%),
+    radial-gradient(38rem 30rem at 42% 55%, rgb(20 44 140 / 0.2), transparent 70%),
+    radial-gradient(30rem 22rem at 100% 70%, rgb(43 91 255 / 0.08), transparent 70%);
   animation: facs-drift 38s ease-in-out infinite alternate;
 }
 @keyframes facs-drift {
@@ -259,14 +260,71 @@ img {
   100% { transform: translate3d(2%, -2%, 0) scale(1.02); }
 }
 
-/* Thẻ: ánh sáng theo con trỏ + viền chuyển màu Sunset → Electric khi rê chuột, hiện dần khi tải trang. */
+/* Lớp nền: lưới chấm, lưới sáng theo con trỏ, đường đồng mức trôi chậm, hạt nhiễu. */
+.facs-backdrop {
+  position: fixed;
+  inset: 0;
+  z-index: -1;
+  pointer-events: none;
+  overflow: hidden;
+  --cx: 50vw;
+  --cy: -30vh;
+  --reveal: 0;
+}
+.facs-backdrop__grid {
+  position: absolute;
+  inset: 0;
+  background-image: radial-gradient(rgb(142 169 255 / 0.16) 1px, transparent 1.3px);
+  background-size: 24px 24px;
+  -webkit-mask-image: radial-gradient(ellipse 85% 75% at 60% 0%, #000 25%, transparent 80%);
+  mask-image: radial-gradient(ellipse 85% 75% at 60% 0%, #000 25%, transparent 80%);
+}
+.facs-backdrop__grid--lit {
+  background-image: radial-gradient(rgb(142 169 255 / 0.75) 1.1px, transparent 1.5px);
+  -webkit-mask-image: radial-gradient(220px circle at var(--cx) var(--cy), #000, transparent 75%);
+  mask-image: radial-gradient(220px circle at var(--cx) var(--cy), #000, transparent 75%);
+  opacity: calc(var(--reveal) * 0.9);
+  transition: opacity 0.4s;
+}
+.facs-backdrop__lines {
+  position: absolute;
+  bottom: -2vh;
+  left: 0;
+  width: 200%;
+  height: 34vh;
+  min-height: 220px;
+  animation: facs-lines 90s linear infinite;
+  -webkit-mask-image: linear-gradient(180deg, transparent, #000 45%);
+  mask-image: linear-gradient(180deg, transparent, #000 45%);
+}
+@keyframes facs-lines {
+  to { transform: translate3d(-50%, 0, 0); }
+}
+.facs-backdrop__grain {
+  position: absolute;
+  inset: 0;
+  opacity: 0.045;
+  mix-blend-mode: overlay;
+}
+
+/* Thẻ: ánh sáng theo con trỏ + viền chuyển màu Sunset → Electric khi rê chuột, hiện dần khi cuộn tới. */
 .facs-card {
   position: relative;
   isolation: isolate;
-  background-image: linear-gradient(180deg, rgb(142 169 255 / 0.05), transparent 38%);
-  box-shadow: 0 1px 0 rgb(255 255 255 / 0.04) inset, 0 18px 40px -28px rgb(0 0 0 / 0.9);
-  transition: border-color 0.35s, box-shadow 0.35s, translate 0.35s cubic-bezier(0.2, 0.8, 0.2, 1);
-  animation: facs-rise 0.55s cubic-bezier(0.2, 0.8, 0.2, 1) backwards;
+  background-image: linear-gradient(180deg, rgb(142 169 255 / 0.06), transparent 38%);
+  box-shadow: 0 1px 0 rgb(255 255 255 / 0.05) inset, 0 18px 40px -28px rgb(0 0 0 / 0.9);
+  transition:
+    border-color 0.35s,
+    box-shadow 0.4s,
+    opacity 0.65s cubic-bezier(0.2, 0.8, 0.2, 1),
+    translate 0.5s cubic-bezier(0.2, 0.8, 0.2, 1),
+    scale 0.45s cubic-bezier(0.2, 0.8, 0.2, 1),
+    transform 0.45s cubic-bezier(0.2, 0.8, 0.2, 1);
+}
+.facs-reveal .facs-card:not(.is-in) {
+  opacity: 0;
+  translate: 0 26px;
+  scale: 0.97;
 }
 .facs-card::before,
 .facs-card::after {
@@ -280,11 +338,11 @@ img {
 }
 .facs-card::before {
   z-index: -1;
-  background: radial-gradient(420px circle at var(--mx, 50%) var(--my, 0%), rgb(43 91 255 / 0.13), transparent 65%);
+  background: radial-gradient(460px circle at var(--mx, 50%) var(--my, 0%), rgb(43 91 255 / 0.16), transparent 65%);
 }
 .facs-card::after {
   padding: 1px;
-  background: radial-gradient(280px circle at var(--mx, 50%) var(--my, 0%), rgb(255 107 53 / 0.75), rgb(43 91 255 / 0.45) 45%, transparent 75%);
+  background: radial-gradient(300px circle at var(--mx, 50%) var(--my, 0%), rgb(255 107 53 / 0.85), rgb(43 91 255 / 0.5) 45%, transparent 75%);
   -webkit-mask: linear-gradient(#000 0 0) content-box, linear-gradient(#000 0 0);
   -webkit-mask-composite: xor;
   mask: linear-gradient(#000 0 0) content-box exclude, linear-gradient(#000 0 0);
@@ -293,23 +351,67 @@ img {
 .facs-card:hover::after {
   opacity: 1;
 }
-.facs-card:hover {
-  box-shadow: 0 1px 0 rgb(255 255 255 / 0.05) inset, 0 24px 50px -26px rgb(43 91 255 / 0.45);
-}
-/* Thẻ nhỏ trong danh sách: nhấc lên nhẹ. */
-.facs-tile:hover {
+/* Thẻ lớn (khu vực nhập liệu): nổi lên nhẹ, không phóng to để chữ và ô nhập không bị nhoè. */
+.facs-card.is-in:hover:not(:has(.fixed)) {
   translate: 0 -3px;
+  box-shadow: 0 1px 0 rgb(255 255 255 / 0.06) inset, 0 30px 60px -30px rgb(43 91 255 / 0.55), 0 0 0 1px rgb(142 169 255 / 0.08);
 }
-.facs-card:nth-child(2) { animation-delay: 50ms; }
-.facs-card:nth-child(3) { animation-delay: 100ms; }
-.facs-card:nth-child(4) { animation-delay: 150ms; }
-.facs-card:nth-child(5) { animation-delay: 200ms; }
-.facs-card:nth-child(n + 6) { animation-delay: 250ms; }
-@keyframes facs-rise {
-  from { opacity: 0; translate: 0 14px; }
-  to { opacity: 1; translate: 0 0; }
+/* Thẻ nhỏ trong danh sách: phóng to, nghiêng 3D theo con trỏ, bóng đổ sâu hơn. */
+.facs-tile {
+  transform-style: preserve-3d;
+  will-change: transform;
 }
-
+.facs-tile.is-in:not([open]):not(:has(.fixed)):hover,
+.facs-cms .facs-tile:not(.facs-card):not([open]):not(:has(.fixed)):hover {
+  z-index: 2;
+  translate: 0 -4px;
+  scale: 1.035;
+  transform: perspective(900px) rotateX(var(--rx, 0deg)) rotateY(var(--ry, 0deg));
+  box-shadow: 0 1px 0 rgb(255 255 255 / 0.07) inset, 0 34px 70px -28px rgb(0 0 0 / 0.95), 0 18px 50px -24px rgb(43 91 255 / 0.6);
+}
+.facs-tile:hover :is(svg, img) {
+  transition: scale 0.35s cubic-bezier(0.3, 1.5, 0.5, 1);
+}
+.facs-tile:hover > :first-child svg:first-child {
+  scale: 1.12;
+}
+/* Dòng danh sách (bài viết, tuyển dụng…): nhô lên khỏi danh sách khi rê. */
+.facs-row {
+  position: relative;
+  border-radius: 16px;
+  transition: background-color 0.25s, box-shadow 0.3s, scale 0.35s cubic-bezier(0.2, 0.8, 0.2, 1);
+}
+.facs-row:not(:has(.fixed)):hover {
+  z-index: 2;
+  scale: 1.012;
+  background-color: rgb(19 34 84 / 0.95) !important;
+  box-shadow: inset 3px 0 0 var(--color-sunset), 0 24px 50px -24px rgb(0 0 0 / 0.95), 0 0 0 1px rgb(142 169 255 / 0.14);
+}
+/* Gợn sóng khi bấm nút. */
+.facs-ripple-host {
+  position: relative;
+  overflow: hidden;
+}
+.facs-ripple {
+  position: absolute;
+  border-radius: 999px;
+  pointer-events: none;
+  background: currentColor;
+  opacity: 0.28;
+  translate: -50% -50%;
+  scale: 0;
+  animation: facs-ripple 0.6s cubic-bezier(0.2, 0.8, 0.2, 1) forwards;
+}
+@keyframes facs-ripple {
+  to { scale: 1; opacity: 0; }
+}
+/* Tiêu đề trang trượt nhẹ vào. */
+.facs-cms h1 {
+  animation: facs-title 0.7s cubic-bezier(0.2, 0.8, 0.2, 1) backwards;
+}
+@keyframes facs-title {
+  from { opacity: 0; translate: 0 10px; letter-spacing: 0.01em; }
+}
 }
 
 /* Nút chính Sunset: chữ tối cho đủ tương phản, ánh sáng lướt qua, nổi lên khi rê, nhún khi bấm. */
@@ -468,7 +570,14 @@ img {
 
 @media (prefers-reduced-motion: reduce) {
   .facs-aurora::before,
-  .facs-card { animation: none; }
+  .facs-backdrop__lines,
+  .facs-cms h1 { animation: none; }
+  .facs-reveal .facs-card:not(.is-in) { opacity: 1; translate: none; scale: none; }
+  .facs-card.is-in:hover,
+  .facs-row:hover { translate: none; scale: none; }
+  .facs-tile.is-in:not([open]):hover,
+  .facs-cms .facs-tile:not(.facs-card):not([open]):hover { translate: none; scale: none; transform: none; }
+  .facs-ripple { display: none; }
   .facs-tile:hover,
   .facs-cms :is(button, a).bg-brand:not(:disabled):hover { translate: none; }
   .facs-cms :is(button, a).bg-brand:not(:disabled)::after { display: none; }

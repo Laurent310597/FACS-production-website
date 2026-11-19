@@ -171,7 +171,7 @@ export default function AdminJobsPage() {
               const publicationState = getPublicationState(job, now);
 
               return (
-                <article key={job.id} className="grid gap-4 p-5 transition hover:bg-white/[0.025] md:grid-cols-[64px_minmax(0,1fr)_auto] md:items-center md:p-6">
+                <article key={job.id} className="facs-row grid gap-4 p-5 transition hover:bg-white/[0.025] md:grid-cols-[64px_minmax(0,1fr)_auto] md:items-center md:p-6">
                   <div className="flex h-14 w-14 items-center justify-center rounded-2xl border border-cyan-200/15 bg-cyan-300/8 text-cyan-200">
                     <Briefcase size={23} />
                   </div>

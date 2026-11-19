@@ -1,6 +1,7 @@
 import { useEffect, useState } from "react";
 import { Eye, EyeOff, LockKeyhole, Mail } from "lucide-react";
 import { Link, useLocation, useNavigate } from "react-router-dom";
+import CmsBackdrop from "../../components/admin/CmsBackdrop";
 import AdminConfigurationNotice from "../../components/admin/AdminConfigurationNotice";
 import { isSupabaseConfigured, supabase } from "../../lib/supabaseClient";
 
@@ -44,6 +45,7 @@ export default function AdminLoginPage() {
 
   return (
     <main data-no-translate className="facs-cms facs-aurora relative flex min-h-screen items-center justify-center overflow-hidden px-5 py-10">
+      <CmsBackdrop />
       <div className="absolute -left-28 top-20 h-80 w-80 rounded-full bg-electric/15 blur-[120px]" />
       <div className="absolute -right-28 bottom-10 h-80 w-80 rounded-full bg-sunset/10 blur-[120px]" />
 

@@ -212,7 +212,7 @@ function GuidelinesFolder({ rows, reload, setError, setNotice }) {
       ) : (
         <ul className="divide-y divide-white/10">
           {rows.map((row) => (
-            <li key={row.id} className="flex flex-wrap items-start justify-between gap-3 py-4">
+            <li key={row.id} className="facs-row -mx-3 px-3 flex flex-wrap items-start justify-between gap-3 py-4">
               <div className="min-w-0 flex-1">
                 <div className="flex flex-wrap items-center gap-2">
                   <span className="font-semibold text-white">{row.title}</span>
@@ -255,7 +255,7 @@ function InputsFolder({ rows }) {
       {rows.map((row) => {
         const files = Array.isArray(row.input_files) ? row.input_files : [];
         return (
-          <li key={row.id} className="py-4">
+          <li key={row.id} className="facs-row -mx-3 px-3 py-4">
             <div className="flex flex-wrap items-start justify-between gap-3">
               <div className="min-w-0 flex-1">
                 <div className="font-semibold text-white">{row.title || "Nội dung chưa đặt tên"}</div>
@@ -361,7 +361,7 @@ function ApprovedFolder({ rows, reload, setError }) {
       ) : (
         <ul className="divide-y divide-white/10">
           {filtered.map((row) => (
-            <li key={row.id} className="py-4">
+            <li key={row.id} className="facs-row -mx-3 px-3 py-4">
               <div className="flex flex-wrap items-start justify-between gap-3">
                 <button type="button" onClick={() => setOpenId(openId === row.id ? null : row.id)} className="min-w-0 flex-1 text-left">
                   <div className="font-semibold text-white hover:text-cyan-200">{row.title || "(không tiêu đề)"}</div>
@@ -440,7 +440,7 @@ export default function AdminHubLibraryPage() {
             const Icon = folder.icon;
             const isActive = active === folder.key;
             return (
-              <button key={folder.key} type="button" onClick={() => { setActive(folder.key); setNotice(""); }} aria-pressed={isActive} className={`facs-card rounded-[20px] border p-5 text-left transition ${isActive ? "border-cyan-300 bg-cyan-300/10" : "border-cyan-300/[0.14] bg-cms-1 hover:border-cyan-200/30"}`}>
+              <button key={folder.key} type="button" onClick={() => { setActive(folder.key); setNotice(""); }} aria-pressed={isActive} className={`facs-card facs-tile rounded-[20px] border p-5 text-left transition ${isActive ? "border-cyan-300 bg-cyan-300/10" : "border-cyan-300/[0.14] bg-cms-1 hover:border-cyan-200/30"}`}>
                 <div className="flex items-center gap-3">
                   <Icon size={22} className={isActive ? "text-cyan-300" : "text-slate-400"} />
                   <span className="font-bold text-white">{folder.title}</span>

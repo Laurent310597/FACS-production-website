@@ -103,7 +103,7 @@ export default function AdminApplicationsPage() {
       </div>
       <div className="mt-6 space-y-4">
         {loading ? <SkeletonRows rows={5} /> : filtered.length === 0 ? <div className="facs-card rounded-[20px] border border-cyan-300/[0.14] bg-cms-1 px-6 py-16 text-center text-ink-3"><UserRoundSearch className="mx-auto mb-4" /> Chưa có hồ sơ phù hợp.</div> : filtered.map((row) => (
-          <details key={row.id} className="group facs-card rounded-[20px] border border-cyan-300/[0.14] bg-cms-1 open:border-cyan-200/20">
+          <details key={row.id} className="group facs-card facs-tile rounded-[20px] border border-cyan-300/[0.14] bg-cms-1 open:border-cyan-200/20">
             <summary className="grid cursor-pointer list-none gap-4 p-5 md:grid-cols-[minmax(0,1.2fr)_minmax(0,.8fr)_auto] md:items-center">
               <div><div className="font-semibold text-white">{row.full_name}</div><div className="mt-1 text-sm text-ink-3">{row.email} · {row.phone}</div></div>
               <div><div className="text-sm text-slate-300">{row.position || "Ứng tuyển chung"}</div><div className="mt-1 text-xs text-ink-3">{new Date(row.submitted_at).toLocaleString("vi-VN")}</div></div>

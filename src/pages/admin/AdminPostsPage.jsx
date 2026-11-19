@@ -192,7 +192,7 @@ export default function AdminPostsPage() {
               const localized = getLocalizedPost(post, "vi");
               const publicationState = getPublicationState(post, now);
               return (
-                <article key={post.id} className="grid gap-4 p-5 transition hover:bg-white/[0.025] md:grid-cols-[96px_minmax(0,1fr)_auto] md:items-center md:p-6">
+                <article key={post.id} className="facs-row grid gap-4 p-5 transition hover:bg-white/[0.025] md:grid-cols-[96px_minmax(0,1fr)_auto] md:items-center md:p-6">
                   <div className="h-20 overflow-hidden rounded-2xl border border-white/10 bg-cms-2">
                     {post.cover_image_url ? <img src={post.cover_image_url} alt="" className="h-full w-full object-cover" /> : <div className="flex h-full items-center justify-center text-xs text-ink-3">No image</div>}
                   </div>
