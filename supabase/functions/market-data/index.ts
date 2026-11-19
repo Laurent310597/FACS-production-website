@@ -3,7 +3,6 @@ import { corsHeaders } from "../_shared/cors.ts";
 // Dữ liệu thị trường cho tiện ích /tools/rates-and-gold.
 // Nguồn (đã kiểm tra truy cập được từ máy chủ Supabase):
 // – Tỷ giá: API JSON chính thức của Vietcombank (dự phòng: XML cũ của VCB).
-// – Tỷ giá trung tâm: trang NHNN (thường chặn máy chủ nước ngoài → dùng giá trị đã lưu nếu có).
 // – Vàng: giá thế giới gold-api.com; vàng miếng SJC theo bảng giá công bố của PNJ.
 // – Chỉ số chứng khoán: dữ liệu biểu đồ ngày của DNSE/Entrade (VN-Index, HNX-Index, VN30, UPCoM).
 // Mỗi nguồn lỗi tạm thời sẽ trả về giá trị đã lưu gần nhất (kèm thời điểm), không để trống.
@@ -69,17 +68,6 @@ async function vcbRates() {
     .filter((r) => CURRENCIES.includes(r.code) && r.sell);
   if (!rows.length) throw new Error("VCB format changed");
   return { rows, as_of: null };
-}
-
-async function sbvCentralRate() {
-  const res = await fetchWithTimeout("https://sbv.gov.vn/vi/t%E1%BB%B7-gi%C3%A1", { headers: { Accept: "text/html" } }, 7000);
-  if (!res.ok) throw new Error(`SBV ${res.status}`);
-  const html = await res.text();
-  if (/Request Rejected/i.test(html)) throw new Error("SBV blocked");
-  const plain = html.replace(/<script[\s\S]*?<\/script>/gi, " ").replace(/<style[\s\S]*?<\/style>/gi, " ").replace(/<[^>]+>/g, " ").replace(/&nbsp;/gi, " ").replace(/\s+/g, " ");
-  const match = plain.match(/1\s*Đô la Mỹ\s*=\s*([0-9.]+)\s*VND/i) || plain.match(/Tỷ giá trung tâm[\s\S]{0,500}?([0-9]{2}\.[0-9]{3})\s*VND/i);
-  if (!match) throw new Error("SBV format changed");
-  return num(match[1].replaceAll(".", ""));
 }
 
 async function worldGold() {
@@ -158,10 +146,9 @@ Deno.serve(async (req) => {
   if (req.method !== "GET" && req.method !== "POST") return json({ error: "Method not allowed" }, 405);
 
   const now = new Date().toISOString();
-  const [cache, vcb, sbv, world, sjc, indices] = await Promise.all([
+  const [cache, vcb, world, sjc, indices] = await Promise.all([
     readCache(),
     vcbRates().then((v) => ({ ok: true as const, v }), (e) => ({ ok: false as const, e: String(e?.message || e) })),
-    sbvCentralRate().then((v) => ({ ok: true as const, v }), (e) => ({ ok: false as const, e: String(e?.message || e) })),
     worldGold().then((v) => ({ ok: true as const, v }), (e) => ({ ok: false as const, e: String(e?.message || e) })),
     sjcGold().then((v) => ({ ok: true as const, v }), (e) => ({ ok: false as const, e: String(e?.message || e) })),
     Promise.allSettled([
@@ -186,7 +173,6 @@ Deno.serve(async (req) => {
   };
 
   const vcbValue = pick("vcb", vcb, cache.vcb ? { rows: cache.vcb, as_of: cache.vcb_as_of ?? null } : undefined);
-  const sbvValue = pick("sbv", sbv, cache.sbv_central_rate ?? undefined);
   const worldValue = pick("gold_world", world, cache.gold?.world_usd_oz ?? undefined);
   const sjcValue = pick("gold_sjc", sjc, cache.gold?.sjc_buy ? { sjc_buy: cache.gold.sjc_buy, sjc_sell: cache.gold.sjc_sell } : undefined);
 
@@ -205,7 +191,6 @@ Deno.serve(async (req) => {
   const payload = {
     vcb: vcbValue?.rows ?? null,
     vcb_as_of: vcbValue?.as_of ?? null,
-    sbv_central_rate: sbvValue ?? null,
     gold,
     indices: indexList.map(({ cached: _c, ...rest }) => rest),
     source_updated: times,
@@ -217,6 +202,6 @@ Deno.serve(async (req) => {
     updated_at: now,
     ...payload,
     indices: indexList,
-    source_status: { vcb: status.vcb, sbv: status.sbv, gold: status.gold_world === "fulfilled" || status.gold_sjc === "fulfilled" ? "fulfilled" : status.gold_world, gold_world: status.gold_world, gold_sjc: status.gold_sjc, indices: status.indices },
+    source_status: { vcb: status.vcb, gold: status.gold_world === "fulfilled" || status.gold_sjc === "fulfilled" ? "fulfilled" : status.gold_world, gold_world: status.gold_world, gold_sjc: status.gold_sjc, indices: status.indices },
   });
 });
