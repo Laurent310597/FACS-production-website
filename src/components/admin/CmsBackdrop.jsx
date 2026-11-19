@@ -1,7 +1,7 @@
 import { useEffect, useRef } from "react";
-import { GRAIN_URL as GRAIN, waveArea } from "../../lib/waveShapes";
+import { GRAIN_URL as GRAIN, ribbon, waveArea } from "../../lib/waveShapes";
 import WaveLayers from "../WaveLayers";
-import DiagonalWaves, { ribbon } from "../site/DiagonalWaves";
+import DiagonalWaves from "../site/DiagonalWaves";
 
 // Các lớp từ xa tới gần: lớp xa trôi chậm, lớp gần trôi nhanh hơn (tạo chiều sâu).
 const LAYERS = [

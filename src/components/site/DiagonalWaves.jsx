@@ -1,27 +1,7 @@
 // Các mảng sóng chéo (từ góc phải trên xuống góc trái dưới) chồng lên nhau, trôi chậm và nhấp nhô nhịp nhàng.
 // Dùng cho nền danh sách Insights, chân trang (soft = nhạt hơn) và nền CMS (truyền bands + className riêng).
 import { useId } from "react";
-
-const SPAN = 3200;
-const H = 260;
-
-// Một dải sóng (mảng) có mép trên và mép dưới đều uốn lượn; chu kỳ chia hết cho 1600 để trôi ngang liền mạch.
-function ribbon(phase, amp, thick) {
-  const top = [];
-  const bottom = [];
-  for (let x = 0; x <= SPAN; x += 20) {
-    const t = (x / 1600) * 2 * Math.PI;
-    const yTop = 70 - amp * Math.sin(2 * t + phase) - amp * 0.4 * Math.sin(5 * t + phase * 1.6);
-    const yBot = yTop + thick + 22 * Math.sin(3 * t + phase * 0.7);
-    top.push(`${x} ${yTop.toFixed(1)}`);
-    bottom.push(`${x} ${yBot.toFixed(1)}`);
-  }
-  const crest = `M${top.join("L")}`;
-  const area = `M${top.join("L")}L${bottom.reverse().join("L")}Z`;
-  return { crest, area };
-}
-
-export { ribbon };
+import { DIAG_SPAN as SPAN, DIAG_HEIGHT as H, ribbon } from "../../lib/waveShapes";
 
 const BANDS = [
   { id: "d1", color: "#22D3EE", alpha: 0.13, line: 0.34, ...ribbon(0.2, 30, 120), dur: "120s", bob: "11s", offset: "4%" },
