@@ -13,6 +13,7 @@
     "qa:email-schedule": "node scripts/qa-scheduled-email-db.mjs",
     "qa:hub": "node --experimental-strip-types --test scripts/qa-hub-content.mjs",
     "qa:hub-social": "node --experimental-strip-types --test scripts/qa-hub-social.mjs",
+    "qa:legal-email": "node --experimental-strip-types --test scripts/qa-legal-email.mjs",
     "qa:hub-zalo": "node --experimental-strip-types --test scripts/qa-hub-zalo.mjs"
   },
   "dependencies": {
