@@ -38,3 +38,6 @@ on public.legal_calendar_email_deliveries
 for select
 to authenticated
 using (true);
+
+-- Dự án này không tự cấp quyền cho service_role trên bảng mới (xem v20.10): Edge Function cần đọc/ghi nhật ký.
+grant select, insert, update on table public.legal_calendar_email_deliveries to service_role;
