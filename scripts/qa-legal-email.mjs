@@ -36,6 +36,9 @@ test("email song ngữ: tiêu đề, số mốc, ngày, liên kết lịch, ch�
   assert.ok(order.every((index, i) => index > -1 && (i === 0 || index > order[i - 1])), order.join(","));
   assert.equal(email.html.split("-------------------").length, 2);
   assert.equal(email.html.split("FACS (VIETNAM) TEAM").length, 2); // một chữ ký song ngữ duy nhất
+  // Mỗi mốc chỉ còn loại + tên nghĩa vụ (không nội dung, đối tượng, căn cứ, nguồn)
+  for (const gone of ["Nộp hồ sơ", "File returns", "Điều 44", "Article 44", "Đối tượng", "Applies to", "example.gov.vn"]) assert.ok(!email.html.includes(gone), gone);
+  assert.match(email.html, /Tiếng Việt[\s\S]*English/);
   assert.ok(email.html.indexOf("Báo cáo lao động") < email.html.indexOf("Khai thuế tháng 11"));
   assert.match(email.html, /PHÒNG THÔNG TIN &amp; TRUYỀN THÔNG/);
   assert.doesNotMatch(email.html, /INTERNAL TEST/);
@@ -55,6 +58,8 @@ test("mã băm nội dung: ổn định theo thứ tự, đổi khi đổi chữ
   const b = { ...base, id: "b", event_date: "2026-12-04" };
   const h1 = await legalEmailContentHash("2026-12", [base, b], "https://facs.vn");
   assert.equal(h1, await legalEmailContentHash("2026-12", [b, base], "https://facs.vn"));
-  assert.notEqual(h1, await legalEmailContentHash("2026-12", [{ ...base, summary_vi: "Khác" }, b], "https://facs.vn"));
+  assert.notEqual(h1, await legalEmailContentHash("2026-12", [{ ...base, title_vi: "Khác" }, b], "https://facs.vn"));
+  // Nội dung/căn cứ không còn hiện trong email nên sửa chúng không bắt gửi thử lại
+  assert.equal(h1, await legalEmailContentHash("2026-12", [{ ...base, summary_vi: "Khác", legal_basis_vi: "Khác" }, b], "https://facs.vn"));
   assert.notEqual(h1, await legalEmailContentHash("2027-01", [base, b], "https://facs.vn"));
 });
