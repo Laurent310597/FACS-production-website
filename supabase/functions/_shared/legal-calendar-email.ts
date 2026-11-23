@@ -1,7 +1,8 @@
 import { buildEmailShell, buildEmailSignature } from "./form-email-templates.ts";
 
-// Email gửi khách hàng các mốc pháp lý trong một tháng (song ngữ, cùng khung với email Insights).
-export const LEGAL_EMAIL_TEMPLATE_VERSION = "2026-11-23-monthly-v1";
+// Email gửi khách hàng các mốc pháp lý trong một tháng (cùng khung với email Insights).
+// Bố cục: lời dẫn tiếng Việt — vạch ngăn — lời dẫn tiếng Anh — một danh sách mốc song ngữ Việt | Anh đặt song song.
+export const LEGAL_EMAIL_TEMPLATE_VERSION = "2026-11-23-monthly-v2-bilingual-list";
 
 export type LegalEmailEvent = {
   id: string;
@@ -96,39 +97,51 @@ export async function legalEmailContentHash(monthKey: string, events: LegalEmail
 
 const P = "font-family:Arial,Helvetica,sans-serif;";
 
-function eventRow(event: LegalEmailEvent, lang: "vi" | "en") {
+/** Một cột ngôn ngữ của một mốc: tiêu đề, nội dung, đối tượng, căn cứ. */
+function languageColumn(event: LegalEmailEvent, lang: "vi" | "en") {
   const vi = lang === "vi";
-  const parts = dayParts(event.event_date);
-  const category = CATEGORIES[event.category || "other"] || CATEGORIES.other;
   const title = vi ? pick(event.title_vi, event.title_en) : pick(event.title_en, event.title_vi);
-  const period = vi ? pick(event.period_label_vi, event.period_label_en) : pick(event.period_label_en, event.period_label_vi);
   const summary = vi ? pick(event.summary_vi, event.summary_en) : pick(event.summary_en, event.summary_vi);
   const audience = vi ? pick(event.target_audience_vi, event.target_audience_en) : pick(event.target_audience_en, event.target_audience_vi);
   const basis = vi ? pick(event.legal_basis_vi, event.legal_basis_en) : pick(event.legal_basis_en, event.legal_basis_vi);
-  const url = /^https:\/\//i.test(text(event.official_source_url)) ? text(event.official_source_url) : "";
   const meta = (label: string, value: string) => value
-    ? `<p style="${P}margin:6px 0 0;font-size:12.5px;line-height:1.6;color:#4b5565;text-align:left;"><strong style="${P}color:#243044;">${label}:</strong> ${escapeHtml(value)}</p>`
+    ? `<p style="${P}margin:5px 0 0;font-size:12px;line-height:1.55;color:#4b5565;text-align:left;"><strong style="${P}color:#243044;">${label}:</strong> ${escapeHtml(value)}</p>`
     : "";
+  return `<p style="${P}margin:0;font-size:14px;line-height:1.45;font-weight:700;color:#0f315a;text-align:left;">${escapeHtml(title)}</p>
+      ${summary ? `<p style="${P}margin:5px 0 0;font-size:12.5px;line-height:1.6;color:#243044;text-align:left;">${escapeHtml(summary)}</p>` : ""}
+      ${meta(vi ? "Đối tượng" : "Applies to", audience)}
+      ${meta(vi ? "Căn cứ" : "Legal basis", basis)}`;
+}
+
+// Hai cột Việt | Anh: đặt cạnh nhau khi đủ rộng, tự xuống dòng trên điện thoại; Outlook dùng bảng ẩn để giữ hai cột.
+const COL = `${P}display:inline-block;vertical-align:top;width:100%;max-width:226px;text-align:left;`;
+
+function eventRow(event: LegalEmailEvent) {
+  const parts = dayParts(event.event_date);
+  const category = CATEGORIES[event.category || "other"] || CATEGORIES.other;
+  const periodVi = pick(event.period_label_vi, event.period_label_en);
+  const periodEn = pick(event.period_label_en, event.period_label_vi);
+  const period = periodVi && periodEn && periodVi !== periodEn ? `${periodVi} / ${periodEn}` : periodVi || periodEn;
+  const url = /^https:\/\//i.test(text(event.official_source_url)) ? text(event.official_source_url) : "";
   return `<tr>
-    <td valign="top" width="74" style="${P}width:74px;padding:16px 0;border-top:1px solid #e3e8ef;">
-      <table role="presentation" cellspacing="0" cellpadding="0" border="0" width="62" style="${P}width:62px;background:#0f315a;border-radius:6px;">
-        <tr><td align="center" style="${P}padding:8px 4px 2px;color:#ffffff;font-size:22px;font-weight:700;line-height:1;">${parts.day}</td></tr>
-        <tr><td align="center" style="${P}padding:2px 4px 9px;color:#bfe9f5;font-size:11px;line-height:1.3;">${vi ? parts.weekdayVi : parts.weekdayEn}</td></tr>
+    <td valign="top" width="70" style="${P}width:70px;padding:16px 0;border-top:1px solid #e3e8ef;">
+      <table role="presentation" cellspacing="0" cellpadding="0" border="0" width="60" style="${P}width:60px;background:#0f315a;border-radius:6px;">
+        <tr><td align="center" style="${P}padding:8px 3px 2px;color:#ffffff;font-size:22px;font-weight:700;line-height:1;">${parts.day}</td></tr>
+        <tr><td align="center" style="${P}padding:2px 3px 9px;color:#bfe9f5;font-size:10.5px;line-height:1.35;">${parts.weekdayVi}<br>${parts.weekdayEn}</td></tr>
       </table>
     </td>
-    <td valign="top" style="${P}padding:16px 0 16px 14px;border-top:1px solid #e3e8ef;text-align:left;">
-      <p style="${P}margin:0 0 4px;font-size:11px;font-weight:700;letter-spacing:0.6px;text-transform:uppercase;color:${category.color};text-align:left;">${escapeHtml(vi ? category.vi : category.en)}${period ? ` <span style="${P}color:#8a95a5;font-weight:400;text-transform:none;letter-spacing:0;">· ${escapeHtml(period)}</span>` : ""}</p>
-      <p style="${P}margin:0;font-size:15px;line-height:1.45;font-weight:700;color:#0f315a;text-align:left;">${escapeHtml(title)}</p>
-      ${summary ? `<p style="${P}margin:6px 0 0;font-size:13px;line-height:1.65;color:#243044;text-align:left;">${escapeHtml(summary)}</p>` : ""}
-      ${meta(vi ? "Đối tượng áp dụng" : "Applies to", audience)}
-      ${meta(vi ? "Căn cứ pháp lý" : "Legal basis", basis)}
-      ${url ? `<p style="${P}margin:6px 0 0;font-size:12px;text-align:left;"><a href="${escapeHtml(url)}" target="_blank" rel="noopener noreferrer" style="${P}color:#067a98;">${vi ? "Xem nguồn chính thức" : "View official source"} &rsaquo;</a></p>` : ""}
+    <td valign="top" style="${P}padding:16px 0 16px 12px;border-top:1px solid #e3e8ef;text-align:left;">
+      <p style="${P}margin:0 0 8px;font-size:11px;font-weight:700;letter-spacing:0.5px;text-transform:uppercase;color:${category.color};text-align:left;">${escapeHtml(category.vi)} · ${escapeHtml(category.en)}${period ? ` <span style="${P}color:#8a95a5;font-weight:400;text-transform:none;letter-spacing:0;">· ${escapeHtml(period)}</span>` : ""}</p>
+      <!--[if mso]><table role="presentation" cellspacing="0" cellpadding="0" border="0" width="100%"><tr><td width="50%" valign="top" style="padding-right:10px;"><![endif]-->
+      <div style="${COL}padding:0 14px 8px 0;">${languageColumn(event, "vi")}</div><!--[if mso]></td><td width="50%" valign="top" style="padding-left:10px;border-left:1px solid #e3e8ef;"><![endif]--><div style="${COL}padding:0 0 8px 0;">${languageColumn(event, "en")}</div>
+      <!--[if mso]></td></tr></table><![endif]-->
+      ${url ? `<p style="${P}margin:4px 0 0;font-size:12px;text-align:left;"><a href="${escapeHtml(url)}" target="_blank" rel="noopener noreferrer" style="${P}color:#067a98;">Nguồn chính thức / Official source &rsaquo;</a></p>` : ""}
     </td>
   </tr>`;
 }
 
-function eventTable(events: LegalEmailEvent[], lang: "vi" | "en") {
-  return `<table role="presentation" width="100%" cellspacing="0" cellpadding="0" border="0" style="${P}width:100%;margin:6px 0 4px;border-bottom:1px solid #e3e8ef;">${events.map((event) => eventRow(event, lang)).join("")}</table>`;
+function eventTable(events: LegalEmailEvent[]) {
+  return `<table role="presentation" width="100%" cellspacing="0" cellpadding="0" border="0" style="${P}width:100%;margin:6px 0 4px;border-bottom:1px solid #e3e8ef;">${events.map(eventRow).join("")}</table>`;
 }
 
 function button(url: string, label: string) {
@@ -149,20 +162,15 @@ export function buildLegalCalendarEmail(monthKey: string, rawEvents: LegalEmailE
   const html = buildEmailShell(`
     ${isTest ? `<p style="${P}margin:0 0 20px;padding:10px 14px;border:1px solid #f59e0b;background:#fffbeb;color:#92400e;font-weight:700;">EMAIL THỬ NỘI BỘ / INTERNAL TEST — KHÔNG GỬI KHÁCH HÀNG</p>` : ""}
     ${para("Kính gửi Quý Khách hàng,")}
-    ${para(`FACS trân trọng gửi đến Quý Khách hàng <strong>${count} mốc thời hạn pháp lý</strong> cần lưu ý trong <strong>${escapeHtml(labels.vi)}</strong>. Quý Khách hàng vui lòng rà soát các nghĩa vụ áp dụng cho doanh nghiệp mình để chủ động chuẩn bị hồ sơ và thực hiện đúng hạn.`)}
-    <h2 style="${P}text-align:left;margin:4px 0 4px;font-size:19px;line-height:1.4;color:#0f315a;">Lịch pháp lý ${escapeHtml(labels.vi)}</h2>
-    ${eventTable(events, "vi")}
-    ${para("Thông tin mang tính tham khảo; nghĩa vụ cụ thể phụ thuộc vào tình hình thực tế của từng doanh nghiệp. Quý Khách hàng có thể phản hồi email này hoặc liên hệ FACS để được hỗ trợ.", "margin-top:16px;font-size:12.5px;color:#4b5565;")}
-    ${button(calendarUrl, "Xem lịch pháp lý đầy đủ")}
-    ${buildEmailSignature("infor@facs.vn", "Trân trọng,", "PHÒNG THÔNG TIN &amp; TRUYỀN THÔNG")}
-    <div style="${P}margin:30px 0;text-align:center;color:#a3acb9;letter-spacing:1px;">-------------------</div>
+    ${para(`FACS trân trọng gửi đến Quý Khách hàng <strong>${count} mốc thời hạn pháp lý</strong> cần lưu ý trong <strong>${escapeHtml(labels.vi)}</strong> (chi tiết song ngữ bên dưới). Quý Khách hàng vui lòng rà soát các nghĩa vụ áp dụng cho doanh nghiệp mình để chủ động chuẩn bị và thực hiện đúng hạn.`, "margin-bottom:0;")}
+    <div style="${P}margin:22px 0;text-align:center;color:#a3acb9;letter-spacing:1px;">-------------------</div>
     ${para("Dear Valued Clients,")}
-    ${para(`FACS is pleased to share <strong>${count} compliance deadline${count > 1 ? "s" : ""}</strong> to note in <strong>${escapeHtml(labels.en)}</strong>. Please review the obligations that apply to your company so that filings and payments can be prepared and completed on time.`)}
-    <h2 style="${P}text-align:left;margin:4px 0 4px;font-size:19px;line-height:1.4;color:#0f315a;">Legal calendar — ${escapeHtml(labels.en)}</h2>
-    ${eventTable(events, "en")}
-    ${para("This information is for reference only; specific obligations depend on each company's circumstances. You may reply to this email or contact FACS for assistance.", "margin-top:16px;font-size:12.5px;color:#4b5565;")}
-    ${button(calendarUrl, "View the full legal calendar")}
-    ${buildEmailSignature("infor@facs.vn", "Sincerely,", "INFORMATION &amp; COMMUNICATION DEPARTMENT")}
+    ${para(`FACS is pleased to share <strong>${count} compliance deadline${count > 1 ? "s" : ""}</strong> to note in <strong>${escapeHtml(labels.en)}</strong> (bilingual details below). Please review the obligations that apply to your company so that they can be prepared and completed on time.`)}
+    <h2 style="${P}text-align:left;margin:26px 0 4px;font-size:18px;line-height:1.4;color:#0f315a;">Lịch pháp lý ${escapeHtml(labels.vi)} <span style="${P}color:#8a95a5;font-weight:400;">|</span> Legal calendar — ${escapeHtml(labels.en)}</h2>
+    ${eventTable(events)}
+    <p style="${P}margin:16px 0 0;font-size:12px;line-height:1.6;color:#4b5565;text-align:left;">Thông tin mang tính tham khảo; nghĩa vụ cụ thể phụ thuộc vào tình hình thực tế của từng doanh nghiệp. Quý Khách hàng có thể phản hồi email này hoặc liên hệ FACS để được hỗ trợ.<br><em>This information is for reference only; specific obligations depend on each company's circumstances. You may reply to this email or contact FACS for assistance.</em></p>
+    ${button(calendarUrl, "Xem lịch pháp lý đầy đủ | View the full legal calendar")}
+    ${buildEmailSignature("infor@facs.vn", "Trân trọng, | Sincerely,", "PHÒNG THÔNG TIN &amp; TRUYỀN THÔNG<br>INFORMATION &amp; COMMUNICATION DEPARTMENT")}
   `, siteUrl);
 
   return { subject, html, calendarUrl, eventCount: count };

@@ -29,8 +29,13 @@ test("email song ngữ: tiêu đề, số mốc, ngày, liên kết lịch, ch�
   assert.match(email.html, /2 mốc thời hạn pháp lý/);
   assert.match(email.html, /2 compliance deadlines/);
   assert.match(email.html, /https:\/\/facs\.vn\/legal-calendar/);
-  assert.match(email.html, />04<\/td>[\s\S]*?Thứ Sáu</); // 04/12/2026 là thứ Sáu
-  assert.match(email.html, />21<\/td>[\s\S]*?>Mon</);
+  assert.match(email.html, />04<\/td>[\s\S]*?Thứ Sáu<br>Fri</); // 04/12/2026 là thứ Sáu
+  assert.match(email.html, />21<\/td>[\s\S]*?Thứ Hai<br>Mon</);
+  // Bố cục: lời dẫn Việt → vạch ngăn → lời dẫn Anh → danh sách song ngữ (mỗi mốc có cả hai cột Việt | Anh)
+  const order = ["Kính gửi Quý Khách hàng", "-------------------", "Dear Valued Clients", "Legal calendar —", "Báo cáo lao động", "Labour report"].map((needle) => email.html.indexOf(needle));
+  assert.ok(order.every((index, i) => index > -1 && (i === 0 || index > order[i - 1])), order.join(","));
+  assert.equal(email.html.split("-------------------").length, 2);
+  assert.equal(email.html.split("FACS (VIETNAM) TEAM").length, 2); // một chữ ký song ngữ duy nhất
   assert.ok(email.html.indexOf("Báo cáo lao động") < email.html.indexOf("Khai thuế tháng 11"));
   assert.match(email.html, /PHÒNG THÔNG TIN &amp; TRUYỀN THÔNG/);
   assert.doesNotMatch(email.html, /INTERNAL TEST/);
