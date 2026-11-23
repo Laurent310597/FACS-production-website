@@ -36,3 +36,6 @@ verify_jwt = false
 
 [functions.market-data]
 verify_jwt = false
+
+[functions.legal-calendar-email]
+verify_jwt = false

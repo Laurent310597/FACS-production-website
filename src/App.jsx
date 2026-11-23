@@ -25,6 +25,7 @@ import AdminLegalCalendarPage from "./pages/admin/AdminLegalCalendarPage";
 import AdminLegalDashboardPage from "./pages/admin/AdminLegalDashboardPage";
 import AdminLegalCalendarEditorPage from "./pages/admin/AdminLegalCalendarEditorPage";
 import AdminLegalSourcesPage from "./pages/admin/AdminLegalSourcesPage";
+import AdminLegalEmailPage from "./pages/admin/AdminLegalEmailPage";
 import AdminARPage from "./pages/admin/AdminARPage";
 import AdminHubContentPage from "./pages/admin/AdminHubContentPage";
 import AdminHubLibraryPage from "./pages/admin/AdminHubLibraryPage";
@@ -154,6 +155,7 @@ function AnimatedRoutes() {
         <Route path="/admin/legal-calendar" element={<ProtectedAdminRoute><AdminLegalCalendarPage /></ProtectedAdminRoute>} />
         <Route path="/admin/legal-calendar/new" element={<ProtectedAdminRoute><AdminLegalCalendarEditorPage /></ProtectedAdminRoute>} />
         <Route path="/admin/legal-calendar/:id/edit" element={<ProtectedAdminRoute><AdminLegalCalendarEditorPage /></ProtectedAdminRoute>} />
+        <Route path="/admin/legal-email" element={<ProtectedAdminRoute><AdminLegalEmailPage /></ProtectedAdminRoute>} />
         <Route path="/admin/legal-sources" element={<ProtectedAdminRoute><AdminLegalSourcesPage /></ProtectedAdminRoute>} />
         <Route path="/admin/hub" element={<Navigate to="/admin/hub/content" replace />} />
         <Route path="/admin/hub/content" element={<ProtectedAdminRoute><AdminHubContentPage /></ProtectedAdminRoute>} />

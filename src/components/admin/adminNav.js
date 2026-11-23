@@ -71,6 +71,7 @@ export const ADMIN_NAV = [
     items: [
       { to: "/admin/legal-dashboard", label: "Dashboard vận hành", icon: BarChart3 },
       { to: "/admin/legal-calendar", label: "Mốc pháp lý", icon: CalendarRange },
+      { to: "/admin/legal-email", label: "Email lịch tháng", icon: MailCheck },
       { to: "/admin/legal-sources", label: "Nguồn & cập nhật", icon: Radar },
     ],
   },
