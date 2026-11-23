@@ -41,3 +41,7 @@ using (true);
 
 -- Dự án này không tự cấp quyền cho service_role trên bảng mới (xem v20.10): Edge Function cần đọc/ghi nhật ký.
 grant select, insert, update on table public.legal_calendar_email_deliveries to service_role;
+
+-- Phạm vi người nhận của mỗi lượt gửi: tất cả khách đang nhận, hoặc chỉ các khách được tick chọn.
+alter table public.legal_calendar_email_deliveries
+  add column if not exists audience_scope text not null default 'all' check (audience_scope in ('all', 'selected'));

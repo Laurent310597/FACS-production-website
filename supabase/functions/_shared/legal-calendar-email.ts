@@ -160,3 +160,48 @@ export function buildLegalCalendarEmail(monthKey: string, rawEvents: LegalEmailE
 
   return { subject, html, calendarUrl, eventCount: count };
 }
+
+// ───────── Người nhận ─────────
+const EMAIL_RE = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
+const UUID_RE = /^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}$/i;
+export const MAX_BCC = 497; // 500 người nhận của Microsoft 365 trừ To + 2 CC
+
+export type AudienceRow = { id: string; email: unknown; display_name?: string | null; company_name?: string | null; created_at?: string | null };
+export type AudienceContact = { id: string; email: string; name: string | null; company: string | null; created_at: string | null };
+
+/** Chuẩn hoá danh sách khách đang nhận: chữ thường, bỏ địa chỉ sai, bỏ địa chỉ nội bộ (To/CC/người gửi), bỏ trùng. */
+export function normalizeAudience(rows: AudienceRow[], excluded: string[]) {
+  const skip = new Set(excluded.map((email) => email.toLowerCase()));
+  const seen = new Set<string>();
+  const list: AudienceContact[] = [];
+  for (const row of rows) {
+    const email = String(row.email || "").trim().toLowerCase();
+    if (!EMAIL_RE.test(email) || skip.has(email) || seen.has(email)) continue;
+    seen.add(email);
+    list.push({ id: row.id, email, name: row.display_name || null, company: row.company_name || null, created_at: row.created_at || null });
+  }
+  return list.sort((a, b) => a.email.localeCompare(b.email));
+}
+
+/** Email nào đã nhận (hoặc đang được gửi) lịch của tháng này, theo nhật ký gửi khách hàng. */
+export function receivedThisMonth(logs: { status: string; bcc_addresses?: string[] | null; completed_at?: string | null; created_at: string }[]) {
+  const map = new Map<string, { status: string; at: string }>();
+  for (const log of [...logs].sort((a, b) => a.created_at.localeCompare(b.created_at))) {
+    if (log.status !== "sent" && log.status !== "processing") continue;
+    for (const raw of log.bcc_addresses || []) map.set(String(raw).toLowerCase(), { status: log.status, at: log.completed_at || log.created_at });
+  }
+  return map;
+}
+
+/** Chọn người nhận BCC theo phạm vi: tất cả, hoặc đúng các khách được tick (phải còn trong danh sách đang nhận). */
+export function pickRecipients(audience: AudienceContact[], mode: unknown, ids: unknown) {
+  if (mode !== "selected") return { scope: "all" as const, contacts: audience };
+  if (!Array.isArray(ids) || !ids.length) throw new Error("Hãy tick chọn ít nhất một khách hàng.");
+  const wanted = Array.from(new Set(ids.map(String)));
+  if (wanted.some((id) => !UUID_RE.test(id))) throw new Error("Danh sách khách hàng đã chọn không hợp lệ.");
+  if (wanted.length > MAX_BCC) throw new Error(`Chỉ chọn tối đa ${MAX_BCC} khách hàng cho một lượt gửi.`);
+  const byId = new Map(audience.map((contact) => [contact.id, contact]));
+  const contacts = wanted.map((id) => byId.get(id)).filter(Boolean) as AudienceContact[];
+  if (contacts.length !== wanted.length) throw new Error(`${wanted.length - contacts.length} khách hàng đã chọn không còn trong danh sách nhận email. Hãy làm mới và chọn lại.`);
+  return { scope: "selected" as const, contacts: contacts.sort((a, b) => a.email.localeCompare(b.email)) };
+}

@@ -1,7 +1,7 @@
 // Kiểm thử mẫu email lịch pháp lý theo tháng:  npm run qa:legal-email
 import assert from "node:assert/strict";
 import test from "node:test";
-import { buildLegalCalendarEmail, legalEmailContentHash, monthLabels, parseMonth, sortLegalEvents } from "../supabase/functions/_shared/legal-calendar-email.ts";
+import { buildLegalCalendarEmail, legalEmailContentHash, MAX_BCC, monthLabels, normalizeAudience, parseMonth, pickRecipients, receivedThisMonth, sortLegalEvents } from "../supabase/functions/_shared/legal-calendar-email.ts";
 
 const base = { id: "a", event_date: "2026-12-21", category: "tax", title_vi: "Khai thuế tháng 11", title_en: "Monthly tax filing", summary_vi: "Nộp hồ sơ", summary_en: "File returns", legal_basis_vi: "Điều 44", legal_basis_en: "Article 44", official_source_url: "https://example.gov.vn/x" };
 
@@ -62,4 +62,45 @@ test("mã băm nội dung: ổn định theo thứ tự, đổi khi đổi chữ
   // Nội dung/căn cứ không còn hiện trong email nên sửa chúng không bắt gửi thử lại
   assert.equal(h1, await legalEmailContentHash("2026-12", [{ ...base, summary_vi: "Khác", legal_basis_vi: "Khác" }, b], "https://facs.vn"));
   assert.notEqual(h1, await legalEmailContentHash("2027-01", [base, b], "https://facs.vn"));
+});
+
+const id = (n) => `00000000-0000-4000-8000-${String(n).padStart(12, "0")}`;
+const rows = [
+  { id: id(1), email: " New@Client.vn " },
+  { id: id(2), email: "old@client.vn", company_name: "Old Co" },
+  { id: id(3), email: "infor@facs.vn" },      // người gửi → loại
+  { id: id(4), email: "tunguyen@facs.vn" },   // To → loại
+  { id: id(5), email: "khong-hop-le" },        // sai định dạng → loại
+  { id: id(6), email: "OLD@client.vn" },       // trùng → loại
+];
+const internal = ["infor@facs.vn", "tunguyen@facs.vn", "yendoan@facs.vn", "thanhhuynh@facs.vn"];
+
+test("danh sách khách: chữ thường, bỏ nội bộ/sai/trùng, sắp xếp theo email", () => {
+  const audience = normalizeAudience(rows, internal);
+  assert.deepEqual(audience.map((c) => c.email), ["new@client.vn", "old@client.vn"]);
+  assert.equal(audience[1].company, "Old Co");
+});
+
+test("chọn người nhận: tất cả, hoặc đúng các khách được tick; từ chối id lạ/không còn nhận/quá giới hạn", () => {
+  const audience = normalizeAudience(rows, internal);
+  assert.equal(pickRecipients(audience, "all").contacts.length, 2);
+  assert.equal(pickRecipients(audience, undefined).scope, "all");
+  const picked = pickRecipients(audience, "selected", [id(1), id(1)]);
+  assert.equal(picked.scope, "selected");
+  assert.deepEqual(picked.contacts.map((c) => c.email), ["new@client.vn"]);
+  assert.throws(() => pickRecipients(audience, "selected", []), /ít nhất một/);
+  assert.throws(() => pickRecipients(audience, "selected", ["abc"]), /không hợp lệ/);
+  assert.throws(() => pickRecipients(audience, "selected", [id(3)]), /không còn trong danh sách/); // nội bộ đã bị loại
+  assert.throws(() => pickRecipients(audience, "selected", Array.from({ length: MAX_BCC + 1 }, (_, i) => id(100 + i))), /tối đa/);
+});
+
+test("đã nhận tháng này: gộp từ các lượt gửi thành công/đang gửi, bỏ lượt lỗi", () => {
+  const map = receivedThisMonth([
+    { status: "sent", bcc_addresses: ["Old@client.vn"], completed_at: "2026-11-23T07:00:00Z", created_at: "2026-11-23T06:59:00Z" },
+    { status: "failed", bcc_addresses: ["new@client.vn"], created_at: "2026-11-23T08:00:00Z" },
+    { status: "processing", bcc_addresses: ["late@client.vn"], created_at: "2026-11-23T09:00:00Z" },
+  ]);
+  assert.deepEqual([...map.keys()].sort(), ["late@client.vn", "old@client.vn"]);
+  assert.equal(map.get("old@client.vn").at, "2026-11-23T07:00:00Z");
+  assert.equal(map.get("late@client.vn").status, "processing");
 });

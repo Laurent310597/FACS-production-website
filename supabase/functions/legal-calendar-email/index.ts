@@ -1,6 +1,6 @@
 import { createClient } from "npm:@supabase/supabase-js@2";
 import { corsHeaders } from "../_shared/cors.ts";
-import { buildLegalCalendarEmail, legalEmailContentHash, parseMonth, sortLegalEvents } from "../_shared/legal-calendar-email.ts";
+import { buildLegalCalendarEmail, legalEmailContentHash, MAX_BCC, normalizeAudience, parseMonth, pickRecipients, receivedThisMonth, sortLegalEvents } from "../_shared/legal-calendar-email.ts";
 import type { LegalEmailEvent } from "../_shared/legal-calendar-email.ts";
 import { getMicrosoftGraphToken, getMicrosoftMailStatus, sendMicrosoftMail } from "../_shared/microsoft-graph.ts";
 
@@ -18,7 +18,6 @@ const SEND_CONFIRMATION = "SEND-LEGAL-MONTH";
 const STUCK_AFTER_MS = 30 * 60 * 1000;
 const EVENT_FIELDS = "id,event_date,category,title_vi,title_en,summary_vi,summary_en,target_audience_vi,target_audience_en,period_label_vi,period_label_en,legal_basis_vi,legal_basis_en,official_source_url,status,verification_status";
 const UUID = /^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}$/i;
-const EMAIL = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
 
 type AdminClient = ReturnType<typeof createClient<any>>;
 
@@ -55,13 +54,17 @@ async function loadMonth(admin: AdminClient, monthKey: string) {
 }
 
 async function loadAudience(admin: AdminClient) {
-  const { data, error } = await admin.from("insight_email_audience").select("email,display_name").eq("status", "subscribed").order("email");
+  const { data, error } = await admin.from("insight_email_audience").select("id,email,display_name,company_name,created_at").eq("status", "subscribed").order("email");
   if (error) throw new Error(`Không thể tải danh sách khách hàng: ${error.message}`);
-  const excluded = new Set([SENDER, ...TO.map((item) => item.mail_address), ...CC.map((item) => item.mail_address)]);
-  const list = (data || [])
-    .map((item) => ({ mail_address: String(item.email || "").trim().toLowerCase(), name: item.display_name || undefined }))
-    .filter((item) => EMAIL.test(item.mail_address) && !excluded.has(item.mail_address));
-  return Array.from(new Map(list.map((item) => [item.mail_address, item])).values());
+  return normalizeAudience(data || [], [SENDER, ...TO.map((item) => item.mail_address), ...CC.map((item) => item.mail_address)]);
+}
+
+/** Ai đã nhận (hoặc đang được gửi) email của tháng này. */
+async function monthReceived(admin: AdminClient, first: string) {
+  const { data, error } = await admin.from("legal_calendar_email_deliveries").select("status,bcc_addresses,completed_at,created_at")
+    .eq("month", first).eq("delivery_type", "send").in("status", ["sent", "processing"]);
+  if (error) throw new Error(`Không thể đọc danh sách đã nhận: ${error.message}`);
+  return receivedThisMonth(data || []);
 }
 
 function recipientSummary(bccCount: number) {
@@ -74,7 +77,7 @@ function recipientSummary(bccCount: number) {
   };
 }
 
-const LOG_FIELDS = "id,month,delivery_type,request_id,content_hash,event_count,status,sender_email,subject,to_addresses,cc_addresses,bcc_count,message_id,error_message,created_by,created_at,completed_at";
+const LOG_FIELDS = "id,month,delivery_type,audience_scope,request_id,content_hash,event_count,status,sender_email,subject,to_addresses,cc_addresses,bcc_count,message_id,error_message,created_by,created_at,completed_at";
 
 async function monthLogs(admin: AdminClient, first: string) {
   const { data, error } = await admin.from("legal_calendar_email_deliveries").select(LOG_FIELDS)
@@ -112,7 +115,7 @@ Deno.serve(async (req) => {
 
     if (action === "preview") {
       const { month, events, excluded } = await loadMonth(admin, body.month);
-      const [audience, logs] = await Promise.all([loadAudience(admin), monthLogs(admin, month.first)]);
+      const [audience, logs, received] = await Promise.all([loadAudience(admin), monthLogs(admin, month.first), monthReceived(admin, month.first)]);
       const hash = await legalEmailContentHash(month.key, events, siteUrl);
       const email = events.length ? buildLegalCalendarEmail(month.key, events, siteUrl, false) : null;
       const tested = logs.some((log) => log.delivery_type === "test" && log.status === "sent" && log.content_hash === hash);
@@ -120,7 +123,7 @@ Deno.serve(async (req) => {
       if (!events.length) warnings.push("Tháng này chưa có mốc pháp lý đã xuất bản và đã xác minh.");
       if (excluded.published_unverified) warnings.push(`${excluded.published_unverified} mốc đang công khai nhưng chưa xác minh sẽ không có trong email.`);
       if (!audience.length) warnings.push("Danh sách khách hàng chưa có ai đang ở trạng thái nhận email.");
-      if (audience.length + TO.length + CC.length > MAX_RECIPIENTS) warnings.push(`Tổng người nhận vượt giới hạn ${MAX_RECIPIENTS} của Microsoft 365.`);
+      if (audience.length > MAX_BCC) warnings.push(`Danh sách có ${audience.length} khách, vượt giới hạn ${MAX_RECIPIENTS} người nhận của Microsoft 365; hãy chọn từng nhóm để gửi.`);
       return json({
         month: month.key,
         events,
@@ -129,6 +132,7 @@ Deno.serve(async (req) => {
         subject: email?.subject || null,
         body_html: email?.html || null,
         recipients: recipientSummary(audience.length),
+        audience: audience.map((contact) => ({ ...contact, received: received.get(contact.email) || null })),
         tested,
         logs,
         warnings,
@@ -186,20 +190,33 @@ Deno.serve(async (req) => {
       if (logs.some((log) => log.delivery_type === "send" && log.status === "processing")) {
         throw new Error("Tháng này đang có một lượt gửi chưa hoàn tất. Hãy kiểm tra nhật ký và Sent Items.");
       }
-      if (logs.some((log) => log.delivery_type === "send" && log.status === "sent") && body.allow_resend !== true) {
-        throw new Error("Tháng này đã được gửi cho khách hàng. Chọn \"Gửi lại\" nếu thực sự muốn gửi thêm một lần.");
+      const audience = await loadAudience(admin);
+      if (!audience.length) throw new Error("Danh sách khách hàng chưa có ai đang ở trạng thái nhận email.");
+      const { scope, contacts } = pickRecipients(audience, body.audience_mode, body.audience_ids);
+      if (contacts.length > MAX_BCC) throw new Error(`Tổng người nhận vượt giới hạn ${MAX_RECIPIENTS} của Microsoft 365. Hãy chọn từng nhóm khách hàng để gửi.`);
+      const bcc = contacts.map((contact) => ({ mail_address: contact.email, name: contact.name || undefined }));
+
+      // Danh sách phải khớp đúng danh sách anh/chị đã xem khi bấm gửi.
+      const expected = Array.isArray(body.expected_bcc) ? body.expected_bcc.map((email: unknown) => String(email).toLowerCase()).sort() : [];
+      if (expected.join(",") !== bcc.map((item) => item.mail_address).join(",")) {
+        throw new Error("Danh sách người nhận vừa thay đổi. Hãy làm mới và kiểm tra lại trước khi gửi.");
       }
 
-      const bcc = await loadAudience(admin);
-      if (!bcc.length) throw new Error("Danh sách khách hàng chưa có ai đang ở trạng thái nhận email.");
-      if (bcc.length + TO.length + CC.length > MAX_RECIPIENTS) throw new Error(`Tổng người nhận vượt giới hạn ${MAX_RECIPIENTS} của Microsoft 365.`);
-      if (Number(body.expected_bcc_count) !== bcc.length) {
-        throw new Error(`Danh sách khách hàng vừa thay đổi (${body.expected_bcc_count} → ${bcc.length}). Hãy xem trước lại.`);
+      // Chống gửi trùng: gửi tất cả khi tháng đã gửi, hoặc tick khách đã nhận tháng này → phải chọn "Gửi lại".
+      if (body.allow_resend !== true) {
+        const received = await monthReceived(admin, month.first);
+        if (scope === "all" && logs.some((log) => log.delivery_type === "send" && log.status === "sent")) {
+          throw new Error("Tháng này đã được gửi cho khách hàng. Hãy chọn từng khách mới, hoặc tick \"Gửi lại\" nếu thực sự muốn gửi lại tất cả.");
+        }
+        const repeat = bcc.filter((item) => received.has(item.mail_address)).map((item) => item.mail_address);
+        if (repeat.length) {
+          throw new Error(`${repeat.length} khách đã nhận email tháng này (${repeat.slice(0, 3).join(", ")}${repeat.length > 3 ? ", …" : ""}). Bỏ chọn họ hoặc tick "Gửi lại".`);
+        }
       }
 
       const email = buildLegalCalendarEmail(month.key, events, siteUrl, false);
       const { data: log, error: logError } = await admin.from("legal_calendar_email_deliveries").insert({
-        month: month.first, delivery_type: "send", request_id: requestId, content_hash: hash,
+        month: month.first, delivery_type: "send", audience_scope: scope, request_id: requestId, content_hash: hash,
         event_count: events.length, status: "processing", sender_email: SENDER, subject: email.subject,
         to_addresses: TO.map((item) => item.mail_address), cc_addresses: CC.map((item) => item.mail_address),
         bcc_addresses: bcc.map((item) => item.mail_address), bcc_count: bcc.length, created_by: user.id,
@@ -219,7 +236,7 @@ Deno.serve(async (req) => {
         accepted = true;
         const finishError = await finishLog(admin, log.id, { status: "sent", message_id: result.message_id || null });
         if (finishError) throw new Error(`Microsoft 365 đã nhận email nhưng chưa chốt được trạng thái: ${finishError.message}`);
-        return json({ ok: true, log_id: log.id, recipients: recipientSummary(bcc.length), event_count: events.length });
+        return json({ ok: true, log_id: log.id, scope, recipients: recipientSummary(bcc.length), event_count: events.length });
       } catch (sendError) {
         const message = sendError instanceof Error ? sendError.message : String(sendError);
         // Microsoft đã nhận thư: giữ trạng thái "đang xử lý" để không ai gửi lại trước khi đối chiếu Sent Items.

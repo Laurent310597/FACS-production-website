@@ -1,10 +1,10 @@
 import { useCallback, useEffect, useMemo, useRef, useState } from "react";
-import { AlertTriangle, ArrowRight, CheckCircle2, ChevronLeft, ChevronRight, CircleDashed, Clock3, FlaskConical, Loader2, MailCheck, RefreshCw, Send, Users } from "lucide-react";
+import { AlertTriangle, ArrowRight, CheckCircle2, ChevronLeft, ChevronRight, CircleDashed, Clock3, FlaskConical, Loader2, MailCheck, RefreshCw, Search, Send, Users } from "lucide-react";
 import { Link } from "react-router-dom";
 import AdminLayout from "../../components/admin/AdminLayout";
 import { useConfirm } from "../../components/admin/ui/confirmContext";
 import { useToast } from "../../components/admin/ui/toastContext";
-import { badge, btnGhost, btnPrimary, btnSecondary, card, subtle } from "../../components/admin/ui/styles";
+import { badge, btnGhost, btnPrimary, btnSecondary, card, input, subtle } from "../../components/admin/ui/styles";
 import { formatLegalDate, getCategory } from "../../lib/legalCalendar";
 import { currentMonth, defaultEmailMonth, formatDateTime, invokeLegalEmail, monthTitle, shiftMonth } from "../../lib/legalCalendarEmail";
 
@@ -29,6 +29,55 @@ function Step({ index, done, active, title, children }) {
   );
 }
 
+const shortDate = (iso) => (iso ? new Date(iso).toLocaleDateString("vi-VN", { timeZone: "Asia/Ho_Chi_Minh", day: "2-digit", month: "2-digit", year: "numeric" }) : "");
+
+/** Danh sách khách hàng để tick chọn người nhận BCC; đánh dấu ai đã nhận email của tháng đang chọn. */
+function RecipientPicker({ audience, selected, onChange, disabled }) {
+  const [query, setQuery] = useState("");
+  const [filter, setFilter] = useState("new");
+  const counts = useMemo(() => ({
+    new: audience.filter((c) => !c.received).length,
+    received: audience.filter((c) => c.received).length,
+    all: audience.length,
+  }), [audience]);
+  const visible = useMemo(() => {
+    const q = query.trim().toLowerCase();
+    return audience.filter((c) => (filter === "all" || (filter === "new" ? !c.received : Boolean(c.received)))
+      && (!q || [c.email, c.name, c.company].some((v) => (v || "").toLowerCase().includes(q))));
+  }, [audience, filter, query]);
+  const toggle = (id) => { const next = new Set(selected); if (next.has(id)) next.delete(id); else next.add(id); onChange(next); };
+  const chip = (key, label) => (
+    <button key={key} type="button" onClick={() => setFilter(key)} className={`rounded-lg px-2.5 py-1 text-xs font-semibold transition ${filter === key ? "bg-brand/20 text-blue-100 ring-1 ring-inset ring-brand/40" : "text-ink-3 hover:bg-white/[0.05] hover:text-ink-1"}`}>{label} <span className="opacity-70">{counts[key]}</span></button>
+  );
+  return (
+    <div className="mt-3 space-y-2.5">
+      <div className="relative"><Search size={15} className="pointer-events-none absolute left-3 top-1/2 -translate-y-1/2 text-ink-3" /><input className={`${input} pl-9`} value={query} onChange={(e) => setQuery(e.target.value)} placeholder="Tìm email, tên, công ty…" aria-label="Tìm khách hàng" /></div>
+      <div className="flex flex-wrap gap-1">{chip("new", "Chưa nhận tháng này")}{chip("received", "Đã nhận")}{chip("all", "Tất cả")}</div>
+      <div className="flex items-center justify-between gap-2 text-xs text-ink-3">
+        <span>Đã chọn <strong className="text-ink-1">{selected.size}</strong> khách</span>
+        <span className="flex gap-3">
+          <button type="button" className="font-semibold text-cyan-300 hover:text-cyan-200 disabled:opacity-40" disabled={disabled || !visible.length} onClick={() => onChange(new Set([...selected, ...visible.map((c) => c.id)]))}>Chọn tất cả đang hiện</button>
+          <button type="button" className="font-semibold text-ink-2 hover:text-ink-1 disabled:opacity-40" disabled={disabled || !selected.size} onClick={() => onChange(new Set())}>Bỏ chọn</button>
+        </span>
+      </div>
+      <ul className="max-h-80 divide-y divide-white/[0.06] overflow-y-auto rounded-xl bg-white/[0.02] ring-1 ring-inset ring-white/[0.06]">
+        {visible.length === 0 ? <li className="px-3 py-6 text-center text-xs text-ink-3">Không có khách hàng phù hợp.</li> : visible.map((c) => (
+          <li key={c.id}>
+            <label className={`flex cursor-pointer items-start gap-3 px-3 py-2.5 transition hover:bg-white/[0.04] ${selected.has(c.id) ? "bg-brand/[0.08]" : ""}`}>
+              <input type="checkbox" className="mt-1 shrink-0" checked={selected.has(c.id)} disabled={disabled} onChange={() => toggle(c.id)} />
+              <span className="min-w-0 flex-1">
+                <span className="block truncate text-sm font-semibold text-ink-1">{c.email}</span>
+                <span className="block truncate text-xs text-ink-3">{[c.name, c.company].filter(Boolean).join(" · ") || "—"}{c.created_at ? ` · thêm ngày ${shortDate(c.created_at)}` : ""}</span>
+              </span>
+              {c.received && <span className={`${badge} shrink-0 ${c.received.status === "sent" ? "bg-emerald-400/10 text-emerald-300" : "bg-amber-300/10 text-amber-200"}`}>{c.received.status === "sent" ? `Đã nhận ${shortDate(c.received.at).slice(0, 5)}` : "Đang gửi"}</span>}
+            </label>
+          </li>
+        ))}
+      </ul>
+    </div>
+  );
+}
+
 export default function AdminLegalEmailPage() {
   const [month, setMonth] = useState(defaultEmailMonth);
   const [data, setData] = useState(null);
@@ -36,6 +85,8 @@ export default function AdminLegalEmailPage() {
   const [error, setError] = useState("");
   const [busy, setBusy] = useState("");
   const [allowResend, setAllowResend] = useState(false);
+  const [mode, setMode] = useState("all");
+  const [selected, setSelected] = useState(() => new Set());
   const requestRef = useRef("");
   const latestMonth = useRef("");
   const confirm = useConfirm();
@@ -48,7 +99,12 @@ export default function AdminLegalEmailPage() {
     setError("");
     try {
       const result = await invokeLegalEmail("preview", { month: key });
-      if (latestMonth.current === key) setData(result);
+      if (latestMonth.current !== key) return;
+      setData(result);
+      // Bỏ những khách không còn trong danh sách; tháng đã gửi thì mặc định chuyển sang chọn từng khách.
+      const ids = new Set((result.audience || []).map((c) => c.id));
+      setSelected((prev) => new Set([...prev].filter((id) => ids.has(id))));
+      if ((result.logs || []).some((log) => log.delivery_type === "send" && log.status === "sent")) setMode("selected");
     } catch (loadError) {
       if (latestMonth.current !== key) return;
       setData(null);
@@ -66,6 +122,8 @@ export default function AdminLegalEmailPage() {
   // Đổi tháng: bỏ lựa chọn "Gửi lại" và mã lượt gửi của tháng cũ.
   function changeMonth(next) {
     setAllowResend(false);
+    setSelected(new Set());
+    setMode("all");
     requestRef.current = "";
     setMonth(next);
   }
@@ -75,10 +133,14 @@ export default function AdminLegalEmailPage() {
   const lastSent = sends.find((log) => log.status === "sent");
   const inflight = sends.find((log) => log.status === "processing");
   const events = data?.events || [];
-  const bccCount = data?.recipients?.bcc_count || 0;
+  const audience = useMemo(() => data?.audience || [], [data]);
+  const recipients = useMemo(() => (mode === "all" ? audience : audience.filter((c) => selected.has(c.id))), [mode, audience, selected]);
+  const bccCount = recipients.length;
+  const repeatCount = recipients.filter((c) => c.received).length;
+  const needResend = mode === "all" ? Boolean(lastSent) : repeatCount > 0;
   const mailReady = data?.mail ? data.mail.connected !== false : true;
   const canTest = Boolean(data && events.length && !busy && !loading);
-  const canSend = Boolean(canTest && data.tested && bccCount > 0 && !inflight && (!lastSent || allowResend) && mailReady);
+  const canSend = Boolean(canTest && data.tested && bccCount > 0 && bccCount <= 497 && !inflight && (!needResend || allowResend) && mailReady);
 
   async function sendTest() {
     setBusy("test");
@@ -95,8 +157,8 @@ export default function AdminLegalEmailPage() {
 
   async function sendToClients() {
     const ok = await confirm({
-      title: `Gửi lịch pháp lý ${monthTitle(month).toLowerCase()} cho ${bccCount} khách hàng?`,
-      message: `Email gồm ${events.length} mốc, gửi từ ${data.recipients.sender}. Khách hàng nhận ở BCC; To: ${data.recipients.to.join(", ")}; CC: ${data.recipients.cc.join(", ")}. Thao tác này không thể thu hồi.`,
+      title: `Gửi lịch pháp lý ${monthTitle(month).toLowerCase()} cho ${bccCount} khách hàng${mode === "selected" ? " đã chọn" : ""}?`,
+      message: `${mode === "selected" ? `BCC: ${recipients.slice(0, 5).map((c) => c.email).join(", ")}${bccCount > 5 ? ` và ${bccCount - 5} khách khác` : ""}. ` : ""}Email gồm ${events.length} mốc, gửi từ ${data.recipients.sender}; To: ${data.recipients.to.join(", ")}; CC: ${data.recipients.cc.join(", ")}.${repeatCount ? ` Có ${repeatCount} khách đã nhận email tháng này.` : ""} Thao tác này không thể thu hồi.`,
       confirmText: `Gửi ${bccCount} khách hàng`,
       danger: true,
     });
@@ -108,12 +170,15 @@ export default function AdminLegalEmailPage() {
         month,
         content_hash: data.content_hash,
         request_id: requestRef.current,
-        expected_bcc_count: bccCount,
+        audience_mode: mode,
+        audience_ids: mode === "selected" ? recipients.map((c) => c.id) : undefined,
+        expected_bcc: recipients.map((c) => c.email),
         allow_resend: allowResend,
         confirmation_text: "SEND-LEGAL-MONTH",
       });
       requestRef.current = "";
       setAllowResend(false);
+      setSelected(new Set());
       toast.success(result.already_processed ? "Lượt gửi này đã hoàn tất trước đó." : `Đã gửi lịch ${monthTitle(month).toLowerCase()} cho ${result.recipients.bcc_count} khách hàng.`);
       await load(month);
     } catch (sendError) {
@@ -186,7 +251,7 @@ export default function AdminLegalEmailPage() {
             </div>
             <div className="mt-5 grid grid-cols-2 gap-3">
               <div className={subtle}><div className="text-xs text-ink-3">Mốc trong email</div><div className="mt-1 text-2xl font-bold">{loading ? "…" : events.length}</div></div>
-              <div className={subtle}><div className="flex items-center gap-1.5 text-xs text-ink-3"><Users size={13} /> Khách hàng (BCC)</div><div className="mt-1 text-2xl font-bold">{loading ? "…" : bccCount}</div></div>
+              <div className={subtle}><div className="flex items-center gap-1.5 text-xs text-ink-3"><Users size={13} /> {mode === "selected" ? "Đã chọn (BCC)" : "Khách hàng (BCC)"}</div><div className="mt-1 text-2xl font-bold">{loading ? "…" : bccCount}{mode === "selected" && !loading && <span className="text-sm font-semibold text-ink-3"> / {audience.length}</span>}</div></div>
             </div>
             <div className="mt-4 text-sm">
               {inflight ? <span className={`${badge} bg-amber-300/10 text-amber-200`}><Clock3 size={13} /> Có lượt gửi đang xử lý</span>
@@ -211,11 +276,19 @@ export default function AdminLegalEmailPage() {
               <div className="mt-3"><button type="button" className={btnSecondary} onClick={sendTest} disabled={!canTest}>{busy === "test" ? <Loader2 size={16} className="animate-spin" /> : <FlaskConical size={16} />} Gửi thử</button></div>
             </Step>
             <Step index={3} done={Boolean(lastSent)} active={Boolean(data?.tested)} title="Gửi khách hàng">
-              Từ <strong className="text-ink-2">{data?.recipients?.sender || "infor@facs.vn"}</strong> · To {data?.recipients?.to?.join(", ") || "—"} · CC {data?.recipients?.cc?.join(", ") || "—"} · BCC {bccCount} khách hàng (<Link to="/admin/email" className="text-cyan-300 hover:text-cyan-200">danh sách khách hàng</Link>).
-              {lastSent && !inflight && (
-                <label className="mt-3 flex items-start gap-2 text-ink-2"><input type="checkbox" className="mt-1" checked={allowResend} onChange={(e) => setAllowResend(e.target.checked)} /> Tháng này đã gửi. Tôi muốn gửi thêm một lần nữa.</label>
+              Từ <strong className="text-ink-2">{data?.recipients?.sender || "infor@facs.vn"}</strong> · To {data?.recipients?.to?.join(", ") || "—"} · CC {data?.recipients?.cc?.join(", ") || "—"} · khách hàng nhận ở BCC (<Link to="/admin/email" className="text-cyan-300 hover:text-cyan-200">quản lý danh sách</Link>).
+              <div className="mt-3 grid grid-cols-2 gap-1 rounded-xl bg-white/[0.04] p-1 ring-1 ring-inset ring-white/[0.06]" role="radiogroup" aria-label="Người nhận">
+                {[["all", `Tất cả (${audience.length})`], ["selected", "Chọn khách hàng"]].map(([value, label]) => (
+                  <button key={value} type="button" role="radio" aria-checked={mode === value} disabled={Boolean(busy)} onClick={() => { setMode(value); setAllowResend(false); }}
+                    className={`h-9 rounded-lg text-sm font-semibold transition ${mode === value ? "bg-cms-3 text-ink-1 shadow ring-1 ring-inset ring-cyan-300/30" : "text-ink-3 hover:text-ink-1"}`}>{label}</button>
+                ))}
+              </div>
+              {mode === "selected" && <RecipientPicker audience={audience} selected={selected} onChange={setSelected} disabled={Boolean(busy)} />}
+              {needResend && !inflight && bccCount > 0 && (
+                <label className="mt-3 flex items-start gap-2 text-ink-2"><input type="checkbox" className="mt-1" checked={allowResend} onChange={(e) => setAllowResend(e.target.checked)} />
+                  {mode === "all" ? "Tháng này đã gửi. Tôi muốn gửi lại cho tất cả khách hàng." : `${repeatCount} khách đã chọn đã nhận email tháng này. Tôi muốn gửi lại cho họ.`}</label>
               )}
-              <div className="mt-3"><button type="button" className={btnPrimary} onClick={sendToClients} disabled={!canSend}>{busy === "send" ? <Loader2 size={16} className="animate-spin" /> : <Send size={16} />} Gửi {bccCount} khách hàng</button></div>
+              <div className="mt-3"><button type="button" className={btnPrimary} onClick={sendToClients} disabled={!canSend}>{busy === "send" ? <Loader2 size={16} className="animate-spin" /> : <Send size={16} />} {mode === "selected" ? `Gửi ${bccCount} khách đã chọn` : `Gửi ${bccCount} khách hàng`}</button></div>
             </Step>
           </section>
 
@@ -247,7 +320,7 @@ export default function AdminLegalEmailPage() {
                   return (
                     <div key={log.id} className="py-3 text-sm">
                       <div className="flex flex-wrap items-center gap-2">
-                        <span className="font-semibold text-ink-1">{log.delivery_type === "test" ? "Gửi thử" : `Gửi ${log.bcc_count} khách hàng`}</span>
+                        <span className="font-semibold text-ink-1">{log.delivery_type === "test" ? "Gửi thử" : `Gửi ${log.bcc_count} khách hàng${log.audience_scope === "selected" ? " (đã chọn)" : ""}`}</span>
                         <span className={`${badge} ${tone}`}>{label}</span>
                         <span className="ml-auto text-xs text-ink-3">{formatDateTime(log.created_at)}</span>
                       </div>
