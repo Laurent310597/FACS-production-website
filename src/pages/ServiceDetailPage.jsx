@@ -128,7 +128,7 @@ export default function ServiceDetailPage() {
 
             <div className="mt-12 grid items-center gap-16 lg:grid-cols-2">
               <motion.div initial={{ opacity: 0, y: 35 }} animate={{ opacity: 1, y: 0 }} transition={{ duration: 0.7 }}>
-                <div className="inline-flex items-center gap-3 rounded-full border border-cyan-400/20 bg-cyan-500/10 px-4 py-2 text-sm font-semibold text-cyan-300">
+                <div className="inline-flex items-center gap-3 rounded-full border border-cyan-400/20 bg-cyan-500/10 px-4 py-2 text-base font-bold text-cyan-300">
                   <div className="h-2 w-2 rounded-full bg-cyan-400" /> {labels.serviceDetail}
                 </div>
 
@@ -153,7 +153,7 @@ export default function ServiceDetailPage() {
         <section className="border-b border-cyan-200/15 py-28">
           <div className="container mx-auto px-6 lg:px-12">
             <div className="max-w-4xl">
-              <div className="mb-5 font-medium text-cyan-400">{labels.strategicPerspective}</div>
+              <div className="text-cyan-300 mb-5 text-base lg:text-lg font-bold tracking-[0.03em]">{labels.strategicPerspective}</div>
               <h2 className="text-4xl font-bold leading-tight tracking-[-2px] lg:text-6xl">
                 {labels.whyMatters}
               </h2>
@@ -184,7 +184,7 @@ export default function ServiceDetailPage() {
         <section className="border-b border-cyan-200/15 py-28">
           <div className="container mx-auto px-6 lg:px-12">
             <div className="max-w-4xl">
-              <div className="mb-5 font-medium text-cyan-400">{isVi ? "Cấu trúc dịch vụ" : "Service Structure"}</div>
+              <div className="text-cyan-300 mb-5 text-base lg:text-lg font-bold tracking-[0.03em]">{isVi ? "Cấu trúc dịch vụ" : "Service Structure"}</div>
               <h2 className="text-4xl font-bold leading-tight tracking-[-2px] lg:text-6xl">
                 {isVi ? "Từ vấn đề thực tế đến đầu ra có thể sử dụng" : "From Business Need To Practical Deliverables"}
               </h2>
@@ -226,7 +226,7 @@ export default function ServiceDetailPage() {
           <div className="container mx-auto px-6 lg:px-12">
             <div className="site-card rounded-[48px] border border-white/10 bg-gradient-to-br from-cyan-500/10 to-blue-600/10 p-12 backdrop-blur-xl transition-all duration-500 hover:border-cyan-400/20 lg:p-20">
               <div className="max-w-3xl">
-                <div className="mb-5 font-medium text-cyan-400">{labels.tailoredSolution}</div>
+                <div className="text-cyan-300 mb-5 text-base lg:text-lg font-bold tracking-[0.03em]">{labels.tailoredSolution}</div>
                 <h2 className="text-4xl font-bold leading-tight lg:text-6xl">{labels.discuss}</h2>
                 <p className="mt-8 text-lg leading-relaxed text-slate-300">{labels.ctaText}</p>
                 <Link to="/contact" className="site-cta mt-10 inline-flex rounded-2xl bg-cyan-500 px-8 py-4 font-semibold text-[#06111f] transition-all duration-300 hover:-translate-y-1 hover:bg-cyan-400 hover:shadow-[0_18px_42px_rgba(6,182,212,0.26)]">

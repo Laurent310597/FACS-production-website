@@ -21,7 +21,7 @@ export default function IndustriesPage() {
 
           <div className="container mx-auto px-6 lg:px-12 relative z-10">
             <div className="max-w-5xl">
-              <div className="text-cyan-400 mb-5 font-bold text-base">
+              <div className="text-cyan-300 mb-5 text-base lg:text-lg font-bold tracking-[0.03em]">
                 {isVi ? "Lĩnh vực" : "Industries"}
               </div>
 
@@ -80,7 +80,7 @@ export default function IndustriesPage() {
           <div className="container mx-auto px-6 lg:px-12">
             <div className="site-card rounded-[48px] border border-white/10 bg-gradient-to-br from-cyan-500/10 to-blue-600/10 p-12 lg:p-24 backdrop-blur-xl">
               <div className="max-w-3xl">
-                <div className="text-cyan-400 mb-5 font-bold text-base">
+                <div className="text-cyan-300 mb-5 text-base lg:text-lg font-bold tracking-[0.03em]">
                   {isVi ? "Tư vấn theo lĩnh vực" : "Industry-Focused Consulting"}
                 </div>
 

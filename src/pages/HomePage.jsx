@@ -7,7 +7,7 @@ import AnimatedCounter from "../components/AnimatedCounter";
 import { motion } from "framer-motion";
 import { getServiceContent, services } from "../data/services";
 import { useLanguage } from "../components/LanguageContext";
-import { ShieldCheck, BarChart3, Building2, Handshake, BriefcaseBusiness, ArrowRight, GraduationCap } from "lucide-react";
+import { ShieldCheck, BarChart3, Building2, Handshake, BriefcaseBusiness, ArrowRight, UserRoundPlus } from "lucide-react";
 
 const labelClass = "text-cyan-300 mb-5 text-base lg:text-lg font-bold tracking-[0.03em]";
 const containerClass = "container mx-auto px-6 lg:px-12";
@@ -70,7 +70,6 @@ export default function HomePage() {
   const buildPaths = [
     {
       to: "/contact",
-      primary: true,
       icon: Handshake,
       eyebrow: isVi ? "Dành cho khách hàng" : "For clients",
       title: isVi ? "Bắt đầu hành trình phát triển mới" : "Start your next growth journey",
@@ -81,7 +80,7 @@ export default function HomePage() {
     },
     {
       to: "/careers",
-      icon: GraduationCap,
+      icon: UserRoundPlus,
       eyebrow: isVi ? "Dành cho ứng viên" : "For candidates",
       title: isVi ? "Khám phá cơ hội làm việc cùng FACS" : "Explore opportunities at FACS",
       desc: isVi
@@ -141,7 +140,7 @@ export default function HomePage() {
                   </div>
                   <div className="site-card mt-6 rounded-[32px] border border-cyan-400/10 bg-gradient-to-br from-cyan-500/10 to-blue-500/10 p-9">
                     <Building2 size={56} className="text-cyan-400" />
-                    <div className="mt-7 text-3xl font-bold leading-snug">{isVi ? "Năng lực tài chính doanh nghiệp" : "Enterprise Financial Intelligence"}</div>
+                    <div className="font-heading mt-7 text-3xl font-bold leading-snug">{isVi ? "Năng lực tài chính doanh nghiệp" : "Enterprise Financial Intelligence"}</div>
                     <p className="mt-5 leading-relaxed text-slate-400">
                       {isVi
                         ? "Hệ thống tư vấn hiện đại được thiết kế để tối ưu vận hành, tăng cường tuân thủ và hỗ trợ tăng trưởng bền vững."
@@ -252,14 +251,14 @@ export default function HomePage() {
                       whileInView={{ opacity: 1, y: 0 }}
                       viewport={{ once: true, amount: 0.3 }}
                       transition={{ duration: 0.7, delay: 0.1 + i * 0.1 }}
-                      className={`build-path site-card group${path.primary ? " build-path--primary" : ""}`}
+                      className="build-path site-card group"
                     >
                       <span className="build-path__icon"><path.icon size={26} /></span>
                       <div className="min-w-0">
                         <div className="build-path__eyebrow">{path.eyebrow}</div>
                         <h3 className="build-path__title">{path.title}</h3>
                         <p className="build-path__desc">{path.desc}</p>
-                        <Link to={path.to} className={path.primary ? "site-cta build-path__btn" : "build-path__btn build-path__btn--ghost"}>
+                        <Link to={path.to} className="site-cta build-path__btn">
                           {path.cta}<ArrowRight size={17} />
                         </Link>
                       </div>

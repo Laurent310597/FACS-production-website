@@ -79,7 +79,7 @@ export default function CareersPage() {
           <div className="absolute left-0 top-0 h-[500px] w-[500px] rounded-full bg-cyan-500/10 blur-[120px]" />
           <div className="container relative z-10 mx-auto px-6 lg:px-12">
             <div className="max-w-5xl">
-              <div className="mb-5 font-medium text-cyan-400">{isVi ? "Tuyển dụng" : "Careers"}</div>
+              <div className="text-cyan-300 mb-5 text-base lg:text-lg font-bold tracking-[0.03em]">{isVi ? "Tuyển dụng" : "Careers"}</div>
               <h1 className="text-balance text-5xl font-bold leading-[1.05] tracking-[-3px] lg:text-7xl">
                 {isVi ? "Kiến tạo tương lai cùng FACS" : "Build The Future With FACS"}
               </h1>
@@ -130,7 +130,7 @@ export default function CareersPage() {
         <section className="border-b border-white/10 py-32">
           <div className="container mx-auto px-6 lg:px-12">
             <div className="max-w-4xl">
-              <div className="mb-5 font-medium text-cyan-400">{isVi ? "Vị trí đang tuyển" : "Open Positions"}</div>
+              <div className="text-cyan-300 mb-5 text-base lg:text-lg font-bold tracking-[0.03em]">{isVi ? "Vị trí đang tuyển" : "Open Positions"}</div>
               <h2 className="text-balance text-4xl font-bold leading-tight lg:text-5xl">
                 {isVi ? "Khám phá cơ hội nghề nghiệp" : "Explore Career Opportunities"}
               </h2>
@@ -205,7 +205,7 @@ export default function CareersPage() {
           <div className="container mx-auto px-6 lg:px-12">
             <div className="site-card rounded-[48px] border border-white/10 bg-gradient-to-br from-cyan-500/10 to-blue-600/10 p-12 backdrop-blur-xl lg:p-24">
               <div className="max-w-3xl">
-                <div className="mb-5 font-medium text-cyan-400">{isVi ? "Gia nhập đội ngũ" : "Join Our Team"}</div>
+                <div className="text-cyan-300 mb-5 text-base lg:text-lg font-bold tracking-[0.03em]">{isVi ? "Gia nhập đội ngũ" : "Join Our Team"}</div>
                 <h2 className="text-balance text-4xl font-bold leading-tight lg:text-6xl">
                   {isVi ? "Định hình tương lai của ngành tư vấn doanh nghiệp" : "Shape The Future Of Enterprise Consulting"}
                 </h2>

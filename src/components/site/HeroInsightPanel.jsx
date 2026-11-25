@@ -18,7 +18,7 @@ export default function HeroInsightPanel({ feature, stats, scope }) {
       {/* 1. Thông điệp chính */}
       <div className="site-card rounded-[28px] border border-cyan-400/15 bg-gradient-to-br from-cyan-500/[0.14] via-cyan-500/[0.06] to-blue-500/[0.12] p-7 lg:p-8">
         <IconBadge icon={feature.icon} size={24} />
-        <div className="mt-6 text-2xl font-bold leading-snug text-balance lg:text-[1.75rem]">{feature.title}</div>
+        <div className="font-heading mt-6 text-2xl font-bold leading-snug text-balance lg:text-[1.75rem]">{feature.title}</div>
         <p className="mt-3 leading-relaxed text-slate-400 text-pretty">{feature.desc}</p>
       </div>
 
@@ -37,7 +37,7 @@ export default function HeroInsightPanel({ feature, stats, scope }) {
       <div className="site-card flex items-center gap-5 rounded-3xl border border-white/10 bg-[#111827]/80 p-6">
         <IconBadge icon={scope.icon} />
         <div className="min-w-0">
-          <div className="text-xl font-bold leading-snug">{scope.title}</div>
+          <div className="font-heading text-xl font-bold leading-snug">{scope.title}</div>
           <div className="mt-1 text-sm text-slate-400">{scope.subtitle}</div>
         </div>
       </div>

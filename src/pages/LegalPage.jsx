@@ -160,8 +160,8 @@ export default function LegalPage({ type }) {
           <div className="absolute bottom-0 left-0 h-72 w-72 rounded-full bg-blue-500/10 blur-[100px]" />
           <div className="container relative z-10 mx-auto px-6 lg:px-12">
             <div className="mx-auto max-w-4xl">
-              <div className="mb-5 text-sm font-semibold uppercase tracking-[0.28em] text-cyan-300/90">{page.eyebrow}</div>
-              <h1 className="text-4xl font-semibold tracking-tight md:text-6xl">{page.title}</h1>
+              <div className="text-cyan-300 mb-5 text-base lg:text-lg font-bold tracking-[0.03em]">{page.eyebrow}</div>
+              <h1 className="text-5xl font-bold leading-[1.05] tracking-[-3px] lg:text-7xl">{page.title}</h1>
               <p className="mt-7 max-w-3xl text-lg leading-8 text-slate-300">{page.intro}</p>
               <div className="mt-6 inline-flex rounded-full border border-cyan-200/15 bg-white/[0.04] px-4 py-2 text-sm text-cyan-100/85">{page.updated}</div>
             </div>

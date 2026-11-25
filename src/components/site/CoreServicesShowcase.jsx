@@ -86,9 +86,16 @@ export default function CoreServicesShowcase({ isVi }) {
           <span className="svc-show__note">{isVi ? "4 dịch vụ thế mạnh FACS cung cấp thường xuyên nhất" : "The 4 strongest services FACS delivers most often"}</span>
         </div>
 
+        {/* Vùng tiêu đề + mô tả giữ chiều cao của dịch vụ dài nhất (bản ẩn xếp chồng) → nút bên dưới không bị đẩy khi đổi dịch vụ. */}
         <div className="svc-show__headline" aria-live="polite">
+          {items.map((item) => (
+            <div key={item.slug} className="svc-show__sizer" aria-hidden="true">
+              <div className="svc-show__title">{splitTitle(item.title).map((line) => <span key={line} className="svc-show__line">{line}</span>)}</div>
+              <p className="svc-show__desc">{item.desc}</p>
+            </div>
+          ))}
           <AnimatePresence mode="wait" initial={false}>
-            <motion.div key={current.slug} initial={{ opacity: 0, y: 18 }} animate={{ opacity: 1, y: 0 }} exit={{ opacity: 0, y: -12 }} transition={{ duration: 0.45, ease: [0.2, 0.8, 0.2, 1] }}>
+            <motion.div key={current.slug} className="svc-show__current" initial={{ opacity: 0, y: 18 }} animate={{ opacity: 1, y: 0 }} exit={{ opacity: 0, y: -12 }} transition={{ duration: 0.45, ease: [0.2, 0.8, 0.2, 1] }}>
               <h2 className="svc-show__title">
                 {splitTitle(current.title).map((line, i) => (
                   <span key={line} className="svc-show__line">{i > 0 ? " " : ""}{line}</span>
