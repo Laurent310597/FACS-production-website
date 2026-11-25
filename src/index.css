@@ -1885,3 +1885,80 @@ html.theme-light .site-rail__track { background: rgb(56 189 248 / 0.45); box-sha
   .site-rail, .site-rail__orb { animation: none; }
   .site-rail__panel, .site-rail__label, .site-rail__knob { transition: none; }
 }
+
+/* ═══════════════ Đường sóng "chữ ký" FACS (dùng chung: khẩu hiệu, footer, ngăn giữa các phần trang) ═══════════════ */
+:root {
+  --sig-wave-mask: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='40' height='10' viewBox='0 0 40 10'%3E%3Cpath d='M0 5 Q10 0.8 20 5 T40 5' fill='none' stroke='%23000' stroke-width='1.6'/%3E%3C/svg%3E");
+  --sig-wave-color: linear-gradient(90deg, #67e8f9, #3b82f6 55%, #22d3ee);
+}
+html.theme-light {
+  --sig-wave-color: linear-gradient(90deg, #38bdf8, #2563eb 55%, #0ea5e9);
+}
+.sig-wave {
+  display: inline-block;
+  flex: none;
+  height: 10px;
+  background: var(--sig-wave-color);
+  -webkit-mask: var(--sig-wave-mask) repeat-x 0 50% / 40px 10px;
+  mask: var(--sig-wave-mask) repeat-x 0 50% / 40px 10px;
+  animation: sig-wave-drift 6s linear infinite;
+}
+.sig-wave--short {
+  width: 56px;
+}
+@keyframes sig-wave-drift {
+  to { -webkit-mask-position: 40px 50%; mask-position: 40px 50%; }
+}
+.sig-slogan {
+  font-size: 0.95em;
+  font-weight: 600;
+  letter-spacing: 0.01em;
+  color: var(--color-slate-300);
+}
+html.theme-light .sig-slogan {
+  color: #1e3a8a;
+}
+footer .sig-slogan,
+html.theme-light footer .sig-slogan {
+  font-size: 14px;
+  white-space: nowrap;
+  color: rgb(186 230 253 / 0.92);
+}
+/* Ngăn giữa các phần trang: đường kẻ thẳng → đường sóng chữ ký, mờ dần hai đầu. */
+main > section {
+  position: relative;
+}
+main > section:has(+ section),
+main > section:has(+ footer) {
+  border-bottom-color: transparent !important;
+}
+main > section:has(+ section)::after,
+main > section:has(+ footer)::after {
+  content: "";
+  position: absolute;
+  left: 50%;
+  bottom: 0;
+  z-index: 1;
+  width: min(1100px, 82%);
+  height: 10px;
+  translate: -50% 0;
+  pointer-events: none;
+  opacity: 0.55;
+  background: var(--sig-wave-color);
+  -webkit-mask: var(--sig-wave-mask) repeat-x 0 50% / 40px 10px, linear-gradient(90deg, transparent, #000 18%, #000 82%, transparent);
+  -webkit-mask-composite: source-in;
+  mask: var(--sig-wave-mask) repeat-x 0 50% / 40px 10px, linear-gradient(90deg, transparent, #000 18%, #000 82%, transparent);
+  mask-composite: intersect;
+}
+@media (min-width: 1280px) {
+  html.has-site-rail main > section:has(+ section)::after,
+  html.has-site-rail main > section:has(+ footer)::after {
+    left: calc(50% + 42px);
+  }
+}
+@media (prefers-reduced-motion: reduce) {
+  .sig-wave { animation: none; }
+}
+@media print {
+  .sig-wave, main > section::after { display: none !important; }
+}

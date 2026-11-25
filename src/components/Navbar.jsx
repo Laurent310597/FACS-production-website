@@ -99,25 +99,6 @@ export default function Navbar() {
             <span className="absolute -inset-4 rounded-full bg-cyan-300/18 opacity-80 blur-2xl transition-all duration-500 group-hover:bg-cyan-300/28" />
             <LogoWordmark />
           </Link>
-
-          <div className="hidden min-w-[208px] border-l border-cyan-200/18 pl-5 2xl:block">
-            <motion.div
-              initial={{ opacity: 0, x: -8 }}
-              animate={{ opacity: 1, x: 0 }}
-              transition={{ duration: 0.65, delay: 0.2, ease: "easeOut" }}
-              className="relative overflow-hidden rounded-2xl px-1 py-1"
-            >
-              <div className="font-[Cambria,Georgia,serif] text-[12px] md:text-[18px] xl:text-[19px] font-semibold italic leading-[1.45] tracking-[0.04em] text-cyan-50/95 drop-shadow-[0_0_12px_rgba(103,232,249,0.25)]">
-  <span className="bg-gradient-to-r from-blue via-cyan-200 to-slate-300 bg-[length:220%_100%] bg-clip-text text-transparent animate-[facsSloganShine_5.5s_ease-in-out_infinite]">
-    Your Growth Starts
-    <br />
-    With Us
-  </span>
-</div>
-              <span className="absolute bottom-0 left-1 h-px w-16 bg-gradient-to-r from-cyan-300/80 to-transparent" />
-            </motion.div>
-          </div>
-
           <nav className="hidden flex-1 items-center justify-center gap-2 text-[14px] font-bold tracking-[0.01em] text-slate-200 lg:flex xl:gap-5 xl:text-[15px]">
             {navItems.map(([to, label, type]) => {
               if (type === "services") {

@@ -75,7 +75,11 @@ export default function HomePage() {
           <div className={`${containerClass} relative z-10`}>
             <div className="grid items-center gap-16 lg:grid-cols-[1.02fr_0.98fr] xl:gap-20">
               <motion.div initial={{ opacity: 0, y: 40 }} animate={{ opacity: 1, y: 0 }} transition={{ duration: 0.8, delay: 3.2 }}>
-                <div className={labelClass}>{isVi ? "Về FACS" : "About FACS"}</div>
+                <div className={`${labelClass} flex flex-wrap items-center gap-x-4 gap-y-2`}>
+                  <span>{isVi ? "Về FACS" : "About FACS"}</span>
+                  <span className="sig-wave sig-wave--short" aria-hidden="true" />
+                  <span className="sig-slogan">{isVi ? "Tăng trưởng của bạn bắt đầu từ đây" : "Your Growth Starts With Us"}</span>
+                </div>
                 <h1 className="text-5xl font-bold leading-[1.05] tracking-[-3px] lg:text-7xl">
                   {isVi ? "Nền tảng tài chính chiến lược cho doanh nghiệp hiện đại" : "Strategic Financial Infrastructure For Modern Enterprises"}
                 </h1>
