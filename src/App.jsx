@@ -44,6 +44,7 @@ import ScrollToTop from "./components/ScrollToTop";
 import PageTransition from "./components/PageTransition";
 import MouseGlow from "./components/MouseGlow";
 import useSiteMotion from "./components/site/useSiteMotion";
+import { LightTrial } from "./components/site/useLightTrial";
 import SiteSideDecor from "./components/site/SiteSideDecor";
 import { LanguageProvider } from "./components/LanguageContext";
 
@@ -183,6 +184,7 @@ export default function App() {
         <ScrollToTop />
         <MouseGlow />
         <SiteMotion />
+        <LightTrial />
         <SiteSideDecor />
         <HomeIntroOverlay />
         {/* Thông báo dạng toast cho CMS; giữ qua các lần chuyển trang */}

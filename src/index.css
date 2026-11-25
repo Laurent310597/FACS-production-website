@@ -1258,3 +1258,277 @@ html.lang-swap #root {
     transform: none !important;
   }
 }
+
+/* ═══════════════ BẢN THỬ TÔNG SÁNG (trắng – xanh, kính mờ) ═══════════════
+   Chỉ bật khi <html> có class .theme-light (xem src/components/site/useLightTrial.js).
+   Cách làm: đổi biến màu (chữ trắng → xanh than, slate/cyan → sắc đậm hơn) rồi phủ lớp kính cho thẻ. */
+html.theme-light {
+  color-scheme: light;
+  --color-white: #0b1a3a;
+  --color-slate-100: #0f1d3d;
+  --color-slate-200: #1e2a47;
+  --color-slate-300: #34415f;
+  --color-slate-400: #4a5878;
+  --color-slate-500: #66748f;
+  --color-cyan-50: #0b3557;
+  --color-cyan-100: #0c4466;
+  --color-cyan-200: #0b5f86;
+  --color-cyan-300: #0784a8;
+  --color-cyan-400: #0a8fb8;
+  --lt-ink: #0b1a3a;
+  --lt-glass: linear-gradient(180deg, rgb(255 255 255 / 0.82), rgb(255 255 255 / 0.58));
+  --lt-glass-border: rgb(255 255 255 / 0.95);
+  --lt-ring: rgb(37 99 235 / 0.12);
+  --lt-shadow: 0 1px 0 rgb(255 255 255 / 0.95) inset, 0 22px 50px -30px rgb(30 64 175 / 0.32), 0 2px 6px -2px rgb(30 64 175 / 0.08);
+  --lt-glow: 0 1px 0 rgb(255 255 255 / 0.95) inset, 0 34px 70px -30px rgb(37 99 235 / 0.45), 0 0 0 1px rgb(59 130 246 / 0.28), 0 0 40px -6px rgb(56 189 248 / 0.35);
+}
+html.theme-light body {
+  color: var(--lt-ink);
+  background:
+    radial-gradient(60rem 40rem at 88% -8%, rgb(56 189 248 / 0.26), transparent 62%),
+    radial-gradient(52rem 38rem at -6% 26%, rgb(99 102 241 / 0.13), transparent 62%),
+    radial-gradient(46rem 34rem at 55% 104%, rgb(14 165 233 / 0.16), transparent 64%),
+    linear-gradient(180deg, #f8fbff 0%, #eef4ff 55%, #e8f1ff 100%);
+  background-attachment: fixed;
+}
+
+/* ── Website ── */
+html.theme-light main {
+  background: transparent !important;
+}
+html.theme-light main > section {
+  border-color: rgb(37 99 235 / 0.08) !important;
+}
+/* Thẻ kính: nền trắng mờ, viền sáng, bóng xanh dịu; rê chuột → phát sáng xanh nhẹ. */
+html.theme-light :is(main, header) .site-card,
+html.theme-light :is(main, header) [class*="bg-[#111827]"] {
+  background-image: var(--lt-glass) !important;
+  background-color: transparent !important;
+  border-color: var(--lt-glass-border) !important;
+  box-shadow: var(--lt-shadow), 0 0 0 1px var(--lt-ring);
+  -webkit-backdrop-filter: blur(18px) saturate(1.5);
+  backdrop-filter: blur(18px) saturate(1.5);
+}
+html.theme-light :is(main, header) .site-card .site-card {
+  background-image: linear-gradient(180deg, rgb(255 255 255 / 0.9), rgb(240 246 255 / 0.75)) !important;
+  -webkit-backdrop-filter: none;
+  backdrop-filter: none;
+}
+html.theme-light .site-card::before {
+  background: radial-gradient(480px circle at var(--mx, 50%) var(--my, 0%), rgb(56 189 248 / 0.16), transparent 65%);
+}
+html.theme-light .site-card::after {
+  background: radial-gradient(320px circle at var(--mx, 50%) var(--my, 0%), rgb(14 165 233 / 0.9), rgb(37 99 235 / 0.5) 45%, transparent 75%);
+}
+html.theme-light .site-card.is-in:not(.site-tile):not(:has(input, textarea, select)):hover,
+html.theme-light .site-tile.is-in:hover {
+  box-shadow: var(--lt-glow);
+}
+/* Quầng sáng trang trí: dịu hơn trên nền sáng. */
+html.theme-light main [class*="blur-[120px]"] {
+  opacity: 0.55;
+}
+/* Sóng phần đầu trang: lớp sát đáy chuyển sang trắng để hoà vào nền; các lớp còn lại giữ xanh trong suốt. */
+html.theme-light .site-backdrop svg:has(#wave-s4) {
+  display: none;
+}
+/* Quầng màu mềm sau từng khu vực để lớp kính có màu "bắt sáng" (không chỉ là thẻ trắng trên nền trắng). */
+html.theme-light main > section {
+  position: relative;
+  isolation: isolate;
+}
+html.theme-light main > section:not(:first-child)::before {
+  content: "";
+  position: absolute;
+  inset: 0;
+  z-index: -1;
+  pointer-events: none;
+  background:
+    radial-gradient(36rem 22rem at 82% 30%, rgb(56 189 248 / 0.16), transparent 70%),
+    radial-gradient(30rem 20rem at 12% 80%, rgb(99 102 241 / 0.10), transparent 70%);
+}
+html.theme-light main > section:nth-child(odd):not(:first-child)::before {
+  background:
+    radial-gradient(36rem 22rem at 14% 28%, rgb(56 189 248 / 0.16), transparent 70%),
+    radial-gradient(30rem 20rem at 88% 82%, rgb(37 99 235 / 0.10), transparent 70%);
+}
+html.theme-light .site-backdrop__grain {
+  opacity: 0.025;
+}
+html.theme-light .site-backdrop__waves {
+  opacity: 0.72;
+}
+/* Nút phụ viền xanh */
+html.theme-light main a[class*="border-cyan-200/25"] {
+  background-color: rgb(255 255 255 / 0.7);
+  border-color: rgb(37 99 235 / 0.25);
+  -webkit-backdrop-filter: blur(12px);
+  backdrop-filter: blur(12px);
+}
+
+/* Thanh điều hướng: kính trắng, đường sóng mảnh xanh. */
+html.theme-light header.sticky {
+  background-color: rgb(255 255 255 / 0.72) !important;
+  box-shadow: 0 1px 0 rgb(37 99 235 / 0.08), 0 18px 50px -30px rgb(30 64 175 / 0.28) !important;
+  -webkit-backdrop-filter: blur(22px) saturate(1.6);
+  backdrop-filter: blur(22px) saturate(1.6);
+}
+html.theme-light header.sticky > [class*="via-cyan-400/10"] {
+  opacity: 0.5;
+}
+html.theme-light [class*="bg-[#0d1726]"] {
+  background-color: rgb(255 255 255 / 0.94) !important;
+  border-color: rgb(37 99 235 / 0.12) !important;
+  box-shadow: 0 30px 70px -30px rgb(30 64 175 / 0.35) !important;
+  -webkit-backdrop-filter: blur(20px) saturate(1.5);
+  backdrop-filter: blur(20px) saturate(1.5);
+}
+/* Vòng điều hướng bên phải: chữ số và nét đậm hơn để đọc được trên nền sáng. */
+html.theme-light .site-ring__num {
+  fill: #0a7ea4;
+}
+html.theme-light .site-ring__count {
+  color: #0b1a3a;
+}
+html.theme-light .site-ring__count span,
+html.theme-light .site-ring__title {
+  color: #4a5878;
+}
+html.theme-light .site-ring__seg path:last-of-type:not([stroke^="url"]) {
+  stroke: #0891b2;
+}
+html.theme-light .site-ring circle[fill="#0d1726"] {
+  fill: #ffffff;
+}
+html.theme-light .site-scroll {
+  scrollbar-color: rgb(37 99 235 / 0.3) transparent;
+}
+html.theme-light kbd,
+html.theme-light header [class*="border-white/"] {
+  border-color: rgb(37 99 235 / 0.18);
+}
+
+/* Chân trang giữ nền xanh than đậm làm điểm kết thúc: trả lại bảng màu tối bên trong footer. */
+html.theme-light footer {
+  color-scheme: dark;
+  --color-white: #fff;
+  --color-slate-100: oklch(96.8% .007 247.896);
+  --color-slate-200: oklch(92.9% .013 255.508);
+  --color-slate-300: oklch(86.9% .022 252.894);
+  --color-slate-400: oklch(70.4% .04 256.788);
+  --color-slate-500: oklch(55.4% .046 257.417);
+  --color-cyan-50: oklch(98.4% .019 200.873);
+  --color-cyan-100: oklch(95.6% .045 203.388);
+  --color-cyan-200: oklch(91.7% .08 205.041);
+  --color-cyan-300: oklch(86.5% .127 207.078);
+  --color-cyan-400: oklch(78.9% .154 211.53);
+  color: #fff;
+}
+
+/* ── CMS ── */
+html.theme-light .facs-cms {
+  color-scheme: light;
+  --color-midnight: #f3f7ff;
+  --color-midnight-2: #ffffff;
+  --color-cms-0: #f3f7ff;
+  --color-cms-1: #ffffff;
+  --color-cms-2: #f2f6fe;
+  --color-cms-3: #ffffff;
+  --color-ink-1: #0b1a3a;
+  --color-ink-2: #3a4a6b;
+  --color-ink-3: #5d6b8a;
+  --color-white: #13285e;
+  /* Thang xanh điện đậm hơn để chữ/biểu tượng đủ tương phản trên nền trắng. */
+  --color-cyan-50: #0f2a75;
+  --color-cyan-100: #16339a;
+  --color-cyan-200: #1d3fbd;
+  --color-cyan-300: #2450d8;
+  --color-cyan-400: #2b5bff;
+  --color-cyan-500: #2b5bff;
+  --color-emerald-200: #047857;
+  --color-emerald-300: #047857;
+  --color-amber-100: #a14a06;
+  --color-amber-200: #a14a06;
+  --color-amber-300: #a14a06;
+  --color-rose-100: #be123c;
+  --color-rose-200: #be123c;
+  --color-rose-300: #be123c;
+  --color-sky-200: #0369a1;
+  --color-sky-300: #0369a1;
+  --color-violet-200: #6d28d9;
+  --color-violet-300: #6d28d9;
+}
+html.theme-light .facs-aurora {
+  background-color: transparent;
+}
+html.theme-light .facs-aurora::before {
+  background:
+    radial-gradient(56rem 38rem at 86% -6%, rgb(56 189 248 / 0.24), transparent 62%),
+    radial-gradient(44rem 32rem at 2% 104%, rgb(99 102 241 / 0.12), transparent 62%),
+    radial-gradient(40rem 30rem at 42% 55%, rgb(43 91 255 / 0.07), transparent 70%),
+    linear-gradient(180deg, #f8fbff, #ecf3ff);
+}
+html.theme-light .facs-backdrop__grid {
+  background-image: radial-gradient(rgb(43 91 255 / 0.13) 1px, transparent 1.3px);
+}
+html.theme-light .facs-backdrop__grid--lit {
+  background-image: radial-gradient(rgb(43 91 255 / 0.5) 1.1px, transparent 1.5px);
+}
+html.theme-light .facs-backdrop__grain {
+  opacity: 0.02;
+}
+html.theme-light .facs-backdrop__diag {
+  opacity: 0.55;
+}
+/* Thẻ CMS: kính trắng, viền sáng, bóng xanh dịu; rê chuột → viền chuyển xanh – cam rất mảnh và phát sáng xanh. */
+html.theme-light .facs-cms .facs-card {
+  background-color: transparent !important;
+  background-image: var(--lt-glass);
+  border-color: var(--lt-glass-border) !important;
+  box-shadow: var(--lt-shadow), 0 0 0 1px var(--lt-ring);
+  -webkit-backdrop-filter: blur(18px) saturate(1.5);
+  backdrop-filter: blur(18px) saturate(1.5);
+}
+html.theme-light .facs-cms .facs-card::before {
+  background: radial-gradient(460px circle at var(--mx, 50%) var(--my, 0%), rgb(56 189 248 / 0.14), transparent 65%);
+}
+html.theme-light .facs-cms .facs-card.is-in:hover:not(:has(.fixed)),
+html.theme-light .facs-tile.is-in:not([open]):not(:has(.fixed)):hover,
+html.theme-light .facs-cms .facs-tile:not(.facs-card):not([open]):not(:has(.fixed)):hover {
+  box-shadow: var(--lt-glow);
+}
+html.theme-light .facs-row:not(:has(.fixed)):hover {
+  background-color: rgb(255 255 255 / 0.95) !important;
+  box-shadow: inset 3px 0 0 var(--color-sunset), 0 20px 44px -24px rgb(30 64 175 / 0.4), 0 0 0 1px rgb(59 130 246 / 0.18);
+}
+/* Thanh đầu trang và menu trái của CMS: kính trắng. */
+html.theme-light .facs-cms .bg-midnight-2\/80,
+html.theme-light .facs-cms .bg-midnight-2\/90 {
+  background-color: rgb(255 255 255 / 0.7) !important;
+  -webkit-backdrop-filter: blur(22px) saturate(1.6);
+  backdrop-filter: blur(22px) saturate(1.6);
+  box-shadow: 0 1px 0 rgb(37 99 235 / 0.08), 0 16px 40px -28px rgb(30 64 175 / 0.25);
+}
+/* "text-white" trong CMS là chữ nổi bật → chữ xanh than; riêng chữ trên nút màu đặc vẫn trắng. */
+html.theme-light .facs-cms .text-white {
+  color: var(--color-ink-1);
+}
+html.theme-light .facs-cms :is(.bg-brand, .bg-sunset, .bg-electric, .bg-rose-500, .bg-rose-600, .bg-emerald-500, .bg-emerald-600, .bg-blue-600).text-white,
+html.theme-light .facs-cms :is(.bg-brand, .bg-sunset, .bg-electric, .bg-rose-500, .bg-rose-600, .bg-emerald-500, .bg-emerald-600, .bg-blue-600) .text-white {
+  color: #fff;
+}
+/* Lớp sóng sát đáy của CMS (vốn màu nền tối) → trắng để hoà vào nền sáng. */
+html.theme-light #wave-w4 stop {
+  stop-color: #ffffff;
+}
+html.theme-light .facs-cms ::selection {
+  background: rgb(43 91 255 / 0.18);
+}
+html.theme-light .facs-cms input::placeholder,
+html.theme-light .facs-cms textarea::placeholder {
+  color: #8391ad;
+}
+html.theme-light .facs-cms select,
+html.theme-light .facs-cms option {
+  color-scheme: light;
+}

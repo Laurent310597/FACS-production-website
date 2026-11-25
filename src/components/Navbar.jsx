@@ -16,7 +16,7 @@ const dropdownClass = "site-scroll pointer-events-none absolute left-1/2 top-ful
 function LogoWordmark({ compact = false }) {
   return (
     <span className={`relative z-10 select-none font-serif font-black leading-none tracking-[-0.04em] text-white drop-shadow-[0_0_28px_rgba(34,211,238,0.22)] transition-all duration-500 group-hover:scale-[1.03] ${compact ? "text-[26px]" : "text-[28px] lg:text-[30px]"}`}>
-      FACS<span className="text-cyan-300">.</span>
+      FACS<span className="text-facs-logo">.</span>
     </span>
   );
 }
