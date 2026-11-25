@@ -37,11 +37,6 @@ export default function SiteRail() {
   return (
     <aside className="site-rail" aria-label={isVi ? "Bảng điều khiển" : "Control panel"}>
       <div className="site-rail__panel">
-        <div className="site-rail__head" aria-hidden="true">
-          <span className="site-rail__orb" />
-          <span className="site-rail__label site-rail__eyebrow">{isVi ? "Điều hướng" : "Navigate"}</span>
-        </div>
-
         <nav className="site-rail__nav">
           {railItems(isVi).map(([to, label]) => {
             const Icon = ICONS[to];

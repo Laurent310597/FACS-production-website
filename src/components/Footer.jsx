@@ -62,8 +62,7 @@ export default function Footer() {
         <div className="grid gap-12 lg:grid-cols-[1.25fr_1fr_1fr_1fr_1.35fr]">
           <div>
             <FooterLogo />
-            <div className="mt-4 flex items-center gap-3">
-              <span className="sig-wave sig-wave--short" aria-hidden="true" />
+            <div className="mt-4">
               <span className="sig-slogan">{isVi ? "Tăng trưởng của bạn bắt đầu từ đây" : "Your Growth Starts With Us"}</span>
             </div>
             <p className="mt-4 max-w-sm text-slate-400 leading-relaxed">

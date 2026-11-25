@@ -87,7 +87,7 @@ function HomeIntroOverlay() {
               transition={{ duration: 0.85, ease: "easeOut" }}
               className="select-none font-serif text-6xl font-black leading-none tracking-[-0.06em] text-white drop-shadow-[0_0_40px_rgba(34,211,238,0.34)] md:text-7xl"
             >
-              FACS<span className="text-cyan-300">.</span>
+              FACS<span className="text-facs-logo">.</span>
             </motion.div>
             <motion.div
               initial={{ height: 0, opacity: 0 }}
