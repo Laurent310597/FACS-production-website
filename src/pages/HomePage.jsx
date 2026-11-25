@@ -7,7 +7,7 @@ import AnimatedCounter from "../components/AnimatedCounter";
 import { motion } from "framer-motion";
 import { getServiceContent, services } from "../data/services";
 import { useLanguage } from "../components/LanguageContext";
-import { ShieldCheck, BarChart3, Building2, Handshake, BriefcaseBusiness, ArrowRight } from "lucide-react";
+import { ShieldCheck, BarChart3, Building2, Handshake, BriefcaseBusiness, ArrowRight, GraduationCap } from "lucide-react";
 
 const labelClass = "text-cyan-300 mb-5 text-base lg:text-lg font-bold tracking-[0.03em]";
 const containerClass = "container mx-auto px-6 lg:px-12";
@@ -66,6 +66,31 @@ export default function HomePage() {
     [Handshake, "10+", isVi ? "Đối tác" : "Strategic Partners"],
   ];
 
+  // Khối kêu gọi cuối trang: hai lối đi – khách hàng → Liên hệ, ứng viên → Tuyển dụng.
+  const buildPaths = [
+    {
+      to: "/contact",
+      primary: true,
+      icon: Handshake,
+      eyebrow: isVi ? "Dành cho khách hàng" : "For clients",
+      title: isVi ? "Bắt đầu hành trình phát triển mới" : "Start your next growth journey",
+      desc: isVi
+        ? "Chia sẻ nhu cầu về kế toán, thuế, pháp lý hay vận hành – đội ngũ FACS sẽ liên hệ để cùng bạn xây dựng lộ trình phù hợp."
+        : "Tell us what you need in accounting, tax, legal or operations – the FACS team will reach out to shape the right roadmap with you.",
+      cta: isVi ? "Đặt lịch tư vấn" : "Schedule Consultation",
+    },
+    {
+      to: "/careers",
+      icon: GraduationCap,
+      eyebrow: isVi ? "Dành cho ứng viên" : "For candidates",
+      title: isVi ? "Khám phá cơ hội làm việc cùng FACS" : "Explore opportunities at FACS",
+      desc: isVi
+        ? "Tìm hiểu các vị trí đang tuyển và cùng FACS phát triển sự nghiệp trong lĩnh vực tài chính, kế toán, thuế và pháp lý."
+        : "See our open positions and grow your career with FACS across finance, accounting, tax and legal.",
+      cta: isVi ? "Xem cơ hội nghề nghiệp" : "View Careers",
+    },
+  ];
+
   return (
     <>
       <Navbar />
@@ -76,11 +101,7 @@ export default function HomePage() {
           <div className={`${containerClass} relative z-10`}>
             <div className="grid items-center gap-16 lg:grid-cols-[1.02fr_0.98fr] xl:gap-20">
               <motion.div initial={{ opacity: 0, y: 40 }} animate={{ opacity: 1, y: 0 }} transition={{ duration: 0.8, delay: 3.2 }}>
-                <div className={`${labelClass} flex flex-wrap items-center gap-x-4 gap-y-2`}>
-                  <span>{isVi ? "Về FACS" : "About FACS"}</span>
-                  <span className="h-4 w-px bg-current opacity-30" aria-hidden="true" />
-                  <span className="sig-slogan">{isVi ? "Tăng trưởng của bạn bắt đầu từ đây" : "Your Growth Starts With Us"}</span>
-                </div>
+                <div className={labelClass}>{isVi ? "Về FACS" : "About FACS"}</div>
                 <h1 className="text-5xl font-bold leading-[1.05] tracking-[-3px] lg:text-7xl">
                   {isVi ? "Nền tảng tài chính chiến lược cho doanh nghiệp hiện đại" : "Strategic Financial Infrastructure For Modern Enterprises"}
                 </h1>
@@ -133,8 +154,6 @@ export default function HomePage() {
           </div>
         </section>
 
-        <CoreServicesShowcase isVi={isVi} />
-
         <section className="border-b border-white/10 py-28">
           <div className={containerClass}>
             <div className="grid gap-8 lg:grid-cols-3">
@@ -182,6 +201,8 @@ export default function HomePage() {
           </div>
         </section>
 
+        <CoreServicesShowcase isVi={isVi} />
+
         <section className="border-b border-white/10 py-32">
           <div className={containerClass}>
             <div className="max-w-4xl">
@@ -209,18 +230,42 @@ export default function HomePage() {
 
         <section className="py-32">
           <div className={containerClass}>
-            <div className="site-card rounded-[48px] border border-white/10 bg-gradient-to-br from-cyan-500/10 to-blue-600/10 p-12 backdrop-blur-xl lg:p-24">
-              <div className="max-w-3xl">
-                <div className={labelClass}>{isVi ? "Cùng kiến tạo giá trị" : "Let’s Build Together"}</div>
-                <h2 className="text-4xl font-bold leading-tight lg:text-6xl">{isVi ? "Hiện đại hóa nền tảng vận hành doanh nghiệp" : "Modernize Your Business Infrastructure"}</h2>
-                <p className="mt-8 text-lg leading-relaxed text-slate-300">
-                  {isVi
-                    ? "Đồng hành cùng FACS để đơn giản hóa vận hành, tăng cường tuân thủ và thúc đẩy tăng trưởng bền vững."
-                    : "Partner with FACS to simplify operations, strengthen compliance and accelerate sustainable business growth."}
-                </p>
-                <Link to="/contact" className="site-cta mt-10 inline-flex rounded-2xl bg-cyan-500 px-8 py-4 font-semibold text-[#06111f] transition-all duration-300 hover:-translate-y-1 hover:bg-cyan-300 hover:shadow-[0_18px_42px_rgba(6,182,212,0.26)]">
-                  {isVi ? "Đặt lịch tư vấn" : "Schedule Consultation"}
-                </Link>
+            <div className="build-cta site-card relative overflow-hidden rounded-[48px] border border-white/10 bg-gradient-to-br from-cyan-500/10 to-blue-600/10 p-8 backdrop-blur-xl sm:p-12 lg:p-16 xl:p-20">
+              <div className="build-cta__glow" aria-hidden="true" />
+              <div className="build-cta__grid" aria-hidden="true" />
+              <div className="relative z-10 grid items-center gap-12 lg:grid-cols-[0.95fr_1.05fr] xl:gap-16">
+                <motion.div initial={{ opacity: 0, y: 30 }} whileInView={{ opacity: 1, y: 0 }} viewport={{ once: true, amount: 0.3 }} transition={{ duration: 0.7 }}>
+                  <div className={labelClass}>{isVi ? "Cùng kiến tạo giá trị" : "Let’s Build Together"}</div>
+                  <h2 className="text-4xl font-bold leading-tight lg:text-6xl">{isVi ? "Hiện đại hóa nền tảng vận hành doanh nghiệp" : "Modernize Your Business Infrastructure"}</h2>
+                  <p className="mt-8 text-lg leading-relaxed text-slate-300">
+                    {isVi
+                      ? "Đồng hành cùng FACS để đơn giản hóa vận hành, tăng cường tuân thủ và thúc đẩy tăng trưởng bền vững."
+                      : "Partner with FACS to simplify operations, strengthen compliance and accelerate sustainable business growth."}
+                  </p>
+                </motion.div>
+
+                <div className="build-cta__paths">
+                  {buildPaths.map((path, i) => (
+                    <motion.div
+                      key={path.to}
+                      initial={{ opacity: 0, y: 30 }}
+                      whileInView={{ opacity: 1, y: 0 }}
+                      viewport={{ once: true, amount: 0.3 }}
+                      transition={{ duration: 0.7, delay: 0.1 + i * 0.1 }}
+                      className={`build-path site-card group${path.primary ? " build-path--primary" : ""}`}
+                    >
+                      <span className="build-path__icon"><path.icon size={26} /></span>
+                      <div className="min-w-0">
+                        <div className="build-path__eyebrow">{path.eyebrow}</div>
+                        <h3 className="build-path__title">{path.title}</h3>
+                        <p className="build-path__desc">{path.desc}</p>
+                        <Link to={path.to} className={path.primary ? "site-cta build-path__btn" : "build-path__btn build-path__btn--ghost"}>
+                          {path.cta}<ArrowRight size={17} />
+                        </Link>
+                      </div>
+                    </motion.div>
+                  ))}
+                </div>
               </div>
             </div>
           </div>

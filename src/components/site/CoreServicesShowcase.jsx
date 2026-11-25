@@ -15,6 +15,23 @@ const CORE = [
 ];
 const AUTOPLAY_MS = 7000;
 
+// Tách tên dịch vụ thành đúng 2 dòng để 4 tiêu đề căn lề giống nhau (không đổi chữ):
+// có "&" thì xuống dòng sau "&", không thì chia đôi theo số chữ (dòng trên dài hơn khi bằng nhau).
+function splitTitle(title) {
+  const amp = title.indexOf(" & ");
+  if (amp > 0) return [title.slice(0, amp + 2), title.slice(amp + 3)];
+  const words = title.split(" ");
+  let best = 1;
+  let bestScore = Infinity;
+  for (let k = 1; k < words.length; k += 1) {
+    const top = words.slice(0, k).join(" ").length;
+    const bottom = words.slice(k).join(" ").length;
+    const score = Math.max(top, bottom) * 2 + (top < bottom ? 1 : 0);
+    if (score < bestScore) { bestScore = score; best = k; }
+  }
+  return [words.slice(0, best).join(" "), words.slice(best).join(" ")];
+}
+
 export default function CoreServicesShowcase({ isVi }) {
   const items = CORE.map((item) => {
     const service = services.find((s) => s.slug === item.slug);
@@ -72,7 +89,11 @@ export default function CoreServicesShowcase({ isVi }) {
         <div className="svc-show__headline" aria-live="polite">
           <AnimatePresence mode="wait" initial={false}>
             <motion.div key={current.slug} initial={{ opacity: 0, y: 18 }} animate={{ opacity: 1, y: 0 }} exit={{ opacity: 0, y: -12 }} transition={{ duration: 0.45, ease: [0.2, 0.8, 0.2, 1] }}>
-              <h2 className="svc-show__title">{current.title}</h2>
+              <h2 className="svc-show__title">
+                {splitTitle(current.title).map((line, i) => (
+                  <span key={line} className="svc-show__line">{i > 0 ? " " : ""}{line}</span>
+                ))}
+              </h2>
               <p className="svc-show__desc">{current.desc}</p>
             </motion.div>
           </AnimatePresence>

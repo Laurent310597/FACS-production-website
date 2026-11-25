@@ -169,49 +169,42 @@ export default function Navbar() {
             })}
           </nav>
 
-          <div className="hidden shrink-0 items-center gap-3 md:flex">
+          {/* Cụm điều khiển: tiện ích (tìm kiếm, giao diện, ngôn ngữ) cùng kích thước 44px → vạch ngăn → nút liên hệ chính ở cuối. */}
+          <div className="hdr-tools hidden shrink-0 items-center gap-2 lg:flex">
             <button
               type="button"
               onClick={() => setSearchOpen(true)}
-              className="site-ripple group inline-flex h-12 w-12 items-center justify-center rounded-2xl border border-white/10 bg-white/[0.035] text-slate-300 transition-all duration-300 hover:-translate-y-0.5 hover:border-cyan-300/40 hover:text-white"
+              className="hdr-tool site-ripple group"
               aria-label={isVi ? "Tìm kiếm" : "Search"}
               title={isVi ? "Tìm kiếm" : "Search"}
             >
-              <Search size={19} className="transition-transform duration-300 group-hover:scale-110" />
+              <Search size={18} className="transition-transform duration-300 group-hover:scale-110" />
             </button>
-            <button
-              type="button"
-              onClick={toggleTheme}
-              className="site-ripple group inline-flex h-12 w-12 items-center justify-center rounded-2xl border border-white/10 bg-white/[0.035] text-slate-300 transition-all duration-300 hover:-translate-y-0.5 hover:border-cyan-300/40 hover:text-white xl:hidden"
-              aria-label={themeLabel}
-              title={themeLabel}
-            >
-              {theme === "light" ? <Sun size={19} /> : <Moon size={19} />}
+            <button type="button" onClick={toggleTheme} className="hdr-tool hdr-tool--theme site-ripple" aria-label={themeLabel} title={themeLabel}>
+              {theme === "light" ? <Sun size={18} /> : <Moon size={18} />}
             </button>
-            <Link
-              to="/contact"
-              className="site-cta whitespace-nowrap rounded-2xl border border-cyan-200/30 bg-white/[0.04] px-4 py-3 text-sm font-semibold text-cyan-100 transition-all duration-300 hover:-translate-y-1 hover:bg-cyan-300 hover:text-[#06111f] hover:shadow-[0_18px_42px_rgba(6,182,212,0.30)] xl:px-5 xl:text-base"
-            >
-              {isVi ? "Kết nối cùng FACS" : "Let's Connect"}
-            </Link>
-
-            <div className="flex items-center rounded-2xl border border-white/10 bg-white/[0.035] p-1 text-xs font-semibold text-slate-300 shadow-[0_12px_36px_rgba(0,0,0,0.20)]">
-              <button type="button" onClick={() => setLanguage("en")} className={`rounded-xl px-3 py-2 transition-all duration-300 ${language === "en" ? "bg-cyan-400/18 text-cyan-100 shadow-[0_0_18px_rgba(34,211,238,0.18)]" : "hover:bg-white/[0.08] hover:text-white"}`}>EN</button>
-              <button type="button" onClick={() => setLanguage("vi")} className={`rounded-xl px-3 py-2 transition-all duration-300 ${language === "vi" ? "bg-cyan-400/18 text-cyan-100 shadow-[0_0_18px_rgba(34,211,238,0.18)]" : "hover:bg-white/[0.08] hover:text-white"}`}>VI</button>
+            <div className="hdr-lang" role="group" aria-label={isVi ? "Ngôn ngữ" : "Language"}>
+              <button type="button" onClick={() => setLanguage("en")} aria-pressed={language === "en"} className={language === "en" ? "is-on" : ""}>EN</button>
+              <button type="button" onClick={() => setLanguage("vi")} aria-pressed={language === "vi"} className={language === "vi" ? "is-on" : ""}>VI</button>
             </div>
+            <span className="hdr-sep" aria-hidden="true" />
+            <Link to="/contact" className="site-cta hdr-cta">
+              {isVi ? "Kết nối cùng FACS" : "Let's Connect"}
+              <ArrowRight size={16} className="hdr-cta__icon" />
+            </Link>
           </div>
 
-          <div className="flex items-center gap-2 md:hidden">
-          <button type="button" onClick={() => setSearchOpen(true)} className="inline-flex h-11 w-11 items-center justify-center rounded-2xl border border-cyan-200/20 bg-white/[0.045] text-cyan-100" aria-label={isVi ? "Tìm kiếm" : "Search"}>
-            <Search size={20} />
+          <div className="flex items-center gap-2 lg:hidden">
+          <button type="button" onClick={() => setSearchOpen(true)} className="hdr-tool" aria-label={isVi ? "Tìm kiếm" : "Search"}>
+            <Search size={19} />
           </button>
-          <button type="button" onClick={toggleTheme} className="inline-flex h-11 w-11 items-center justify-center rounded-2xl border border-cyan-200/20 bg-white/[0.045] text-cyan-100" aria-label={themeLabel}>
-            {theme === "light" ? <Sun size={20} /> : <Moon size={20} />}
+          <button type="button" onClick={toggleTheme} className="hdr-tool" aria-label={themeLabel}>
+            {theme === "light" ? <Sun size={19} /> : <Moon size={19} />}
           </button>
           <button
             type="button"
             onClick={() => setMobileOpen((current) => !current)}
-            className="relative z-20 inline-flex h-11 w-11 items-center justify-center rounded-2xl border border-cyan-200/20 bg-white/[0.045] text-cyan-100 transition-all duration-300 hover:bg-cyan-400/12 md:hidden"
+            className="hdr-tool relative z-20"
             aria-label={mobileOpen ? "Close navigation" : "Open navigation"}
           >
             {mobileOpen ? <X size={22} /> : <Menu size={22} />}
@@ -224,7 +217,7 @@ export default function Navbar() {
       {createPortal(
         <AnimatePresence>
           {mobileOpen && (
-            <motion.div className="fixed inset-0 z-[150] md:hidden" initial={{ opacity: 0 }} animate={{ opacity: 1 }} exit={{ opacity: 0 }}>
+            <motion.div className="fixed inset-0 z-[150] lg:hidden" initial={{ opacity: 0 }} animate={{ opacity: 1 }} exit={{ opacity: 0 }}>
               <button type="button" className="absolute inset-0 bg-[#030913]/70 backdrop-blur-sm" onClick={() => setMobileOpen(false)} aria-label={isVi ? "Đóng menu" : "Close menu"} />
               <motion.nav
                 className="absolute inset-y-0 right-0 flex w-[88vw] max-w-[380px] flex-col border-l border-cyan-200/15 bg-[#0d1726] shadow-[-30px_0_80px_rgba(0,0,0,0.5)]"
