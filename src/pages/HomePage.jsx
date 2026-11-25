@@ -1,6 +1,7 @@
 import { Link } from "react-router-dom";
 import Navbar from "../components/Navbar";
 import Footer from "../components/Footer";
+import CoreServicesShowcase from "../components/site/CoreServicesShowcase";
 import SiteBackdrop from "../components/site/SiteBackdrop";
 import AnimatedCounter from "../components/AnimatedCounter";
 import { motion } from "framer-motion";
@@ -131,6 +132,8 @@ export default function HomePage() {
             </div>
           </div>
         </section>
+
+        <CoreServicesShowcase isVi={isVi} />
 
         <section className="border-b border-white/10 py-28">
           <div className={containerClass}>
