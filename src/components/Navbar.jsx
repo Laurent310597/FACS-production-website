@@ -2,12 +2,13 @@ import { useEffect, useState } from "react";
 import { createPortal } from "react-dom";
 import { Link, NavLink, useLocation } from "react-router-dom";
 import { AnimatePresence, motion } from "framer-motion";
-import { ArrowRight, ChevronDown, Menu, Search, X } from "lucide-react";
+import { ArrowRight, ChevronDown, Menu, Moon, Search, Sun, X } from "lucide-react";
 import { useLanguage } from "./LanguageContext";
 import { getServiceContent, services } from "../data/services";
 import { industries } from "../data/industries";
 import HeaderWave from "./admin/HeaderWave";
 import SiteSearch from "./site/SiteSearch";
+import { setSiteTheme, useSiteTheme } from "./site/siteTheme";
 import { siteNavItems, siteResourceItems } from "./site/siteLinks";
 
 const linkBase = "relative rounded-full px-1 py-2 transition-all duration-300 whitespace-nowrap after:absolute after:left-0 after:-bottom-1 after:h-[2px] after:w-0 after:bg-gradient-to-r after:from-cyan-200 after:to-blue-400 after:transition-all after:duration-300 hover:text-white hover:after:w-full";
@@ -29,6 +30,9 @@ export default function Navbar() {
 
   const navItems = siteNavItems(isVi);
   const [searchOpen, setSearchOpen] = useState(false);
+  const theme = useSiteTheme();
+  const themeLabel = theme === "light" ? (isVi ? "Chuyển sang chế độ tối" : "Switch to dark mode") : (isVi ? "Chuyển sang chế độ sáng" : "Switch to light mode");
+  const toggleTheme = () => setSiteTheme(theme === "light" ? "dark" : "light");
   const [openSection, setOpenSection] = useState(null);
 
   // Ctrl/⌘ + K mở ô Tìm nhanh.
@@ -39,8 +43,13 @@ export default function Navbar() {
         setSearchOpen((v) => !v);
       }
     };
+    const onOpen = () => setSearchOpen(true);
     window.addEventListener("keydown", onKey);
-    return () => window.removeEventListener("keydown", onKey);
+    window.addEventListener("facs:open-search", onOpen);
+    return () => {
+      window.removeEventListener("keydown", onKey);
+      window.removeEventListener("facs:open-search", onOpen);
+    };
   }, []);
 
   // Khoá cuộn trang khi menu điện thoại đang mở; phím Esc để đóng.
@@ -180,12 +189,20 @@ export default function Navbar() {
             <button
               type="button"
               onClick={() => setSearchOpen(true)}
-              className="site-ripple group inline-flex h-12 items-center gap-2 lg:hidden xl:inline-flex rounded-2xl border border-white/10 bg-white/[0.035] px-3.5 text-sm text-slate-300 transition-all duration-300 hover:-translate-y-0.5 hover:border-cyan-300/40 hover:text-white"
-              aria-label={isVi ? "Tìm nhanh (Ctrl K)" : "Search (Ctrl K)"}
-              title="Ctrl / ⌘ + K"
+              className="site-ripple group inline-flex h-12 w-12 items-center justify-center rounded-2xl border border-white/10 bg-white/[0.035] text-slate-300 transition-all duration-300 hover:-translate-y-0.5 hover:border-cyan-300/40 hover:text-white"
+              aria-label={isVi ? "Tìm kiếm" : "Search"}
+              title={isVi ? "Tìm kiếm" : "Search"}
             >
-              <Search size={18} className="transition-transform duration-300 group-hover:scale-110" />
-              <kbd className="hidden rounded-md border border-white/[0.14] px-1.5 py-0.5 text-[11px] text-slate-400 2xl:inline">Ctrl K</kbd>
+              <Search size={19} className="transition-transform duration-300 group-hover:scale-110" />
+            </button>
+            <button
+              type="button"
+              onClick={toggleTheme}
+              className="site-ripple group inline-flex h-12 w-12 items-center justify-center rounded-2xl border border-white/10 bg-white/[0.035] text-slate-300 transition-all duration-300 hover:-translate-y-0.5 hover:border-cyan-300/40 hover:text-white xl:hidden"
+              aria-label={themeLabel}
+              title={themeLabel}
+            >
+              {theme === "light" ? <Sun size={19} /> : <Moon size={19} />}
             </button>
             <Link
               to="/contact"
@@ -201,8 +218,11 @@ export default function Navbar() {
           </div>
 
           <div className="flex items-center gap-2 md:hidden">
-          <button type="button" onClick={() => setSearchOpen(true)} className="inline-flex h-11 w-11 items-center justify-center rounded-2xl border border-cyan-200/20 bg-white/[0.045] text-cyan-100" aria-label={isVi ? "Tìm nhanh" : "Search"}>
+          <button type="button" onClick={() => setSearchOpen(true)} className="inline-flex h-11 w-11 items-center justify-center rounded-2xl border border-cyan-200/20 bg-white/[0.045] text-cyan-100" aria-label={isVi ? "Tìm kiếm" : "Search"}>
             <Search size={20} />
+          </button>
+          <button type="button" onClick={toggleTheme} className="inline-flex h-11 w-11 items-center justify-center rounded-2xl border border-cyan-200/20 bg-white/[0.045] text-cyan-100" aria-label={themeLabel}>
+            {theme === "light" ? <Sun size={20} /> : <Moon size={20} />}
           </button>
           <button
             type="button"
