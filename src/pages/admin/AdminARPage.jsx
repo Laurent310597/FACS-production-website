@@ -115,7 +115,7 @@ export default function AdminARPage() {
     <AdminLayout>
       <div>
         <div className="text-xs font-bold uppercase tracking-[0.18em] text-sunset">Finance · AR</div>
-        <h1 className="mt-2 text-3xl font-bold md:text-4xl">Email nhắc công nợ</h1>
+        <h1 className="mt-3 text-3xl font-bold md:text-4xl">Email nhắc công nợ</h1>
         <p className="mt-2 max-w-3xl text-sm leading-relaxed text-ink-2">
           Nhập công nợ từng khách (trực tiếp hoặc bằng file Excel), xem trước rồi gửi email song ngữ từ <span className="text-cyan-200">accounting@facs.vn</span>, kèm thông tin tài khoản ngân hàng của FACS. Không có email nào được gửi khi anh/chị chưa bấm gửi và xác nhận.
         </p>

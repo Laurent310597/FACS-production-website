@@ -427,7 +427,7 @@ export default function AdminHubLibraryPage() {
         <div className="flex flex-wrap items-end justify-between gap-4">
           <div>
             <div className="text-xs font-bold uppercase tracking-[0.18em] text-sunset">FACS Hub</div>
-            <h1 className="mt-1 text-3xl font-bold tracking-[-0.02em]">Thư viện</h1>
+            <h1 className="mt-3 text-3xl font-bold md:text-4xl">Thư viện</h1>
             <p className="mt-2 max-w-3xl text-sm text-ink-2">Nơi AI học cách làm việc theo cách của FACS: đọc hướng dẫn ở thư mục 1 và các bài đã duyệt ở thư mục 3 trước mỗi lần tạo nội dung.</p>
           </div>
           <Link to="/admin/hub/content" className={primaryButton}><Sparkles size={16} /> Tạo nội dung</Link>

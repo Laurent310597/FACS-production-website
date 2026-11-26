@@ -223,7 +223,7 @@ export default function AdminLegalEmailPage() {
         <div className="order-2 min-w-0 space-y-6 xl:order-1">
           <section className={card}>
             <div className="flex flex-wrap items-center justify-between gap-3">
-              <h2 className="text-xl font-bold">Xem trước email</h2>
+              <h2 className="text-xl font-semibold">Xem trước email</h2>
               {data?.subject && <span className="text-xs text-ink-3">Giống hệt email khách hàng nhận</span>}
             </div>
             {data?.subject && <div className={`${subtle} mt-4 text-sm`}><span className="text-ink-3">Tiêu đề: </span><span className="font-semibold text-ink-1">{data.subject}</span></div>}
@@ -269,7 +269,7 @@ export default function AdminLegalEmailPage() {
           )}
 
           <section className={`${card} space-y-3`}>
-            <h2 className="text-xl font-bold">Gửi email</h2>
+            <h2 className="text-xl font-semibold">Gửi email</h2>
             <Step index={1} done={Boolean(events.length)} active title="Kiểm tra nội dung">Rà soát email xem trước. Chỉ các mốc <strong className="text-ink-2">đã xuất bản và đã xác minh</strong> được đưa vào.</Step>
             <Step index={2} done={Boolean(data?.tested)} active={Boolean(events.length)} title="Gửi thử nội bộ">
               Gửi bản [TEST] tới {data?.recipients?.to?.[0] || "tunguyen@facs.vn"}. Nếu sửa mốc sau khi gửi thử, cần gửi thử lại.
@@ -293,7 +293,7 @@ export default function AdminLegalEmailPage() {
           </section>
 
           <section className={card}>
-            <div className="flex items-center justify-between gap-3"><h2 className="text-xl font-bold">Các mốc trong email</h2><Link to="/admin/legal-calendar" className="text-sm font-semibold text-cyan-300 hover:text-cyan-200">Quản lý mốc</Link></div>
+            <div className="flex items-center justify-between gap-3"><h2 className="text-xl font-semibold">Các mốc trong email</h2><Link to="/admin/legal-calendar" className="text-sm font-semibold text-cyan-300 hover:text-cyan-200">Quản lý mốc</Link></div>
             {events.length === 0 ? <p className="mt-4 text-sm text-ink-3">{loading ? "Đang tải…" : "Chưa có mốc nào."}</p> : (
               <div className="mt-3 divide-y divide-white/[0.07]">
                 {events.map((event) => { const category = getCategory(event.category); return (
@@ -311,7 +311,7 @@ export default function AdminLegalEmailPage() {
           </section>
 
           <section className={card}>
-            <h2 className="text-xl font-bold">Nhật ký {monthTitle(month).toLowerCase()}</h2>
+            <h2 className="text-xl font-semibold">Nhật ký {monthTitle(month).toLowerCase()}</h2>
             {logs.length === 0 ? <p className="mt-4 text-sm text-ink-3">Chưa có lượt gửi nào.</p> : (
               <div className="mt-3 divide-y divide-white/[0.07]">
                 {logs.map((log) => {

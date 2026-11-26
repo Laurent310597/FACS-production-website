@@ -375,7 +375,7 @@ export default function AdminLegalSourcesPage() {
       <section className="mt-7">
         <div className="flex items-end justify-between gap-4">
           <div>
-            <h2 className="text-2xl font-bold">Danh mục nguồn</h2>
+            <h2 className="text-xl font-semibold">Danh mục nguồn</h2>
             <p className="mt-1 text-sm text-ink-3">Bật/tắt quét tự động mà không xóa lịch sử nguồn.</p>
           </div>
         </div>
@@ -416,7 +416,7 @@ export default function AdminLegalSourcesPage() {
 
       <section className="mt-10 border-t border-white/10 pt-10">
         <div>
-          <h2 className="text-2xl font-bold">Kết quả chưa đủ dữ liệu</h2>
+          <h2 className="text-xl font-semibold">Kết quả chưa đủ dữ liệu</h2>
           <p className="mt-1 text-sm text-ink-3">Chỉ hiển thị các mục mà hệ thống chưa xác định được ngày hoặc nội dung cần thiết. Các mục đã biên soạn nằm trực tiếp tại “Mốc pháp lý”; phần này không bắt buộc phải xử lý từng dòng.</p>
         </div>
         {candidates.length === 0 ? (

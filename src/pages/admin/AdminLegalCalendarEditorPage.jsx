@@ -214,7 +214,7 @@ export default function AdminLegalCalendarEditorPage() {
       <div className="flex flex-col gap-5 xl:flex-row xl:items-end xl:justify-between">
         <div>
           <Link to="/admin/legal-calendar" className="inline-flex items-center gap-2 text-sm text-ink-2 transition hover:text-cyan-200"><ArrowLeft size={16} /> Trở lại lịch pháp lý</Link>
-          <h1 className="mt-4 text-3xl font-bold md:text-4xl">{isEditing ? "Chỉnh sửa mốc pháp lý" : "Thêm mốc pháp lý"}</h1>
+          <h1 className="mt-3 text-3xl font-bold md:text-4xl">{isEditing ? "Chỉnh sửa mốc pháp lý" : "Thêm mốc pháp lý"}</h1>
           <p className="mt-2 max-w-3xl text-sm leading-relaxed text-ink-2">Nguồn phát hiện P2/P3 không thay thế căn cứ chính thức P1. Hệ thống sẽ chặn xuất bản nếu chưa có nguồn chính thức.</p>
         </div>
         <div className="flex flex-wrap gap-3">
@@ -229,7 +229,7 @@ export default function AdminLegalCalendarEditorPage() {
 
       {error && <div className="mt-6 rounded-2xl border border-red-300/20 bg-red-400/8 px-5 py-4 text-sm text-red-200">{error}</div>}
 
-      <div className="mt-7 grid gap-6 2xl:grid-cols-[minmax(0,1fr)_420px]">
+      <div className="mt-7 grid grid-cols-1 gap-6 [&>*]:min-w-0 2xl:grid-cols-[minmax(0,1fr)_420px]">
         <div className="space-y-6">
           <section className="facs-card rounded-[20px] border border-cyan-300/[0.14] bg-cms-1 p-5 md:p-7">
             <div className="flex flex-wrap items-center justify-between gap-4 border-b border-white/10 pb-5">

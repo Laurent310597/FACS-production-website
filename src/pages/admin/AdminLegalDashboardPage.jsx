@@ -144,7 +144,7 @@ export default function AdminLegalDashboardPage() {
 
           <div className="mt-7 grid gap-6 xl:grid-cols-[1.1fr_0.9fr]">
             <section className="facs-card rounded-[20px] border border-cyan-300/[0.14] bg-cms-1 p-5 md:p-6">
-              <div className="flex items-center justify-between gap-4"><div><h2 className="text-xl font-bold">Theo lĩnh vực</h2><p className="mt-1 text-sm text-ink-3">Tổng số mốc và số chưa xác minh</p></div><Link to="/admin/legal-calendar" className="text-sm font-semibold text-cyan-300 hover:text-cyan-200">Mở danh sách</Link></div>
+              <div className="flex items-center justify-between gap-4"><div><h2 className="text-xl font-semibold">Theo lĩnh vực</h2><p className="mt-1 text-sm text-ink-3">Tổng số mốc và số chưa xác minh</p></div><Link to="/admin/legal-calendar" className="text-sm font-semibold text-cyan-300 hover:text-cyan-200">Mở danh sách</Link></div>
               <div className="mt-6 space-y-4">
                 {byCategory.map((item) => <div key={item.value}>
                   <div className="mb-2 flex items-center justify-between gap-4 text-sm"><span className="font-semibold text-ink-1">{item.vi}</span><span className="text-ink-3"><strong className="text-white">{item.total}</strong>{item.pending ? ` · ${item.pending} chờ duyệt` : ""}</span></div>
@@ -154,7 +154,7 @@ export default function AdminLegalDashboardPage() {
             </section>
 
             <section className="facs-card rounded-[20px] border border-cyan-300/[0.14] bg-cms-1 p-5 md:p-6">
-              <h2 className="text-xl font-bold">Phân bổ theo tháng {dashboardYear}</h2>
+              <h2 className="text-xl font-semibold">Phân bổ theo tháng {dashboardYear}</h2>
               <p className="mt-1 text-sm text-ink-3">Nhận diện tháng cao điểm để bố trí nguồn lực</p>
               <div className="mt-7 flex h-56 items-end gap-2 sm:gap-3">
                 {byMonth.map((item) => <div key={item.month} className="flex h-full min-w-0 flex-1 flex-col justify-end text-center">
@@ -167,7 +167,7 @@ export default function AdminLegalDashboardPage() {
           </div>
 
           <section className="mt-6 facs-card rounded-[20px] border border-cyan-300/[0.14] bg-cms-1 p-5 md:p-6">
-            <div className="flex flex-col gap-3 sm:flex-row sm:items-end sm:justify-between"><div><h2 className="text-xl font-bold">Danh sách cần ưu tiên</h2><p className="mt-1 text-sm text-ink-3">Mốc sắp đến hạn hoặc chưa được rà soát, xếp theo ngày gần nhất</p></div><span className="text-xs text-ink-3">Tối đa 8 mốc</span></div>
+            <div className="flex flex-col gap-3 sm:flex-row sm:items-end sm:justify-between"><div><h2 className="text-xl font-semibold">Danh sách cần ưu tiên</h2><p className="mt-1 text-sm text-ink-3">Mốc sắp đến hạn hoặc chưa được rà soát, xếp theo ngày gần nhất</p></div><span className="text-xs text-ink-3">Tối đa 8 mốc</span></div>
             {attention.length === 0 ? <div className="mt-6 rounded-2xl border border-emerald-300/10 bg-emerald-300/[0.04] px-5 py-8 text-center text-sm text-emerald-200">Không có mốc cần ưu tiên trong phạm vi hiện tại.</div> : <div className="mt-5 divide-y divide-white/8">
               {attention.map((item) => { const itemCategory = getCategory(item.category); return <div key={item.id} className="flex flex-col gap-3 py-4 md:flex-row md:items-center">
                 <div className="w-28 shrink-0 text-sm font-bold text-cyan-200">{formatLegalDate(item.event_date, "vi")}</div>

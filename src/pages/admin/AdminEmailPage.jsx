@@ -496,7 +496,7 @@ export default function AdminEmailPage() {
     <AdminLayout>
       <div>
         <div className="text-xs font-bold uppercase tracking-[0.18em] text-sunset">Email automation</div>
-        <h1 className="mt-2 text-3xl font-bold md:text-4xl">Email & Audience</h1>
+        <h1 className="mt-3 text-3xl font-bold md:text-4xl">Email & Audience</h1>
         <p className="mt-2 max-w-3xl text-sm leading-relaxed text-ink-2">
           Gửi từ infor@facs.vn; To cố định tunguyen@facs.vn; Cc cố định yendoan@facs.vn và thanhhuynh@facs.vn. Toàn bộ khách hàng chỉ xuất hiện tại Bcc.
         </p>
@@ -634,7 +634,7 @@ export default function AdminEmailPage() {
           </div>
         </div>
 
-        <form onSubmit={addContact} className="mt-6 grid gap-3 rounded-2xl border border-white/10 bg-cms-2 p-4 lg:grid-cols-[1.2fr_1fr_1fr_auto]">
+        <form onSubmit={addContact} className="mt-6 grid gap-3 rounded-2xl border border-white/10 bg-cms-2 p-4 sm:grid-cols-2 xl:grid-cols-[1.2fr_1fr_1fr_auto] [&>*]:min-w-0">
           <input required type="email" value={form.email} onChange={(event) => setForm((current) => ({ ...current, email: event.target.value }))} placeholder="customer@example.com" className="rounded-xl border border-white/10 bg-cms-2 px-4 py-3 text-sm text-white outline-none focus:border-cyan-300/35" />
           <input value={form.display_name} onChange={(event) => setForm((current) => ({ ...current, display_name: event.target.value }))} placeholder="Tên khách hàng" className="rounded-xl border border-white/10 bg-cms-2 px-4 py-3 text-sm text-white outline-none focus:border-cyan-300/35" />
           <input value={form.company_name} onChange={(event) => setForm((current) => ({ ...current, company_name: event.target.value }))} placeholder="Công ty" className="rounded-xl border border-white/10 bg-cms-2 px-4 py-3 text-sm text-white outline-none focus:border-cyan-300/35" />

@@ -381,7 +381,7 @@ export default function AdminHubContentPage() {
         <div className="flex flex-wrap items-end justify-between gap-4">
           <div>
             <div className="text-xs font-bold uppercase tracking-[0.18em] text-sunset">FACS Hub</div>
-            <h1 className="mt-1 text-3xl font-bold tracking-[-0.02em]">Tạo nội dung</h1>
+            <h1 className="mt-3 text-3xl font-bold md:text-4xl">Tạo nội dung</h1>
             <p className="mt-2 max-w-3xl text-sm text-ink-2">
               Gửi link bài báo, văn bản hoặc ghi chú. Trợ lý soạn bài website song ngữ, bài mạng xã hội và infographic để anh/chị rà soát. Không có gì được đăng hay gửi email tự động từ trang này.
             </p>
@@ -600,7 +600,7 @@ export default function AdminHubContentPage() {
         )}
 
         <div className={cardClass}>
-          <h2 className="text-lg font-bold">Bộ nội dung đã lưu</h2>
+          <h2 className="text-xl font-semibold">Bộ nội dung đã lưu</h2>
           {items.length === 0 ? (
             <p className="mt-3 text-sm text-ink-3">Chưa có bộ nội dung nào.</p>
           ) : (

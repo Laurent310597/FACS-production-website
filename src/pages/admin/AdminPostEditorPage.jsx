@@ -286,7 +286,7 @@ export default function AdminPostEditorPage() {
       <div className="flex flex-col gap-5 lg:flex-row lg:items-end lg:justify-between">
         <div>
           <Link to="/admin/posts" className="inline-flex items-center gap-2 text-sm text-ink-2 transition hover:text-cyan-200"><ArrowLeft size={16} /> Trở lại danh sách</Link>
-          <h1 className="mt-4 text-3xl font-bold md:text-4xl">{isEditing ? "Chỉnh sửa bài viết" : "Viết bài mới"}</h1>
+          <h1 className="mt-3 text-3xl font-bold md:text-4xl">{isEditing ? "Chỉnh sửa bài viết" : "Viết bài mới"}</h1>
           <p className="mt-2 max-w-2xl text-sm leading-relaxed text-ink-2">Nội dung, tác giả và đường dẫn được quản lý riêng theo từng ngôn ngữ. Các thiết lập xuất bản được gom ở cột bên phải.</p>
         </div>
         <button type="button" onClick={() => setPreviewOpen(true)} className="inline-flex items-center justify-center gap-2 rounded-2xl border border-white/10 px-5 py-3 font-semibold text-ink-1 transition hover:border-cyan-200/30 hover:text-cyan-100">

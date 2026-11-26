@@ -155,7 +155,7 @@ export default function AdminPostsPage() {
       <div className="flex flex-col gap-5 sm:flex-row sm:items-end sm:justify-between">
         <div>
           <div className="text-xs font-bold uppercase tracking-[0.18em] text-sunset">Quản lý nội dung</div>
-          <h1 className="mt-2 text-3xl font-bold md:text-4xl">Danh sách bài viết</h1>
+          <h1 className="mt-3 text-3xl font-bold md:text-4xl">Danh sách bài viết</h1>
           <p className="mt-2 text-sm text-ink-2">Tạo, lưu nháp, hẹn giờ hoặc đăng ngay bài viết trên trang Insights.</p>
         </div>
         <Link to="/admin/posts/new" className="inline-flex items-center justify-center gap-2 rounded-2xl bg-brand px-5 py-3 font-bold text-white transition hover:-translate-y-0.5 hover:bg-brand-hover">
