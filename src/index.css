@@ -1277,7 +1277,8 @@ html.theme-light {
   --color-cyan-300: #0784a8;
   --color-cyan-400: #0a8fb8;
   --lt-ink: #0b1a3a;
-  --lt-glass: linear-gradient(180deg, rgb(255 255 255 / 0.82), rgb(255 255 255 / 0.58));
+  /* Không làm mờ nền phía sau (đỡ nặng khi cuộn) → kính trắng đục hơn một chút để giữ cảm giác như cũ. */
+  --lt-glass: linear-gradient(180deg, rgb(255 255 255 / 0.9), rgb(255 255 255 / 0.72));
   --lt-glass-border: rgb(255 255 255 / 0.95);
   --lt-ring: rgb(37 99 235 / 0.12);
   --lt-shadow: 0 1px 0 rgb(255 255 255 / 0.95) inset, 0 22px 50px -30px rgb(30 64 175 / 0.32), 0 2px 6px -2px rgb(30 64 175 / 0.08);
@@ -1306,8 +1307,6 @@ html.theme-light :is(main, header) [class*="bg-[#111827]"] {
   background-image: var(--lt-glass) !important;
   background-color: transparent !important;
   border-color: var(--lt-glass-border) !important;
-  -webkit-backdrop-filter: blur(18px) saturate(1.5);
-  backdrop-filter: blur(18px) saturate(1.5);
 }
 html.theme-light :is(main, header) .site-card .site-card {
   background-image: linear-gradient(180deg, rgb(255 255 255 / 0.9), rgb(240 246 255 / 0.75)) !important;
@@ -1351,8 +1350,6 @@ html.theme-light [class*="linear-gradient(145deg,rgba(218"] {
   --color-cyan-400: oklch(78.9% .154 211.53);
   background-image: var(--lt-glass) !important;
   border-color: var(--lt-glass-border) !important;
-  -webkit-backdrop-filter: blur(18px) saturate(1.5);
-  backdrop-filter: blur(18px) saturate(1.5);
 }
 html.theme-light :is(input, textarea, select):-webkit-autofill:not(.facs-cms *),
 html.theme-light :is(input, textarea, select):autofill:not(.facs-cms *) {
@@ -1446,8 +1443,6 @@ html.theme-light [class*="bg-[#0d1726]"]:not(.min-h-screen) {
   background-color: rgb(255 255 255 / 0.94) !important;
   border-color: rgb(37 99 235 / 0.12) !important;
   box-shadow: 0 30px 70px -30px rgb(30 64 175 / 0.35) !important;
-  -webkit-backdrop-filter: blur(20px) saturate(1.5);
-  backdrop-filter: blur(20px) saturate(1.5);
 }
 /* Vòng điều hướng bên phải: chữ số và nét đậm hơn để đọc được trên nền sáng. */
 html.theme-light .site-ring__num {
@@ -1552,8 +1547,6 @@ html.theme-light .facs-cms .facs-card {
   background-image: var(--lt-glass);
   border-color: var(--lt-glass-border) !important;
   box-shadow: var(--lt-shadow), 0 0 0 1px var(--lt-ring);
-  -webkit-backdrop-filter: blur(18px) saturate(1.5);
-  backdrop-filter: blur(18px) saturate(1.5);
 }
 html.theme-light .facs-cms .facs-card::before {
   background: radial-gradient(460px circle at var(--mx, 50%) var(--my, 0%), rgb(56 189 248 / 0.14), transparent 65%);
@@ -1574,8 +1567,6 @@ html.theme-light .facs-cms .facs-tile:not(.facs-card):not([open]):not(:has(.fixe
 html.theme-light .facs-cms .bg-midnight-2\/80,
 html.theme-light .facs-cms .bg-midnight-2\/90 {
   background-color: rgb(255 255 255 / 0.7) !important;
-  -webkit-backdrop-filter: blur(22px) saturate(1.6);
-  backdrop-filter: blur(22px) saturate(1.6);
   box-shadow: 0 1px 0 rgb(37 99 235 / 0.08), 0 16px 40px -28px rgb(30 64 175 / 0.25);
 }
 /* "text-white" trong CMS là chữ nổi bật → chữ xanh than; riêng chữ trên nút màu đặc vẫn trắng. */
@@ -2075,8 +2066,6 @@ html.theme-light .facs-mark {
   background: rgb(255 255 255 / 0.1);
   font-weight: 600;
   color: #fff;
-  -webkit-backdrop-filter: blur(10px);
-  backdrop-filter: blur(10px);
   transition: background-color 0.25s, border-color 0.25s, translate 0.25s;
 }
 .svc-show__more:hover {
@@ -2094,8 +2083,6 @@ html.theme-light .facs-mark {
   border: 1px solid rgb(255 255 255 / 0.4);
   background: rgb(255 255 255 / 0.14);
   color: #fff;
-  -webkit-backdrop-filter: blur(10px);
-  backdrop-filter: blur(10px);
   transition: background-color 0.25s, scale 0.25s;
 }
 .svc-show__nav:hover {
@@ -2128,14 +2115,10 @@ html.theme-light .facs-mark {
 .svc-show__col.is-active {
   color: #fff;
   background: linear-gradient(165deg, rgb(37 99 235 / 0.72), rgb(14 116 190 / 0.62));
-  -webkit-backdrop-filter: blur(6px);
-  backdrop-filter: blur(6px);
 }
 .svc-show__col:hover {
   color: #fff;
   background: linear-gradient(165deg, rgb(37 99 235 / 0.9), rgb(8 145 210 / 0.82));
-  -webkit-backdrop-filter: blur(6px);
-  backdrop-filter: blur(6px);
 }
 .svc-show__col:is(:hover, .is-active) .svc-show__num { color: #e0f2fe; }
 .svc-show__col:focus-visible {
@@ -2369,8 +2352,6 @@ html.theme-light .hdr-tool.hdr-tool--danger:hover { border-color: rgb(225 29 72 
   border-radius: 28px;
   border: 1px solid rgb(255 255 255 / 0.1);
   background: rgb(255 255 255 / 0.05);
-  -webkit-backdrop-filter: blur(14px);
-  backdrop-filter: blur(14px);
 }
 .build-path__icon {
   display: inline-flex;
@@ -2494,4 +2475,21 @@ html.theme-light .facs-cms [class*="rgba(5,7,13,0.6)"] {
   background-image: radial-gradient(circle, rgb(43 91 255 / 0.1), rgb(255 255 255 / 0.78) 62%) !important;
   border-color: rgb(37 99 235 / 0.18) !important;
   box-shadow: var(--slab);
+}
+
+/* ═══════════════ Hiệu năng chuyển động ═══════════════
+   Nền phía sau (sóng, quầng sáng) chuyển động liên tục → mọi khối "làm mờ nền phía sau" (backdrop-filter) bị trình duyệt
+   làm mờ lại mỗi khung hình. Chỉ giữ làm mờ ở header dính và thanh điều khiển trái (diện tích nhỏ, nội dung trôi qua). */
+.site-card,
+.facs-cms .facs-card,
+.facs-cms .cms-panel {
+  -webkit-backdrop-filter: none !important;
+  backdrop-filter: none !important;
+}
+html.theme-light .facs-cms .bg-midnight-2\/80 {
+  -webkit-backdrop-filter: blur(22px) saturate(1.6);
+  backdrop-filter: blur(22px) saturate(1.6);
+}
+html.theme-light .facs-cms .bg-midnight-2\/90 {
+  background-color: rgb(255 255 255 / 0.9) !important;
 }
