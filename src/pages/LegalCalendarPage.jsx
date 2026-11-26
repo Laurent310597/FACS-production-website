@@ -33,12 +33,12 @@ const weekDays = {
 };
 
 const calendarCategoryColors = {
-  tax: "#0e7490",
-  accounting: "#2563eb",
-  labor: "#7c3aed",
-  insurance: "#047857",
-  hse: "#a16207",
-  corporate: "#be123c",
+  tax: "#0b5e75",
+  accounting: "#1d4ed8",
+  labor: "#6d28d9",
+  insurance: "#065f46",
+  hse: "#854d0e",
+  corporate: "#9f1239",
   other: "#475569",
 };
 
@@ -244,10 +244,10 @@ export default function LegalCalendarPage() {
         <div className="z-10 container relative mx-auto px-6 lg:px-12">
           <div className="grid items-end gap-10 xl:grid-cols-[minmax(0,1fr)_440px]">
             <div className="max-w-4xl">
-              <div className="mb-4 inline-flex items-center gap-2 rounded-full border border-cyan-200/20 bg-cyan-300/[0.06] px-4 py-2 text-sm font-semibold text-cyan-200">
+              <div className="mb-6 inline-flex items-center gap-3 rounded-full border border-cyan-400/20 bg-cyan-500/10 px-4 py-2 text-base font-bold text-cyan-300">
                 <CalendarCheck2 size={16} /> {isVi ? "Tiện ích tuân thủ doanh nghiệp" : "Business compliance resource"}
               </div>
-              <h1 className="text-balance text-5xl font-bold leading-[1.08] md:text-6xl lg:text-7xl">
+              <h1 className="text-5xl font-bold leading-[1.05] tracking-[-3px] lg:text-7xl">
                 {isVi ? "Lịch pháp lý doanh nghiệp" : "Corporate Legal Calendar"}
               </h1>
               <p className="mt-7 max-w-3xl text-lg leading-relaxed text-slate-400">

@@ -62,7 +62,10 @@ export default function Footer() {
         <div className="grid gap-12 lg:grid-cols-[1.25fr_1fr_1fr_1fr_1.35fr]">
           <div>
             <FooterLogo />
-            <p className="mt-5 max-w-sm text-slate-400 leading-relaxed">
+            <div className="mt-4">
+              <span className="sig-slogan">{isVi ? "Tăng trưởng của bạn bắt đầu từ đây" : "Your Growth Starts With Us"}</span>
+            </div>
+            <p className="mt-4 max-w-sm text-slate-400 leading-relaxed">
               {isVi
                 ? "Nền tảng tư vấn chiến lược về tài chính, pháp lý và vận hành dành cho doanh nghiệp hiện đại tại Việt Nam."
                 : "Strategic financial, legal and operational consulting infrastructure for modern enterprises in Vietnam."}

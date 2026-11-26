@@ -50,7 +50,7 @@ export default function ContactPage() {
           <div className="absolute left-0 top-0 h-[500px] w-[500px] rounded-full bg-cyan-500/10 blur-[120px]" />
           <div className="container relative z-10 mx-auto px-6 lg:px-12">
             <div className="max-w-5xl">
-              <div className="mb-5 text-base font-bold text-cyan-300 lg:text-lg">{isVi ? "Liên hệ FACS" : "Contact FACS"}</div>
+              <div className="text-cyan-300 mb-5 text-base lg:text-lg font-bold tracking-[0.03em]">{isVi ? "Liên hệ FACS" : "Contact FACS"}</div>
               <h1 className="text-5xl font-bold leading-[1.05] tracking-[-3px] text-balance lg:text-7xl">{isVi ? "Cùng kiến tạo giá trị bền vững" : "Let’s Build Together"}</h1>
               <p className="mt-10 max-w-4xl text-xl leading-relaxed text-slate-400">
                 {isVi ? "Liên hệ FACS để được tư vấn các giải pháp chiến lược về tài chính, thuế, pháp lý và vận hành doanh nghiệp." : "Contact FACS for strategic financial, taxation, legal and enterprise consulting solutions."}

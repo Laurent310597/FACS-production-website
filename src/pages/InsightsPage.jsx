@@ -109,9 +109,9 @@ export default function InsightsPage() {
         <SiteBackdrop />
         <div className="container relative z-10 mx-auto px-6 lg:px-12">
           <div className="max-w-4xl">
-            <div className="mb-4 text-cyan-400">{isVi ? "Góc nhìn chuyên môn" : "Insights & Perspectives"}</div>
-            <h1 className="text-balance text-5xl font-bold leading-tight lg:text-7xl">
-              {isVi ? "Tri thức kinh doanh chiến lược" : "Strategic Business Intelligence"}
+            <div className="text-cyan-300 mb-5 text-base lg:text-lg font-bold tracking-[0.03em]">{isVi ? "Góc nhìn chuyên môn" : "Insights & Perspectives"}</div>
+            <h1 className="text-5xl font-bold leading-[1.05] tracking-[-3px] lg:text-7xl">
+              {isVi ? <><span className="sm:block">Tri thức kinh doanh</span> chiến lược</> : "Strategic Business Intelligence"}
             </h1>
             <p className="mt-7 max-w-2xl text-lg leading-relaxed text-slate-400">
               {isVi

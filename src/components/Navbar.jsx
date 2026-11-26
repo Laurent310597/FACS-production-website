@@ -2,12 +2,13 @@ import { useEffect, useState } from "react";
 import { createPortal } from "react-dom";
 import { Link, NavLink, useLocation } from "react-router-dom";
 import { AnimatePresence, motion } from "framer-motion";
-import { ArrowRight, ChevronDown, Menu, Search, X } from "lucide-react";
+import { ArrowRight, ChevronDown, Menu, Moon, Search, Sun, X } from "lucide-react";
 import { useLanguage } from "./LanguageContext";
 import { getServiceContent, services } from "../data/services";
 import { industries } from "../data/industries";
 import HeaderWave from "./admin/HeaderWave";
 import SiteSearch from "./site/SiteSearch";
+import { setSiteTheme, useSiteTheme } from "./site/siteTheme";
 import { siteNavItems, siteResourceItems } from "./site/siteLinks";
 
 const linkBase = "relative rounded-full px-1 py-2 transition-all duration-300 whitespace-nowrap after:absolute after:left-0 after:-bottom-1 after:h-[2px] after:w-0 after:bg-gradient-to-r after:from-cyan-200 after:to-blue-400 after:transition-all after:duration-300 hover:text-white hover:after:w-full";
@@ -16,7 +17,10 @@ const dropdownClass = "site-scroll pointer-events-none absolute left-1/2 top-ful
 function LogoWordmark({ compact = false }) {
   return (
     <span className={`relative z-10 select-none font-serif font-black leading-none tracking-[-0.04em] text-white drop-shadow-[0_0_28px_rgba(34,211,238,0.22)] transition-all duration-500 group-hover:scale-[1.03] ${compact ? "text-[26px]" : "text-[28px] lg:text-[30px]"}`}>
-      FACS<span className="text-cyan-300">.</span>
+      <span className="inline-flex items-center gap-2.5">
+        <img src="/facs-mark.png" alt="" aria-hidden="true" width="63" height="64" className={`facs-mark w-auto ${compact ? "h-[26px]" : "h-[30px] lg:h-[32px]"}`} />
+        <span>FACS<span className="text-facs-logo">.</span></span>
+      </span>
     </span>
   );
 }
@@ -29,6 +33,9 @@ export default function Navbar() {
 
   const navItems = siteNavItems(isVi);
   const [searchOpen, setSearchOpen] = useState(false);
+  const theme = useSiteTheme();
+  const themeLabel = theme === "light" ? (isVi ? "Chuyển sang chế độ tối" : "Switch to dark mode") : (isVi ? "Chuyển sang chế độ sáng" : "Switch to light mode");
+  const toggleTheme = () => setSiteTheme(theme === "light" ? "dark" : "light");
   const [openSection, setOpenSection] = useState(null);
 
   // Ctrl/⌘ + K mở ô Tìm nhanh.
@@ -39,8 +46,13 @@ export default function Navbar() {
         setSearchOpen((v) => !v);
       }
     };
+    const onOpen = () => setSearchOpen(true);
     window.addEventListener("keydown", onKey);
-    return () => window.removeEventListener("keydown", onKey);
+    window.addEventListener("facs:open-search", onOpen);
+    return () => {
+      window.removeEventListener("keydown", onKey);
+      window.removeEventListener("facs:open-search", onOpen);
+    };
   }, []);
 
   // Khoá cuộn trang khi menu điện thoại đang mở; phím Esc để đóng.
@@ -90,25 +102,6 @@ export default function Navbar() {
             <span className="absolute -inset-4 rounded-full bg-cyan-300/18 opacity-80 blur-2xl transition-all duration-500 group-hover:bg-cyan-300/28" />
             <LogoWordmark />
           </Link>
-
-          <div className="hidden min-w-[208px] border-l border-cyan-200/18 pl-5 2xl:block">
-            <motion.div
-              initial={{ opacity: 0, x: -8 }}
-              animate={{ opacity: 1, x: 0 }}
-              transition={{ duration: 0.65, delay: 0.2, ease: "easeOut" }}
-              className="relative overflow-hidden rounded-2xl px-1 py-1"
-            >
-              <div className="font-[Cambria,Georgia,serif] text-[12px] md:text-[18px] xl:text-[19px] font-semibold italic leading-[1.45] tracking-[0.04em] text-cyan-50/95 drop-shadow-[0_0_12px_rgba(103,232,249,0.25)]">
-  <span className="bg-gradient-to-r from-blue via-cyan-200 to-slate-300 bg-[length:220%_100%] bg-clip-text text-transparent animate-[facsSloganShine_5.5s_ease-in-out_infinite]">
-    Your Growth Starts
-    <br />
-    With Us
-  </span>
-</div>
-              <span className="absolute bottom-0 left-1 h-px w-16 bg-gradient-to-r from-cyan-300/80 to-transparent" />
-            </motion.div>
-          </div>
-
           <nav className="hidden flex-1 items-center justify-center gap-2 text-[14px] font-bold tracking-[0.01em] text-slate-200 lg:flex xl:gap-5 xl:text-[15px]">
             {navItems.map(([to, label, type]) => {
               if (type === "services") {
@@ -176,38 +169,42 @@ export default function Navbar() {
             })}
           </nav>
 
-          <div className="hidden shrink-0 items-center gap-3 md:flex">
+          {/* Cụm điều khiển: tiện ích (tìm kiếm, giao diện, ngôn ngữ) cùng kích thước 44px → vạch ngăn → nút liên hệ chính ở cuối. */}
+          <div className="hdr-tools hidden shrink-0 items-center gap-2 lg:flex">
             <button
               type="button"
               onClick={() => setSearchOpen(true)}
-              className="site-ripple group inline-flex h-12 items-center gap-2 lg:hidden xl:inline-flex rounded-2xl border border-white/10 bg-white/[0.035] px-3.5 text-sm text-slate-300 transition-all duration-300 hover:-translate-y-0.5 hover:border-cyan-300/40 hover:text-white"
-              aria-label={isVi ? "Tìm nhanh (Ctrl K)" : "Search (Ctrl K)"}
-              title="Ctrl / ⌘ + K"
+              className="hdr-tool site-ripple group"
+              aria-label={isVi ? "Tìm kiếm" : "Search"}
+              title={isVi ? "Tìm kiếm" : "Search"}
             >
               <Search size={18} className="transition-transform duration-300 group-hover:scale-110" />
-              <kbd className="hidden rounded-md border border-white/[0.14] px-1.5 py-0.5 text-[11px] text-slate-400 2xl:inline">Ctrl K</kbd>
             </button>
-            <Link
-              to="/contact"
-              className="site-cta whitespace-nowrap rounded-2xl border border-cyan-200/30 bg-white/[0.04] px-4 py-3 text-sm font-semibold text-cyan-100 transition-all duration-300 hover:-translate-y-1 hover:bg-cyan-300 hover:text-[#06111f] hover:shadow-[0_18px_42px_rgba(6,182,212,0.30)] xl:px-5 xl:text-base"
-            >
-              {isVi ? "Kết nối cùng FACS" : "Let's Connect"}
-            </Link>
-
-            <div className="flex items-center rounded-2xl border border-white/10 bg-white/[0.035] p-1 text-xs font-semibold text-slate-300 shadow-[0_12px_36px_rgba(0,0,0,0.20)]">
-              <button type="button" onClick={() => setLanguage("en")} className={`rounded-xl px-3 py-2 transition-all duration-300 ${language === "en" ? "bg-cyan-400/18 text-cyan-100 shadow-[0_0_18px_rgba(34,211,238,0.18)]" : "hover:bg-white/[0.08] hover:text-white"}`}>EN</button>
-              <button type="button" onClick={() => setLanguage("vi")} className={`rounded-xl px-3 py-2 transition-all duration-300 ${language === "vi" ? "bg-cyan-400/18 text-cyan-100 shadow-[0_0_18px_rgba(34,211,238,0.18)]" : "hover:bg-white/[0.08] hover:text-white"}`}>VI</button>
+            <button type="button" onClick={toggleTheme} className="hdr-tool hdr-tool--theme site-ripple" aria-label={themeLabel} title={themeLabel}>
+              {theme === "light" ? <Sun size={18} /> : <Moon size={18} />}
+            </button>
+            <div className="hdr-lang" role="group" aria-label={isVi ? "Ngôn ngữ" : "Language"}>
+              <button type="button" onClick={() => setLanguage("en")} aria-pressed={language === "en"} className={language === "en" ? "is-on" : ""}>EN</button>
+              <button type="button" onClick={() => setLanguage("vi")} aria-pressed={language === "vi"} className={language === "vi" ? "is-on" : ""}>VI</button>
             </div>
+            <span className="hdr-sep" aria-hidden="true" />
+            <Link to="/contact" className="site-cta hdr-cta">
+              {isVi ? "Kết nối cùng FACS" : "Let's Connect"}
+              <ArrowRight size={16} className="hdr-cta__icon" />
+            </Link>
           </div>
 
-          <div className="flex items-center gap-2 md:hidden">
-          <button type="button" onClick={() => setSearchOpen(true)} className="inline-flex h-11 w-11 items-center justify-center rounded-2xl border border-cyan-200/20 bg-white/[0.045] text-cyan-100" aria-label={isVi ? "Tìm nhanh" : "Search"}>
-            <Search size={20} />
+          <div className="flex items-center gap-2 lg:hidden">
+          <button type="button" onClick={() => setSearchOpen(true)} className="hdr-tool" aria-label={isVi ? "Tìm kiếm" : "Search"}>
+            <Search size={19} />
+          </button>
+          <button type="button" onClick={toggleTheme} className="hdr-tool" aria-label={themeLabel}>
+            {theme === "light" ? <Sun size={19} /> : <Moon size={19} />}
           </button>
           <button
             type="button"
             onClick={() => setMobileOpen((current) => !current)}
-            className="relative z-20 inline-flex h-11 w-11 items-center justify-center rounded-2xl border border-cyan-200/20 bg-white/[0.045] text-cyan-100 transition-all duration-300 hover:bg-cyan-400/12 md:hidden"
+            className="hdr-tool relative z-20"
             aria-label={mobileOpen ? "Close navigation" : "Open navigation"}
           >
             {mobileOpen ? <X size={22} /> : <Menu size={22} />}
@@ -220,7 +217,7 @@ export default function Navbar() {
       {createPortal(
         <AnimatePresence>
           {mobileOpen && (
-            <motion.div className="fixed inset-0 z-[150] md:hidden" initial={{ opacity: 0 }} animate={{ opacity: 1 }} exit={{ opacity: 0 }}>
+            <motion.div className="fixed inset-0 z-[150] lg:hidden" initial={{ opacity: 0 }} animate={{ opacity: 1 }} exit={{ opacity: 0 }}>
               <button type="button" className="absolute inset-0 bg-[#030913]/70 backdrop-blur-sm" onClick={() => setMobileOpen(false)} aria-label={isVi ? "Đóng menu" : "Close menu"} />
               <motion.nav
                 className="absolute inset-y-0 right-0 flex w-[88vw] max-w-[380px] flex-col border-l border-cyan-200/15 bg-[#0d1726] shadow-[-30px_0_80px_rgba(0,0,0,0.5)]"

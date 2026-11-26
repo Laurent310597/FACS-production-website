@@ -59,7 +59,7 @@ export default function IndustryDetailPage() {
 
             <div className="grid lg:grid-cols-2 gap-16 items-center mt-12">
               <motion.div initial={{ opacity: 0, y: 35 }} animate={{ opacity: 1, y: 0 }} transition={{ duration: 0.7 }}>
-                <div className="inline-flex items-center gap-3 px-4 py-2 rounded-full border border-cyan-400/20 bg-cyan-500/10 text-cyan-300 text-sm font-bold">
+                <div className="inline-flex items-center gap-3 rounded-full border border-cyan-400/20 bg-cyan-500/10 px-4 py-2 text-base font-bold text-cyan-300">
                   <div className="w-2 h-2 rounded-full bg-cyan-400" /> {isVi ? "Chi tiết lĩnh vực" : "Industry Detail"}
                 </div>
 
@@ -92,7 +92,7 @@ export default function IndustryDetailPage() {
         <section className="py-28 border-b border-cyan-200/15">
           <div className="container mx-auto px-6 lg:px-12">
             <div className="max-w-4xl">
-              <div className="text-cyan-400 mb-5 font-bold text-base">
+              <div className="text-cyan-300 mb-5 text-base lg:text-lg font-bold tracking-[0.03em]">
                 {isVi ? "Góc nhìn chiến lược" : "Strategic Perspective"}
               </div>
               <h2 className="text-4xl lg:text-6xl font-bold leading-tight tracking-[-2px]">
@@ -130,7 +130,7 @@ export default function IndustryDetailPage() {
           <div className="container mx-auto px-6 lg:px-12">
             <div className="site-card rounded-[48px] border border-white/10 bg-gradient-to-br from-cyan-500/10 to-blue-600/10 p-12 lg:p-20 backdrop-blur-xl hover:border-cyan-400/20 transition-all duration-500">
               <div className="max-w-3xl">
-                <div className="text-cyan-400 mb-5 font-bold text-base">
+                <div className="text-cyan-300 mb-5 text-base lg:text-lg font-bold tracking-[0.03em]">
                   {isVi ? "Giải pháp theo lĩnh vực" : "Industry-Focused Solution"}
                 </div>
                 <h2 className="text-4xl lg:text-6xl font-bold leading-tight">

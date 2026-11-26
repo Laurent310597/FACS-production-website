@@ -10,6 +10,17 @@
     <meta property="og:description" content="Your trusted partner for accounting, tax, legal and operational consulting in Vietnam." />
     <meta property="og:type" content="website" />
     <title>FACS | Strategic Financial Infrastructure</title>
+    <script>
+      /* Đặt tông Sáng/Tối trước khi trang hiển thị để không bị nháy màu. */
+      (function () {
+        try {
+          if (location.pathname.indexOf("/admin") === 0) return;
+          var root = document.documentElement;
+          root.classList.add("has-site-rail");
+          if (localStorage.getItem("facs-theme") !== "dark") root.classList.add("theme-light");
+        } catch (e) {}
+      })();
+    </script>
   </head>
   <body>
     <div id="root"></div>
