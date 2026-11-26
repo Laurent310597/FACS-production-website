@@ -1,12 +1,13 @@
 import { useEffect, useRef, useState } from "react";
 import { AnimatePresence, MotionConfig, motion } from "framer-motion";
 import { Link, NavLink, useLocation, useNavigate } from "react-router-dom";
-import { ChevronDown, ChevronRight, ExternalLink, Globe, LogOut, Menu, Orbit, PanelLeftClose, PanelLeftOpen, Search, X } from "lucide-react";
+import { ChevronDown, ChevronRight, ExternalLink, Globe, LogOut, Menu, Moon, Orbit, PanelLeftClose, PanelLeftOpen, Search, Sun, X } from "lucide-react";
 import { supabase } from "../../lib/supabaseClient";
 import AdminNavWheel from "./AdminNavWheel";
 import CommandPalette from "./CommandPalette";
 import HeaderWave from "./HeaderWave";
 import CmsBackdrop from "./CmsBackdrop";
+import { setSiteTheme, useSiteTheme } from "../site/siteTheme";
 import { ADMIN_NAV, PUBLIC_SITE_LINKS, activeGroupId, activeItemPath, activeTrail, loadNavMode, loadOpenGroups, saveNavMode, saveOpenGroups } from "./adminNav";
 
 const itemClass = (active) =>
@@ -215,6 +216,8 @@ export default function AdminLayout({ children }) {
   const [drawerOpen, setDrawerOpen] = useState(false);
   const siteMenuRef = useRef(null);
   const trail = activeTrail(location.pathname);
+  const theme = useSiteTheme();
+  const themeLabel = theme === "light" ? "Chuyển sang chế độ tối" : "Chuyển sang chế độ sáng";
 
   // Ctrl/⌘ + K mở bảng tìm nhanh.
   useEffect(() => {
@@ -273,14 +276,15 @@ export default function AdminLayout({ children }) {
       <header className="sticky top-0 z-40 bg-midnight-2/80 backdrop-blur-xl">
         <div className="mx-auto flex h-[68px] max-w-[1500px] items-center justify-between gap-3 px-4 sm:px-5 lg:px-8">
           <div className="flex min-w-0 items-center gap-2 sm:gap-3">
-            <button type="button" onClick={() => setDrawerOpen(true)} className={`${iconButton} lg:hidden`} title="Mở menu" aria-label="Mở menu">
+            <button type="button" onClick={() => setDrawerOpen(true)} className="hdr-tool facs-ripple-host lg:hidden" title="Mở menu" aria-label="Mở menu">
               <Menu size={19} />
             </button>
-            <button type="button" onClick={() => setWheelOpen(true)} className={`${iconButton} hidden lg:flex`} title="Menu vòng xoay" aria-label="Mở menu vòng xoay">
+            <button type="button" onClick={() => setWheelOpen(true)} className="hdr-tool facs-ripple-host hidden lg:inline-flex" title="Menu vòng xoay" aria-label="Mở menu vòng xoay">
               <Orbit size={19} />
             </button>
-            <Link to="/admin/posts" className="shrink-0 font-serif text-2xl font-black tracking-[-0.04em]" aria-label="FACS CMS – về trang đầu">
-              FACS<span className="text-facs-logo">.</span>
+            <Link to="/admin/posts" className="group ml-1 inline-flex shrink-0 items-center gap-2.5 font-serif text-2xl font-black tracking-[-0.04em]" aria-label="FACS CMS – về trang đầu">
+              <img src="/facs-mark.png" alt="" aria-hidden="true" width="63" height="64" className="facs-mark h-[26px] w-auto transition-transform duration-500 group-hover:scale-[1.06]" />
+              <span>FACS<span className="text-facs-logo">.</span></span>
             </Link>
             {trail.group && (
               <nav aria-label="Vị trí hiện tại" className="ml-1 hidden min-w-0 items-center gap-1.5 border-l border-white/[0.08] pl-4 text-sm md:flex">
@@ -298,22 +302,27 @@ export default function AdminLayout({ children }) {
               </nav>
             )}
           </div>
-          <div className="flex shrink-0 items-center gap-2">
+          {/* Cụm điều khiển giống website: tìm nhanh · Sáng/Tối · xem website cùng cao 44px → vạch ngăn → đăng xuất ở cuối. */}
+          <div className="hdr-tools flex shrink-0 items-center gap-2">
             <button
               type="button"
               onClick={() => setPaletteOpen(true)}
-              className="flex h-10 items-center gap-2 rounded-xl border border-white/[0.1] bg-white/[0.03] px-3 text-sm text-ink-3 transition hover:border-cyan-300/40 hover:text-ink-1 sm:w-56 lg:w-64"
-              aria-label="Tìm nhanh (Ctrl K)"
+              className="hdr-tool hdr-tool--wide facs-ripple-host group sm:w-44 sm:justify-start xl:w-60"
+              aria-label="Tìm nhanh (Ctrl/⌘ + K)"
+              title="Tìm nhanh · Ctrl/⌘ + K"
             >
-              <Search size={16} />
-              <span className="hidden sm:inline">Tìm nhanh…</span>
-              <kbd className="ml-auto hidden rounded-md border border-white/[0.12] px-1.5 py-0.5 text-[11px] sm:inline">Ctrl K</kbd>
+              <Search size={17} className="shrink-0 transition-transform duration-300 group-hover:scale-110" />
+              <span className="hidden font-medium sm:inline">Tìm nhanh…</span>
+            </button>
+            <button type="button" onClick={() => setSiteTheme(theme === "light" ? "dark" : "light")} className="hdr-tool facs-ripple-host" aria-label={themeLabel} title={themeLabel}>
+              {theme === "light" ? <Sun size={18} /> : <Moon size={18} />}
             </button>
             <div ref={siteMenuRef} className="relative">
               <button
                 type="button"
                 onClick={() => setSiteMenuOpen((v) => !v)}
-                className="flex h-10 items-center gap-2 rounded-xl border border-white/[0.1] px-3 text-sm text-ink-2 transition hover:border-cyan-300/40 hover:text-ink-1"
+                className="hdr-tool hdr-tool--wide facs-ripple-host"
+                aria-label="Xem website"
                 aria-haspopup="menu"
                 aria-expanded={siteMenuOpen}
               >
@@ -325,7 +334,7 @@ export default function AdminLayout({ children }) {
                 {siteMenuOpen && (
                   <motion.div
                     role="menu"
-                    className="absolute right-0 top-12 w-56 rounded-2xl border border-cyan-300/[0.16] bg-cms-3 p-1.5 shadow-[0_24px_60px_-20px_rgba(0,0,0,0.9)]"
+                    className="absolute right-0 top-[52px] w-56 rounded-2xl border border-cyan-300/[0.16] bg-cms-3 p-1.5 shadow-[0_24px_60px_-20px_rgba(0,0,0,0.9)]"
                     initial={{ opacity: 0, y: -6, scale: 0.97 }} animate={{ opacity: 1, y: 0, scale: 1 }} exit={{ opacity: 0, y: -4, scale: 0.98 }}
                     transition={{ duration: 0.16 }}
                   >
@@ -339,7 +348,8 @@ export default function AdminLayout({ children }) {
                 )}
               </AnimatePresence>
             </div>
-            <button type="button" onClick={handleLogout} className={`${iconButton} hover:border-rose-300/40! hover:text-rose-200!`} title="Đăng xuất" aria-label="Đăng xuất">
+            <span className="hdr-sep hidden sm:block" aria-hidden="true" />
+            <button type="button" onClick={handleLogout} className="hdr-tool hdr-tool--danger facs-ripple-host" title="Đăng xuất" aria-label="Đăng xuất">
               <LogOut size={17} />
             </button>
           </div>
@@ -351,7 +361,7 @@ export default function AdminLayout({ children }) {
         {mode !== "wheel" && (
           <aside className="relative z-30 hidden h-fit lg:sticky lg:top-24 lg:block">
             {/* Màn hình nhỏ luôn dùng thanh mở rộng; màn hình lớn theo lựa chọn */}
-            <div className={`rounded-[20px] border border-white/[0.07] bg-midnight-2/90 p-3 lg:max-h-[calc(100vh-7.5rem)] lg:overflow-y-auto ${mode === "collapsed" ? "lg:hidden" : ""}`}>
+            <div className={`cms-panel rounded-[20px] border border-white/[0.07] bg-midnight-2/90 p-3 lg:max-h-[calc(100vh-7.5rem)] lg:overflow-y-auto ${mode === "collapsed" ? "lg:hidden" : ""}`}>
               <div className="mb-1 flex items-center justify-between px-2 pb-2">
                 <span className="text-[13px] font-semibold text-ink-3">Menu</span>
                 <div className="flex gap-1.5">
@@ -367,7 +377,7 @@ export default function AdminLayout({ children }) {
             </div>
 
             {mode === "collapsed" && (
-              <div className="hidden flex-col items-center gap-3 rounded-[20px] border border-white/[0.07] bg-midnight-2/90 px-2 py-3 lg:flex">
+              <div className="cms-panel hidden flex-col items-center gap-3 rounded-[20px] border border-white/[0.07] bg-midnight-2/90 px-2 py-3 lg:flex">
                 <button type="button" onClick={() => changeMode("expanded")} className={iconButton} title="Mở rộng thanh bên" aria-label="Mở rộng thanh bên">
                   <PanelLeftOpen size={18} />
                 </button>
@@ -422,7 +432,10 @@ export default function AdminLayout({ children }) {
               transition={{ type: "spring", stiffness: 380, damping: 38 }}
             >
               <div className="mb-2 flex items-center justify-between px-2 py-1">
-                <span className="font-serif text-xl font-black">FACS<span className="text-facs-logo">.</span></span>
+                <span className="inline-flex items-center gap-2 font-serif text-xl font-black">
+                  <img src="/facs-mark.png" alt="" aria-hidden="true" width="63" height="64" className="facs-mark h-[22px] w-auto" />
+                  <span>FACS<span className="text-facs-logo">.</span></span>
+                </span>
                 <div className="flex gap-1.5">
                   <button type="button" onClick={() => { setDrawerOpen(false); setWheelOpen(true); }} className={iconButtonSm} aria-label="Dùng menu vòng xoay"><Orbit size={15} /></button>
                   <button type="button" onClick={() => setDrawerOpen(false)} className={iconButtonSm} aria-label="Đóng menu"><X size={15} /></button>

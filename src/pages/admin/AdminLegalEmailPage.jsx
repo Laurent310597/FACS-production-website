@@ -219,8 +219,8 @@ export default function AdminLegalEmailPage() {
         <button type="button" onClick={() => load(month)} disabled={loading || Boolean(busy)} className={`${btnSecondary} self-start xl:self-auto`}><RefreshCw size={16} className={loading ? "animate-spin" : ""} /> Làm mới</button>
       </div>
 
-      <div className="mt-7 grid gap-6 xl:grid-cols-[minmax(0,1fr)_420px]">
-        <div className="order-2 space-y-6 xl:order-1">
+      <div className="mt-7 grid grid-cols-1 gap-6 xl:grid-cols-[minmax(0,1fr)_420px]">
+        <div className="order-2 min-w-0 space-y-6 xl:order-1">
           <section className={card}>
             <div className="flex flex-wrap items-center justify-between gap-3">
               <h2 className="text-xl font-bold">Xem trước email</h2>
@@ -235,7 +235,7 @@ export default function AdminLegalEmailPage() {
           </section>
         </div>
 
-        <div className="order-1 space-y-6 xl:order-2">
+        <div className="order-1 min-w-0 space-y-6 xl:order-2">
           <section className={card}>
             <div className="flex items-center justify-between gap-3">
               <button type="button" className={btnGhost} onClick={() => changeMonth(shiftMonth(month, -1))} disabled={Boolean(busy)} aria-label="Tháng trước"><ChevronLeft size={18} /></button>
@@ -301,7 +301,7 @@ export default function AdminLegalEmailPage() {
                     <span className="w-14 shrink-0 text-sm font-bold text-cyan-200">{formatLegalDate(event.event_date, "vi").slice(0, 5)}</span>
                     <span className="min-w-0 flex-1">
                       <span className="block text-sm font-semibold leading-snug text-ink-1 group-hover:text-cyan-200">{event.title_vi || event.title_en}</span>
-                      <span className="mt-0.5 block text-xs" style={{ color: category.color }}>{category.vi}</span>
+                      <span className="cms-cat-label mt-0.5 block text-xs" style={{ color: category.color }}>{category.vi}</span>
                     </span>
                     <ArrowRight size={15} className="mt-0.5 shrink-0 text-ink-3 opacity-0 transition group-hover:opacity-100" />
                   </Link>
