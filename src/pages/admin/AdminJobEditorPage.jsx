@@ -187,7 +187,7 @@ export default function AdminJobEditorPage() {
       <div className="flex flex-col gap-5 xl:flex-row xl:items-end xl:justify-between">
         <div>
           <Link to="/admin/jobs" className="inline-flex items-center gap-2 text-sm text-ink-2 transition hover:text-cyan-200"><ArrowLeft size={16} /> Trở lại danh sách</Link>
-          <h1 className="mt-4 text-3xl font-bold md:text-4xl">{isEditing ? "Chỉnh sửa vị trí tuyển dụng" : "Tạo JD mới"}</h1>
+          <h1 className="mt-3 text-3xl font-bold md:text-4xl">{isEditing ? "Chỉnh sửa vị trí tuyển dụng" : "Tạo JD mới"}</h1>
           <p className="mt-2 text-sm text-ink-2">Có thể nhập một hoặc cả hai ngôn ngữ; website tự dùng ngôn ngữ còn lại làm nội dung dự phòng.</p>
         </div>
         <div className="flex flex-wrap gap-3">
@@ -208,7 +208,7 @@ export default function AdminJobEditorPage() {
 
       {error && <div className="mt-6 rounded-2xl border border-red-300/20 bg-red-400/8 px-5 py-4 text-sm text-red-200">{error}</div>}
 
-      <div className={`mt-7 grid gap-6 ${previewOpen ? "2xl:grid-cols-[minmax(0,1fr)_500px]" : ""}`}>
+      <div className={`mt-7 grid grid-cols-1 gap-6 [&>*]:min-w-0 ${previewOpen ? "2xl:grid-cols-[minmax(0,1fr)_500px]" : ""}`}>
         <div className="space-y-6">
           <section className="facs-card rounded-[20px] border border-cyan-300/[0.14] bg-cms-1 p-5 md:p-7">
             <div className="flex flex-wrap items-center justify-between gap-4 border-b border-white/10 pb-5">
@@ -229,7 +229,7 @@ export default function AdminJobEditorPage() {
                 <input value={form[`title_${activeLanguage}`]} onChange={(event) => handleTitleChange(event.target.value)} className="w-full rounded-2xl border border-white/10 bg-cms-2 px-4 py-3.5 text-white outline-none placeholder:text-[#6A7BA3] focus:border-cyan-300/35" placeholder={activeLanguage === "vi" ? "Ví dụ: Chuyên viên tư vấn thuế..." : "Example: Tax Consultant..."} />
               </label>
 
-              <div className="grid gap-5 md:grid-cols-2">
+              <div className="grid grid-cols-1 gap-5 [&>*]:min-w-0 md:grid-cols-2">
                 <label className="block">
                   <span className="mb-2 block text-sm font-semibold text-ink-1">Phòng ban / Bộ phận</span>
                   <input value={form[`department_${activeLanguage}`]} onChange={(event) => updateField(`department_${activeLanguage}`, event.target.value)} className="w-full rounded-2xl border border-white/10 bg-cms-2 px-4 py-3.5 text-white outline-none placeholder:text-[#6A7BA3] focus:border-cyan-300/35" placeholder={activeLanguage === "vi" ? "Tư vấn Thuế" : "Tax Advisory"} />
@@ -260,7 +260,7 @@ export default function AdminJobEditorPage() {
 
           <section className="facs-card rounded-[20px] border border-cyan-300/[0.14] bg-cms-1 p-5 md:p-7">
             <h2 className="text-xl font-semibold">Thiết lập vị trí tuyển dụng</h2>
-            <div className="mt-6 grid gap-5 md:grid-cols-2">
+            <div className="mt-6 grid grid-cols-1 gap-5 [&>*]:min-w-0 md:grid-cols-2">
               <label className="block md:col-span-2">
                 <span className="mb-2 block text-sm font-semibold text-ink-1">Đường dẫn tuyển dụng (slug)</span>
                 <div className="flex overflow-hidden rounded-2xl border border-white/10 bg-cms-2 focus-within:border-cyan-300/35">

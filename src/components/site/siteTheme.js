@@ -1,6 +1,6 @@
 import { useSyncExternalStore } from "react";
 
-// Chế độ Sáng/Tối của website (mặc định Sáng), lưu trên trình duyệt. CMS không dùng bộ chuyển này.
+// Chế độ Sáng/Tối (mặc định Sáng) dùng chung cho website và CMS, lưu trên trình duyệt.
 const KEY = "facs-theme";
 const listeners = new Set();
 

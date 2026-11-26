@@ -93,7 +93,7 @@ export default function AdminApplicationsPage() {
   return (
     <AdminLayout>
       <div className="flex flex-col gap-4 sm:flex-row sm:items-end sm:justify-between">
-        <div><div className="text-xs font-bold uppercase tracking-[0.18em] text-sunset">Careers</div><h1 className="mt-2 text-3xl font-bold md:text-4xl">Hồ sơ ứng tuyển</h1><p className="mt-2 text-sm text-ink-2">Lưu hồ sơ, tải CV và theo dõi trạng thái email tự động.</p></div>
+        <div><div className="text-xs font-bold uppercase tracking-[0.18em] text-sunset">Careers</div><h1 className="mt-3 text-3xl font-bold md:text-4xl">Hồ sơ ứng tuyển</h1><p className="mt-2 text-sm text-ink-2">Lưu hồ sơ, tải CV và theo dõi trạng thái email tự động.</p></div>
         <button onClick={load} className="inline-flex items-center gap-2 rounded-2xl border border-white/10 px-4 py-3 text-sm font-semibold text-ink-2"><RefreshCw size={17} /> Làm mới</button>
       </div>
       {error && <div className="mt-6 rounded-2xl border border-red-300/20 bg-red-400/8 px-5 py-4 text-sm text-red-200">{error}</div>}

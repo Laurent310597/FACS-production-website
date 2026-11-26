@@ -1563,9 +1563,12 @@ html.theme-light .facs-tile.is-in:not([open]):not(:has(.fixed)):hover,
 html.theme-light .facs-cms .facs-tile:not(.facs-card):not([open]):not(:has(.fixed)):hover {
   box-shadow: var(--lt-glow);
 }
-html.theme-light .facs-row:not(:has(.fixed)):hover {
-  background-color: rgb(255 255 255 / 0.95) !important;
-  box-shadow: inset 3px 0 0 var(--color-sunset), 0 20px 44px -24px rgb(30 64 175 / 0.4), 0 0 0 1px rgb(59 130 246 / 0.18);
+/* Cùng @layer components với quy tắc nền tối (có !important) thì mới thắng được. */
+@layer components {
+  html.theme-light .facs-row:not(:has(.fixed)):hover {
+    background-color: rgb(255 255 255 / 0.95) !important;
+    box-shadow: inset 3px 0 0 var(--color-sunset), 0 20px 44px -24px rgb(30 64 175 / 0.4), 0 0 0 1px rgb(59 130 246 / 0.18);
+  }
 }
 /* Thanh đầu trang và menu trái của CMS: kính trắng. */
 html.theme-light .facs-cms .bg-midnight-2\/80,
@@ -1579,8 +1582,8 @@ html.theme-light .facs-cms .bg-midnight-2\/90 {
 html.theme-light .facs-cms .text-white {
   color: var(--color-ink-1);
 }
-html.theme-light .facs-cms :is(.bg-brand, .bg-sunset, .bg-electric, .bg-rose-500, .bg-rose-600, .bg-emerald-500, .bg-emerald-600, .bg-blue-600).text-white,
-html.theme-light .facs-cms :is(.bg-brand, .bg-sunset, .bg-electric, .bg-rose-500, .bg-rose-600, .bg-emerald-500, .bg-emerald-600, .bg-blue-600) .text-white {
+html.theme-light .facs-cms :is(.bg-electric, .bg-rose-500, .bg-rose-600, .bg-emerald-500, .bg-emerald-600, .bg-blue-600).text-white,
+html.theme-light .facs-cms :is(.bg-electric, .bg-rose-500, .bg-rose-600, .bg-emerald-500, .bg-emerald-600, .bg-blue-600) .text-white {
   color: #fff;
 }
 /* Lớp sóng sát đáy của CMS (vốn màu nền tối) → trắng để hoà vào nền sáng. */
@@ -2216,6 +2219,8 @@ html.theme-light .facs-mark {
 }
 
 /* ═══════════════ Cụm điều khiển header: tìm kiếm · giao diện · ngôn ngữ | liên hệ ═══════════════ */
+/* Đặt trong @layer components để tiện ích Tailwind (hidden, lg:inline-flex…) vẫn ẩn/hiện được nút. Dùng chung cho header website và CMS. */
+@layer components {
 .hdr-tool,
 .hdr-lang,
 .hdr-cta {
@@ -2224,6 +2229,7 @@ html.theme-light .facs-mark {
 }
 .hdr-tool {
   display: inline-flex;
+  flex-shrink: 0;
   width: 44px;
   align-items: center;
   justify-content: center;
@@ -2288,6 +2294,22 @@ html.theme-light .facs-mark {
   .hdr-cta { display: none; }
 }
 .hdr-cta:hover .hdr-cta__icon { translate: 3px 0; }
+/* Nút có chữ (CMS: Tìm nhanh…, Xem website) cùng cao 44px. */
+.hdr-tool--wide {
+  width: auto;
+  gap: 8px;
+  padding: 0 14px;
+  font-size: 14px;
+  font-weight: 600;
+}
+.hdr-tool--danger:hover {
+  border-color: rgb(253 164 175 / 0.5);
+  color: rgb(254 205 211);
+}
+.facs-cms .hdr-tool { color: var(--color-ink-2); }
+.facs-cms .hdr-tool:hover { border-color: rgb(142 169 255 / 0.5); color: var(--color-ink-1); }
+.facs-cms .hdr-tool.hdr-tool--danger:hover { border-color: rgb(253 164 175 / 0.5); color: rgb(254 205 211); }
+}
 html.theme-light .hdr-tool,
 html.theme-light .hdr-lang {
   border-color: rgb(30 64 175 / 0.14);
@@ -2307,6 +2329,7 @@ html.theme-light .hdr-lang button.is-on {
   box-shadow: none;
 }
 html.theme-light .hdr-sep { background: rgb(30 64 175 / 0.16); }
+html.theme-light .hdr-tool.hdr-tool--danger:hover { border-color: rgb(225 29 72 / 0.4); color: #be123c; }
 
 /* ═══════════════ Trang chủ – khối "Cùng kiến tạo giá trị": hai lối đi khách hàng / ứng viên ═══════════════ */
 .build-cta__glow {
@@ -2413,6 +2436,62 @@ html.theme-light .build-path__eyebrow { color: #0369a1; }
 
 /* ═══════════════ Rà soát tương phản nền sáng: chữ nhấn cyan đạt chuẩn WCAG AA (≥ 4.5:1) trên nền trắng/kính ═══════════════
    Chỉ đổi màu CHỮ (không đổi nền/viền cyan), và bỏ qua các khối vẫn giữ bảng màu tối: chân trang, lớp phủ ảnh, bảng lịch. */
-html.theme-light :is(.text-cyan-300, .text-cyan-400):not(footer *, [class*="from-[#0d1726]"] *, [class*="from-[#0f1c2e]"] *, [class*="linear-gradient(145deg,rgba(218"] *) {
+html.theme-light :is(.text-cyan-300, .text-cyan-400):not(.facs-cms *, footer *, [class*="from-[#0d1726]"] *, [class*="from-[#0f1c2e]"] *, [class*="linear-gradient(145deg,rgba(218"] *) {
   color: #067593;
+}
+
+/* ═══════════════ CMS đồng bộ với website: thẻ "dày" (slab) ở cả 2 nền ═══════════════ */
+.facs-cms .facs-card,
+.facs-cms .cms-panel {
+  box-shadow: var(--slab);
+}
+.facs-cms .facs-card .facs-card {
+  box-shadow: var(--slab-sm);
+}
+.facs-cms .facs-card.is-in:hover:not(:has(.fixed)) {
+  box-shadow: var(--slab-hover);
+}
+html.theme-light .facs-cms :is(.facs-card, .cms-panel) {
+  box-shadow: var(--slab);
+}
+html.theme-light .facs-cms .facs-card .facs-card {
+  box-shadow: var(--slab-sm);
+}
+html.theme-light .facs-cms .facs-card.is-in:hover:not(:has(.fixed)) {
+  box-shadow: var(--slab-hover);
+}
+@media (prefers-reduced-motion: reduce) {
+  .facs-cms .facs-card.is-in:hover,
+  html.theme-light .facs-cms .facs-card.is-in:hover { box-shadow: var(--slab); }
+}
+/* CMS nền sáng: ô số liệu / khối mã vốn nền đen mờ → kính trắng; thanh dính của Lịch pháp lý → trắng. */
+html.theme-light .facs-cms :is(.bg-black\/10, .bg-black\/20, .bg-black\/40) {
+  background-color: rgb(255 255 255 / 0.72) !important;
+  border-color: rgb(37 99 235 / 0.12) !important;
+}
+html.theme-light .facs-cms .bg-\[\#0a1928\]\/95 {
+  background-color: rgb(255 255 255 / 0.94) !important;
+}
+/* CMS nền sáng: nút cam giữ chữ tối như nền tối và như nút cam của website (tương phản ~7:1). */
+html.theme-light .facs-cms :is(button, a).bg-brand:not(:disabled),
+html.theme-light .facs-cms :is(button, a).bg-brand:not(:disabled) .text-white {
+  color: #160800;
+}
+/* Nhãn nhỏ màu cam (eyebrow) trên nền sáng: cam đậm để đọc rõ (≥ 4.5:1). */
+html.theme-light .facs-cms .text-sunset {
+  color: #c2410c;
+}
+/* Nhãn lĩnh vực tô màu theo dữ liệu: tối bớt trên nền sáng. */
+html.theme-light .facs-cms .cms-cat-label {
+  filter: brightness(0.68) saturate(1.25);
+}
+/* CMS nền sáng: lớp phủ sau hộp thoại / menu vòng xoay → kính xanh nhạt thay vì đen. */
+html.theme-light .facs-cms :is([class*="bg-[#020812]/"], [class*="bg-[#020811]/"], [class*="bg-[#020409]/"]),
+html.theme-light :is([class*="bg-[#020812]/"], [class*="bg-[#020811]/"]).facs-cms {
+  background-color: rgb(222 232 250 / 0.72) !important;
+}
+html.theme-light .facs-cms [class*="rgba(5,7,13,0.6)"] {
+  background-image: radial-gradient(circle, rgb(43 91 255 / 0.1), rgb(255 255 255 / 0.78) 62%) !important;
+  border-color: rgb(37 99 235 / 0.18) !important;
+  box-shadow: var(--slab);
 }

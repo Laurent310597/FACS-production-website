@@ -131,7 +131,7 @@ export default function AdminHubSocialPage() {
       <div className="mb-8 flex flex-wrap items-start justify-between gap-4">
         <div>
           <div className="text-xs font-bold uppercase tracking-[0.18em] text-sunset">FACS Hub</div>
-          <h1 className="mt-2 font-serif text-3xl font-bold text-white">Đăng & lịch đăng mạng xã hội</h1>
+          <h1 className="mt-3 text-3xl font-bold md:text-4xl">Đăng & lịch đăng mạng xã hội</h1>
           <p className="mt-2 max-w-2xl text-sm leading-6 text-ink-2">
             Kết nối Facebook Fanpage, Instagram và LinkedIn cá nhân bằng quyền chính thức. Bài chỉ được đăng khi anh/chị bấm “Duyệt & hẹn giờ” hoặc “Đăng ngay” trong trang Tạo nội dung; không có gì tự đăng.
           </p>

@@ -102,7 +102,8 @@ export default function AdminHubZaloPage() {
       <div className="mx-auto max-w-6xl space-y-6">
         <div className="flex flex-wrap items-end justify-between gap-3">
           <div>
-            <h1 className="text-2xl font-black">AI Zalo — giám sát & cấu hình</h1>
+            <div className="text-xs font-bold uppercase tracking-[0.18em] text-sunset">FACS Hub</div>
+            <h1 className="mt-3 text-3xl font-bold md:text-4xl">AI Zalo — giám sát & cấu hình</h1>
             <p className="mt-1 text-sm text-ink-2">Xem hoạt động và chỉnh luật của AI Zalo chạy trên laptop. Dữ liệu do laptop gửi lên; lệnh được laptop kiểm tra lại trước khi làm.</p>
           </div>
           <button type="button" className={ghostButton} onClick={loadDevices} disabled={loading}>
@@ -127,7 +128,7 @@ export default function AdminHubZaloPage() {
 
         {!setupMissing && !loading && !device && (
           <div className={cardClass}>
-            <h2 className="font-bold">Chưa có laptop nào kết nối</h2>
+            <h2 className="text-xl font-semibold">Chưa có laptop nào kết nối</h2>
             <p className="mt-1 text-sm text-ink-2">Tạo khóa thiết bị, rồi điền HUB_SYNC_URL và HUB_DEVICE_KEY vào .env của AI Zalo (xem HUONG-DAN-FACS-HUB.md).</p>
             <div className="mt-4 flex flex-wrap gap-2">
               <input className={`${inputClass} max-w-xs`} value={newName} onChange={(e) => setNewName(e.target.value)} maxLength={80} />
@@ -218,7 +219,7 @@ function Overview({ device, confirmRevoke, setConfirmRevoke, revoke, add, busy, 
   return (
     <div className="space-y-5">
       <div className={cardClass}>
-        <h2 className="font-bold">Trạng thái AI Zalo</h2>
+        <h2 className="text-xl font-semibold">Trạng thái AI Zalo</h2>
         <div className="mt-4 grid gap-3 sm:grid-cols-2 lg:grid-cols-4">
           {tile("Kết nối Zalo", hb.zaloStatus || "—")}
           {tile("Tài khoản Zalo", hb.accountName || "—")}
@@ -231,7 +232,7 @@ function Overview({ device, confirmRevoke, setConfirmRevoke, revoke, add, busy, 
         </div>
       </div>
       <div className={cardClass}>
-        <h2 className="font-bold">Báo cáo 7 ngày gần nhất</h2>
+        <h2 className="text-xl font-semibold">Báo cáo 7 ngày gần nhất</h2>
         <div className="mt-4 grid gap-3 sm:grid-cols-2 lg:grid-cols-5">
           {tile("Hội thoại có hoạt động", stats.convWeek)}
           {tile("Lead cập nhật", stats.leadWeek)}
@@ -242,7 +243,7 @@ function Overview({ device, confirmRevoke, setConfirmRevoke, revoke, add, busy, 
         <p className="mt-3 text-xs text-ink-3">Số liệu tính trên dữ liệu đã đồng bộ lên Hub (tối đa 500 dòng mỗi loại).</p>
       </div>
       <div className={cardClass}>
-        <h2 className="font-bold">Quản lý khóa thiết bị</h2>
+        <h2 className="text-xl font-semibold">Quản lý khóa thiết bị</h2>
         <p className="mt-1 text-sm text-ink-2">Khóa chỉ cho phép laptop gửi/nhận dữ liệu AI Zalo; không phải khóa quản trị. Nghi ngờ lộ khóa thì thu hồi và tạo khóa mới.</p>
         <div className="mt-4 flex flex-wrap items-center gap-2">
           {confirmRevoke ? (
@@ -334,7 +335,7 @@ function Leads({ device }) {
   return (
     <div className="space-y-5">
       <div className={cardClass}>
-        <h2 className="font-bold">Lead ({leads.rows.length})</h2>
+        <h2 className="text-xl font-semibold">Lead ({leads.rows.length})</h2>
         {!leads.rows.length ? <div className="mt-3"><Empty>Chưa có lead.</Empty></div> : (
           <div className="mt-3 overflow-x-auto">
             <table className="w-full min-w-[640px] text-left text-sm">
@@ -355,7 +356,7 @@ function Leads({ device }) {
         )}
       </div>
       <div className={cardClass}>
-        <h2 className="font-bold">Chuyển giao cho nhân viên ({handovers.rows.length})</h2>
+        <h2 className="text-xl font-semibold">Chuyển giao cho nhân viên ({handovers.rows.length})</h2>
         {!handovers.rows.length ? <div className="mt-3"><Empty>Chưa có lượt chuyển giao.</Empty></div> : (
           <ul className="mt-3 space-y-3">
             {handovers.rows.map((r) => (
@@ -391,7 +392,7 @@ function Groups({ device, setError, setNotice }) {
   return (
     <div className="space-y-5">
       <div className={cardClass}>
-        <h2 className="font-bold">Việc đang mở ({open.length})</h2>
+        <h2 className="text-xl font-semibold">Việc đang mở ({open.length})</h2>
         {!open.length ? <div className="mt-3"><Empty>Không có việc tồn.</Empty></div> : (
           <ul className="mt-3 space-y-2">
             <AnimatePresence initial={false}>
@@ -406,7 +407,7 @@ function Groups({ device, setError, setNotice }) {
         )}
       </div>
       <div className={cardClass}>
-        <h2 className="font-bold">Nhóm Zalo ({groups.rows.length})</h2>
+        <h2 className="text-xl font-semibold">Nhóm Zalo ({groups.rows.length})</h2>
         {!groups.rows.length ? <div className="mt-3"><Empty>Chưa có nhóm.</Empty></div> : (
           <ul className="mt-3 space-y-2">
             {groups.rows.map((r) => (
@@ -438,7 +439,7 @@ function Security({ device }) {
   const sev = { INFO: "text-ink-2", WARN: "text-amber-200", HIGH: "text-rose-200", CRITICAL: "text-rose-300" };
   return (
     <div className={cardClass}>
-      <h2 className="flex items-center gap-2 font-bold"><ShieldAlert size={18} /> Nhật ký bảo mật ({rows.length})</h2>
+      <h2 className="flex items-center gap-2 text-xl font-semibold"><ShieldAlert size={18} /> Nhật ký bảo mật ({rows.length})</h2>
       {!rows.length ? <div className="mt-3"><Empty>Chưa có sự kiện.</Empty></div> : (
         <ul className="mt-3 divide-y divide-white/10 text-sm">
           {rows.map((r) => (
@@ -558,7 +559,7 @@ function Commands({ device }) {
   const style = { pending: "text-ink-2", delivered: "text-cyan-200", done: "text-emerald-200", failed: "text-rose-200" };
   return (
     <div className={cardClass}>
-      <h2 className="font-bold">Lệnh gần đây</h2>
+      <h2 className="text-xl font-semibold">Lệnh gần đây</h2>
       {error && <div className="mt-2 text-sm text-rose-200">{error}</div>}
       {!rows.length ? <div className="mt-3"><Empty>Chưa gửi lệnh nào.</Empty></div> : (
         <ul className="mt-3 divide-y divide-white/10 text-sm">
