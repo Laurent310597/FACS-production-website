@@ -33,12 +33,12 @@ const weekDays = {
 };
 
 const calendarCategoryColors = {
-  tax: "#0e7490",
-  accounting: "#2563eb",
-  labor: "#7c3aed",
-  insurance: "#047857",
-  hse: "#a16207",
-  corporate: "#be123c",
+  tax: "#0b5e75",
+  accounting: "#1d4ed8",
+  labor: "#6d28d9",
+  insurance: "#065f46",
+  hse: "#854d0e",
+  corporate: "#9f1239",
   other: "#475569",
 };
 

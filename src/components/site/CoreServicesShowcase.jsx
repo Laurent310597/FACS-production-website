@@ -87,7 +87,7 @@ export default function CoreServicesShowcase({ isVi }) {
         </div>
 
         {/* Vùng tiêu đề + mô tả giữ chiều cao của dịch vụ dài nhất (bản ẩn xếp chồng) → nút bên dưới không bị đẩy khi đổi dịch vụ. */}
-        <div className="svc-show__headline" aria-live="polite">
+        <div className="svc-show__headline" id="svc-show-panel" role="tabpanel" aria-live={paused ? "polite" : "off"}>
           {items.map((item) => (
             <div key={item.slug} className="svc-show__sizer" aria-hidden="true">
               <div className="svc-show__title">{splitTitle(item.title).map((line) => <span key={line} className="svc-show__line">{line}</span>)}</div>
@@ -123,9 +123,21 @@ export default function CoreServicesShowcase({ isVi }) {
             key={item.slug}
             type="button"
             role="tab"
+            id={`svc-show-tab-${index}`}
             aria-selected={index === active}
+            aria-controls="svc-show-panel"
+            tabIndex={index === active ? 0 : -1}
             className={`svc-show__col${index === active ? " is-active" : ""}`}
             onClick={() => go(index)}
+            onKeyDown={(event) => {
+              // Bàn phím theo chuẩn tab ARIA: ←/→ (↑/↓) đổi dịch vụ, Home/End về đầu/cuối.
+              const keys = { ArrowRight: index + 1, ArrowDown: index + 1, ArrowLeft: index - 1, ArrowUp: index - 1, Home: 0, End: items.length - 1 };
+              if (!(event.key in keys)) return;
+              event.preventDefault();
+              const next = (keys[event.key] + items.length) % items.length;
+              go(next);
+              event.currentTarget.parentElement?.children[next]?.focus();
+            }}
             onMouseEnter={() => go(index)}
           >
             <span className="svc-show__bar" aria-hidden="true">{index === active && !paused && <span key={active} className="svc-show__progress" style={{ animationDuration: `${AUTOPLAY_MS}ms` }} />}</span>

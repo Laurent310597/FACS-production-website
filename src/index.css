@@ -1270,7 +1270,7 @@ html.theme-light {
   --color-slate-200: #1e2a47;
   --color-slate-300: #34415f;
   --color-slate-400: #4a5878;
-  --color-slate-500: #66748f;
+  --color-slate-500: #586683;
   --color-cyan-50: #0b3557;
   --color-cyan-100: #0c4466;
   --color-cyan-200: #0b5f86;
@@ -1328,6 +1328,8 @@ html.theme-light [class*="bg-[#030913]"] {
 }
 /* Lớp phủ tối trên ảnh: chữ trên ảnh vẫn trắng. */
 html.theme-light :is([class*="from-[#0d1726]"], [class*="from-[#0f1c2e]"]) {
+  /* Chữ không có lớp màu riêng (vd. tên lãnh đạo) thừa hưởng màu mực từ <main> → đặt lại trắng. */
+  color: #fff;
   --color-white: #fff;
   --color-slate-200: oklch(92.9% .013 255.508);
   --color-slate-300: oklch(86.9% .022 252.894);
@@ -1992,6 +1994,11 @@ html.theme-light .facs-mark {
 @media (min-width: 1024px) {
   .svc-show__eyebrow { font-size: 1.125rem; }
 }
+/* Điện thoại: ghi chú xuống dòng riêng, bỏ dấu chấm ngăn để không treo cuối dòng. */
+@media (max-width: 639px) {
+  .svc-show__dot { display: none; }
+  .svc-show__note { flex-basis: 100%; }
+}
 .svc-show__dot {
   width: 5px;
   height: 5px;
@@ -2330,7 +2337,7 @@ html.theme-light .hdr-sep { background: rgb(30 64 175 / 0.16); }
   flex-direction: column;
   align-items: flex-start;
 }
-.build-path__btn { margin-top: auto !important; }
+.build-path__btn { margin-top: auto !important; white-space: nowrap; }
 .build-path__desc { margin-bottom: 20px; }
 .build-path {
   display: flex;
@@ -2402,4 +2409,10 @@ html.theme-light .build-cta__glow {
 html.theme-light .build-path__eyebrow { color: #0369a1; }
 @media (prefers-reduced-motion: reduce) {
   .build-path:hover .build-path__icon { scale: none; rotate: none; }
+}
+
+/* ═══════════════ Rà soát tương phản nền sáng: chữ nhấn cyan đạt chuẩn WCAG AA (≥ 4.5:1) trên nền trắng/kính ═══════════════
+   Chỉ đổi màu CHỮ (không đổi nền/viền cyan), và bỏ qua các khối vẫn giữ bảng màu tối: chân trang, lớp phủ ảnh, bảng lịch. */
+html.theme-light :is(.text-cyan-300, .text-cyan-400):not(footer *, [class*="from-[#0d1726]"] *, [class*="from-[#0f1c2e]"] *, [class*="linear-gradient(145deg,rgba(218"] *) {
+  color: #067593;
 }
