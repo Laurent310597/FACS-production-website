@@ -10,7 +10,7 @@ export default function SiteThemeManager() {
     const site = !pathname.startsWith("/admin");
     const root = document.documentElement;
     root.classList.toggle("theme-light", theme === "light");
-    root.classList.toggle("has-site-rail", site);
+    root.classList.toggle("has-site-rail", site && !pathname.startsWith("/card/"));
     document.querySelector('meta[name="theme-color"]')?.setAttribute("content", theme === "light" ? "#f4f8ff" : site ? "#0d1726" : "#05070D");
   }, [pathname, theme]);
   return null;

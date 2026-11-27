@@ -16,7 +16,7 @@
         try {
           var root = document.documentElement;
           if (localStorage.getItem("facs-theme") !== "dark") root.classList.add("theme-light");
-          if (location.pathname.indexOf("/admin") !== 0) root.classList.add("has-site-rail");
+          if (location.pathname.indexOf("/admin") !== 0 && location.pathname.indexOf("/card/") !== 0) root.classList.add("has-site-rail");
         } catch (e) {}
       })();
     </script>
