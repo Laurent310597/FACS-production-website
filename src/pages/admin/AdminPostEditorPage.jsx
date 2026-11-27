@@ -25,7 +25,8 @@ import {
   isoToVietnamDateTimeInput,
   vietnamDateTimeInputToIso,
 } from "../../lib/publication";
-import { supabase } from "../../lib/supabaseClient";
+import { supabase, supabaseKey, supabaseUrl } from "../../lib/supabaseClient";
+import { uploadInsightCover } from "../../lib/insightCoverUpload";
 
 const emptyForm = {
   slug: "",
@@ -58,12 +59,6 @@ function stripHtml(value = "") {
   return value.replace(/<[^>]*>/g, " ").replace(/&nbsp;/g, " ").replace(/\s+/g, " ").trim();
 }
 
-function cleanFileName(name = "image") {
-  const extension = name.includes(".") ? `.${name.split(".").pop().toLowerCase()}` : "";
-  const base = name.replace(/\.[^/.]+$/, "");
-  return `${slugify(base) || "image"}${extension}`;
-}
-
 function normalizeLoadedPost(data) {
   const legacySlug = data.slug || "";
   const legacyAuthor = data.author_name || "FACS";
@@ -86,6 +81,7 @@ export default function AdminPostEditorPage() {
   const [loading, setLoading] = useState(isEditing);
   const [saving, setSaving] = useState(false);
   const [uploading, setUploading] = useState(false);
+  const [uploadError, setUploadError] = useState("");
   const [error, setError] = useState("");
   const [previewOpen, setPreviewOpen] = useState(false);
   const [scheduleAt, setScheduleAt] = useState("");
@@ -137,35 +133,23 @@ export default function AdminPostEditorPage() {
   const uploadCover = async (event) => {
     const file = event.target.files?.[0];
     event.target.value = "";
-    if (!file) return;
-
-    if (!file.type.startsWith("image/")) {
-      setError("Vui lòng chọn file hình ảnh.");
-      return;
-    }
-    if (file.size > 5 * 1024 * 1024) {
-      setError("Ảnh bìa không được vượt quá 5 MB.");
-      return;
-    }
-
+    if (!file || uploading) return;
     setUploading(true);
-    setError("");
-    const path = `covers/${Date.now()}-${cleanFileName(file.name)}`;
-    const { error: uploadError } = await supabase.storage.from("insight-images").upload(path, file, {
-      cacheControl: "3600",
-      upsert: false,
-      contentType: file.type,
-    });
-
-    if (uploadError) {
-      setError(`Không thể tải ảnh: ${uploadError.message}`);
+    setUploadError("");
+    try {
+      const publicUrl = await uploadInsightCover({
+        client: supabase,
+        url: supabaseUrl,
+        key: supabaseKey,
+        file,
+        stem: slugify(file.name.replace(/\.[^/.]+$/, "")).slice(0, 100) || "image",
+      });
+      updateField("cover_image_url", publicUrl);
+    } catch (issue) {
+      setUploadError(issue.message || "Không thể tải ảnh. Hãy thử lại.");
+    } finally {
       setUploading(false);
-      return;
     }
-
-    const { data } = supabase.storage.from("insight-images").getPublicUrl(path);
-    updateField("cover_image_url", data.publicUrl);
-    setUploading(false);
   };
 
   const savePost = async (action) => {
@@ -350,6 +334,7 @@ export default function AdminPostEditorPage() {
                     <input type="file" accept="image/jpeg,image/png,image/webp,image/gif" onChange={uploadCover} disabled={uploading} className="hidden" />
                   </label>
                 </div>
+                {uploadError && <p role="alert" className="text-sm text-red-200">{uploadError}</p>}
                 <label className="block">
                   <span className="mb-2 block text-sm font-semibold text-ink-1">URL ảnh</span>
                   <input value={form.cover_image_url || ""} onChange={(event) => updateField("cover_image_url", event.target.value)} className="w-full rounded-2xl border border-white/10 bg-cms-2 px-4 py-3.5 text-white outline-none placeholder:text-[#6A7BA3] focus:border-cyan-300/35" placeholder="https://..." />
