@@ -25,20 +25,24 @@ export default function useSiteMotion() {
     const apply = () => {
       frame = 0;
       const now = new Set();
+      // Đọc hết vị trí trước rồi mới ghi (tránh bắt trình duyệt tính lại bố cục giữa các lần ghi).
+      const chain = [];
       let el = last?.target instanceof Element ? last.target.closest(".site-card, .site-tile") : null;
       while (el) {
-        now.add(el);
-        const r = el.getBoundingClientRect();
+        chain.push([el, el.getBoundingClientRect()]);
+        el = el.parentElement?.closest(".site-card, .site-tile") || null;
+      }
+      for (const [card, r] of chain) {
+        now.add(card);
         const x = last.clientX - r.left;
         const y = last.clientY - r.top;
-        el.style.setProperty("--mx", `${x}px`);
-        el.style.setProperty("--my", `${y}px`);
-        if (el.classList.contains("site-tile") && !reduce) {
-          el.style.setProperty("--rx", `${((0.5 - y / r.height) * 6).toFixed(2)}deg`);
-          el.style.setProperty("--ry", `${((x / r.width - 0.5) * 8).toFixed(2)}deg`);
+        card.style.setProperty("--mx", `${x.toFixed(0)}px`);
+        card.style.setProperty("--my", `${y.toFixed(0)}px`);
+        if (card.classList.contains("site-tile") && !reduce) {
+          card.style.setProperty("--rx", `${((0.5 - y / r.height) * 6).toFixed(2)}deg`);
+          card.style.setProperty("--ry", `${((x / r.width - 0.5) * 8).toFixed(2)}deg`);
         }
-        if (el.classList.contains("site-glass")) el.style.setProperty("--gx", `${x.toFixed(0)}px`);
-        el = el.parentElement?.closest(".site-card, .site-tile") || null;
+        if (card.classList.contains("site-glass")) card.style.setProperty("--gx", `${x.toFixed(0)}px`);
       }
       hovered.forEach((old) => {
         if (!now.has(old)) release(old);

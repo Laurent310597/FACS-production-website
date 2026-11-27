@@ -28,8 +28,8 @@ export default function CmsBackdrop() {
   const ref = useRef(null);
 
   useEffect(() => {
-    const el = ref.current;
-    if (!el || window.matchMedia?.("(pointer: coarse)").matches) return undefined;
+    const lit = ref.current?.querySelector(".facs-backdrop__grid--lit");
+    if (!lit || window.matchMedia?.("(pointer: coarse)").matches) return undefined;
     let frame = 0;
     let x = 0;
     let y = 0;
@@ -39,12 +39,15 @@ export default function CmsBackdrop() {
       if (!frame)
         frame = requestAnimationFrame(() => {
           frame = 0;
-          el.style.setProperty("--cx", `${x}px`);
-          el.style.setProperty("--cy", `${y}px`);
-          el.style.setProperty("--reveal", "1");
+          // Chỉ dời một ô sáng 440px bằng transform (GPU), không vẽ lại cả lớp lưới toàn màn hình.
+          lit.style.transform = `translate3d(${x - 220}px, ${y - 220}px, 0)`;
+          lit.style.backgroundPosition = `${220 - x}px ${220 - y}px`;
+          lit.style.opacity = "0.9";
         });
     };
-    const onLeave = () => el.style.setProperty("--reveal", "0");
+    const onLeave = () => {
+      lit.style.opacity = "0";
+    };
     window.addEventListener("pointermove", onMove, { passive: true });
     document.addEventListener("pointerleave", onLeave);
     return () => {

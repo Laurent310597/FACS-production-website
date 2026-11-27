@@ -299,33 +299,52 @@ function translateNodeText(raw, map) {
   return `${leading}${mapped}${trailing}`;
 }
 
-function applyTranslations(language) {
-  const map = language === "vi" ? translations : reverseTranslations;
-  const walker = document.createTreeWalker(document.body, NodeFilter.SHOW_TEXT, {
+const SKIP_SELECTOR = "script, style, textarea, [data-no-translate]";
+
+/** Dịch các nút chữ trong `root` (bỏ qua cả nhánh script/style/textarea/[data-no-translate] – không duyệt vào trong). */
+function translateTree(root, map) {
+  if (!root) return;
+  if (root.nodeType === Node.TEXT_NODE) {
+    if (!root.parentElement || root.parentElement.closest(SKIP_SELECTOR)) return;
+    translateTextNode(root, map);
+    return;
+  }
+  if (root.nodeType !== Node.ELEMENT_NODE || root.closest(SKIP_SELECTOR)) return;
+  const walker = document.createTreeWalker(root, NodeFilter.SHOW_ELEMENT | NodeFilter.SHOW_TEXT, {
     acceptNode(node) {
-      if (!node.nodeValue || !normalizeText(node.nodeValue)) return NodeFilter.FILTER_REJECT;
-      const parent = node.parentElement;
-      if (!parent || parent.closest("script, style, textarea, [data-no-translate]")) return NodeFilter.FILTER_REJECT;
-      return NodeFilter.FILTER_ACCEPT;
+      if (node.nodeType === Node.ELEMENT_NODE) return node.matches(SKIP_SELECTOR) ? NodeFilter.FILTER_REJECT : NodeFilter.FILTER_SKIP;
+      return node.nodeValue && normalizeText(node.nodeValue) ? NodeFilter.FILTER_ACCEPT : NodeFilter.FILTER_REJECT;
     },
   });
-
   const nodes = [];
   while (walker.nextNode()) nodes.push(walker.currentNode);
+  nodes.forEach((node) => translateTextNode(node, map));
+  root.querySelectorAll("input[placeholder], textarea[placeholder]").forEach((el) => translatePlaceholder(el, map));
+  if (root.matches("input[placeholder], textarea[placeholder]")) translatePlaceholder(root, map);
+}
 
-  nodes.forEach((node) => {
-    const nextValue = translateNodeText(node.nodeValue, map);
-    if (nextValue !== node.nodeValue) node.nodeValue = nextValue;
-  });
+function translateTextNode(node, map) {
+  const value = node.nodeValue;
+  if (!value) return;
+  const nextValue = translateNodeText(value, map);
+  if (nextValue !== value) node.nodeValue = nextValue;
+}
 
-  document.querySelectorAll("input[placeholder], textarea[placeholder]").forEach((el) => {
-    if (el.closest("[data-no-translate]")) return;
-    const text = el.getAttribute("placeholder");
-    const mapped = map[text];
-    if (mapped) el.setAttribute("placeholder", mapped);
-  });
+function translatePlaceholder(el, map) {
+  if (el.closest("[data-no-translate]")) return;
+  const mapped = map[el.getAttribute("placeholder")];
+  if (mapped) el.setAttribute("placeholder", mapped);
+}
 
-  document.documentElement.lang = language === "vi" ? "vi" : "en";
+function mapFor(language) {
+  return language === "vi" ? translations : reverseTranslations;
+}
+
+function applyTranslations(language) {
+  translateTree(document.body, mapFor(language));
+  const lang = language === "vi" ? "vi" : "en";
+  // Chỉ ghi khi khác: ghi lại thuộc tính lang (dù cùng giá trị) bắt trình duyệt kiểm tra lại kiểu của cả trang.
+  if (document.documentElement.lang !== lang) document.documentElement.lang = lang;
 }
 
 export function LanguageProvider({ children }) {
@@ -338,11 +357,32 @@ export function LanguageProvider({ children }) {
     const run = () => applyTranslations(language);
     const timers = [0, 40, 120, 260, 520].map((delay) => window.setTimeout(run, delay));
 
-    const observer = new MutationObserver(() => run());
-    observer.observe(document.body, { childList: true, subtree: true, characterData: true });
+    // Hiệu năng: chỉ dịch phần vừa thay đổi (không duyệt lại cả trang), gom lại tối đa một lần mỗi khung hình.
+    // Trước đây mỗi thay đổi nhỏ (bộ đếm số chạy, gõ phím trong CMS…) đều duyệt lại toàn bộ chữ trên trang.
+    const map = mapFor(language);
+    let pending = new Set();
+    let frame = 0;
+    const flush = () => {
+      frame = 0;
+      const targets = pending;
+      pending = new Set();
+      targets.forEach((node) => {
+        if (node.isConnected) translateTree(node, map);
+      });
+    };
+    const observer = new MutationObserver((records) => {
+      for (const record of records) {
+        if (record.type === "characterData") pending.add(record.target);
+        else if (record.type === "attributes") record.target.matches?.("input, textarea") && translatePlaceholder(record.target, map);
+        else record.addedNodes.forEach((node) => pending.add(node));
+      }
+      if (pending.size && !frame) frame = window.requestAnimationFrame(flush);
+    });
+    observer.observe(document.body, { childList: true, subtree: true, characterData: true, attributes: true, attributeFilter: ["placeholder"] });
 
     return () => {
       timers.forEach((timer) => window.clearTimeout(timer));
+      window.cancelAnimationFrame(frame);
       observer.disconnect();
     };
   }, [language, location.pathname, location.search, location.hash]);

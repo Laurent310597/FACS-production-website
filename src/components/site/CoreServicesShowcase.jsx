@@ -39,21 +39,38 @@ export default function CoreServicesShowcase({ isVi }) {
   });
   const [active, setActive] = useState(0);
   const [paused, setPaused] = useState(false);
+  // Chỉ tự chuyển khi khối thực sự hiện trên màn hình → khách cuộn tới luôn thấy bắt đầu từ cột 01.
+  const [inView, setInView] = useState(false);
+  const rootRef = useRef(null);
   const timer = useRef(null);
   const go = useCallback((next) => setActive((next + CORE.length) % CORE.length), []);
 
-  // Tự chuyển sau mỗi 7 giây; dừng khi rê chuột/đang chọn bằng bàn phím hoặc người dùng bật giảm chuyển động.
+  useEffect(() => {
+    const el = rootRef.current;
+    if (!el || !("IntersectionObserver" in window)) {
+      setInView(true);
+      return undefined;
+    }
+    const io = new IntersectionObserver(([entry]) => setInView(entry.isIntersecting), { threshold: 0.45 });
+    io.observe(el);
+    return () => io.disconnect();
+  }, []);
+
+  // Tự chuyển sau mỗi 7 giây khi khối đang hiện; dừng khi cuộn đi, khi rê chuột/đang chọn bằng bàn phím,
+  // hoặc khi người dùng bật giảm chuyển động.
+  const running = inView && !paused;
   useEffect(() => {
     const reduce = window.matchMedia?.("(prefers-reduced-motion: reduce)").matches;
-    if (paused || reduce) return undefined;
+    if (!running || reduce) return undefined;
     timer.current = window.setTimeout(() => go(active + 1), AUTOPLAY_MS);
     return () => window.clearTimeout(timer.current);
-  }, [active, paused, go]);
+  }, [active, running, go]);
 
   const current = items[active];
 
   return (
     <section
+      ref={rootRef}
       className="svc-show relative overflow-hidden"
       aria-roledescription="carousel"
       aria-label={isVi ? "Dịch vụ trọng tâm" : "Core services"}
@@ -140,7 +157,7 @@ export default function CoreServicesShowcase({ isVi }) {
             }}
             onMouseEnter={() => go(index)}
           >
-            <span className="svc-show__bar" aria-hidden="true">{index === active && !paused && <span key={active} className="svc-show__progress" style={{ animationDuration: `${AUTOPLAY_MS}ms` }} />}</span>
+            <span className="svc-show__bar" aria-hidden="true">{index === active && running && <span key={active} className="svc-show__progress" style={{ animationDuration: `${AUTOPLAY_MS}ms` }} />}</span>
             <span className="svc-show__num">{String(index + 1).padStart(2, "0")}</span>
             <span className="svc-show__label">{item.title}</span>
             <ArrowRight size={18} className="svc-show__arrow" aria-hidden="true" />
