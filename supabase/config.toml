@@ -39,3 +39,6 @@ verify_jwt = false
 
 [functions.legal-calendar-email]
 verify_jwt = false
+
+[functions.card-vcf]
+verify_jwt = false

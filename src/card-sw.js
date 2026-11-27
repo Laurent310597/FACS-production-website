@@ -26,6 +26,25 @@ self.addEventListener("fetch", (event) => {
   const req = event.request;
   if (req.method !== "GET") return;
   const url = new URL(req.url);
+
+  // Ảnh chủ thẻ tự tải lên (kho Supabase): mỗi ảnh có tên riêng, không đổi nội dung → lưu lại để xem khi mất mạng.
+  if (url.origin !== self.location.origin && url.pathname.includes("/storage/v1/object/public/card-photos/")) {
+    event.respondWith(
+      (async () => {
+        const cache = await caches.open(CACHE);
+        const cached = await cache.match(req, { ignoreVary: true });
+        if (cached) return cached;
+        try {
+          const res = await fetch(req);
+          if (res && (res.ok || res.type === "opaque")) cache.put(req, res.clone());
+          return res;
+        } catch {
+          return Response.error();
+        }
+      })(),
+    );
+    return;
+  }
   if (url.origin !== self.location.origin) return;
 
   // Mở trang thẻ: lấy bản mới trên mạng (tối đa 3 giây), mất mạng thì dùng bản đã lưu.

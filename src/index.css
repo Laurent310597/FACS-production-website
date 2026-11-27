@@ -2534,8 +2534,9 @@ html.theme-light .facs-cms .bg-midnight-2\/90 {
   width: 100%;
   min-height: 100vh;
   background:
-    radial-gradient(60rem 36rem at 85% -10%, rgb(37 99 235 / 0.22), transparent 60%),
+    radial-gradient(60rem 36rem at 85% -10%, rgb(37 99 235 / 0.24), transparent 60%),
     radial-gradient(48rem 30rem at 0% 100%, rgb(34 211 238 / 0.1), transparent 60%),
+    radial-gradient(rgb(148 197 255 / 0.075) 1px, transparent 1.4px) 0 0 / 22px 22px,
     #081322;
   padding: 18px 16px 56px;
   display: flex;
@@ -2956,6 +2957,7 @@ html.theme-light main.dcard-page {
   background:
     radial-gradient(60rem 36rem at 85% -10%, rgb(56 189 248 / 0.2), transparent 60%),
     radial-gradient(48rem 30rem at 0% 100%, rgb(99 102 241 / 0.08), transparent 60%),
+    radial-gradient(rgb(30 64 175 / 0.075) 1px, transparent 1.4px) 0 0 / 22px 22px,
     linear-gradient(180deg, #f4f8ff, #eaf1ff) !important;
 }
 html.theme-light .dcard-top__logo, html.theme-light .dcard__company-name, html.theme-light .dcard__name, html.theme-light .dcard-sheet__name { color: #0b1a3a; }
@@ -3039,18 +3041,30 @@ html.theme-light .dcard-sheet__panel { border-color: #fff; background: #ffffff; 
 .bcard__face--front {
   padding: 7cqw 7cqw 6cqw;
   color: #fff;
+  /* Nền xanh đậm sang trọng: họa tiết guilloche (như giấy tờ có giá) + vòng lục giác FACS + vân sọc mảnh như vải âu phục */
   background:
-    url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='56' height='48' viewBox='0 0 56 48'%3E%3Cpath d='M14 1h28l13 23-13 23H14L1 24z' fill='none' stroke='%23ffffff' stroke-opacity='.07' stroke-width='1.2'/%3E%3C/svg%3E") 0 0 / 56px 48px,
-    radial-gradient(90% 60% at 100% 0%, rgb(56 189 248 / 0.45), transparent 60%),
-    radial-gradient(80% 50% at 0% 100%, rgb(99 102 241 / 0.35), transparent 60%),
-    linear-gradient(160deg, #0b1f4d 0%, #143e96 55%, #0a6fae 100%);
+    url("/card/card-pattern.svg") center / cover no-repeat,
+    repeating-linear-gradient(135deg, rgb(255 255 255 / 0.028) 0 1px, transparent 1px 6px),
+    radial-gradient(110% 62% at 100% 0%, rgb(56 189 248 / 0.34), transparent 58%),
+    radial-gradient(95% 55% at 0% 100%, rgb(37 99 235 / 0.42), transparent 62%),
+    linear-gradient(162deg, #06142f 0%, #0a2a66 44%, #0d4791 76%, #0b6aa8 100%);
+}
+/* Viền mảnh bên trong như thẻ in dập nổi */
+.bcard__face--front::before {
+  content: "";
+  position: absolute;
+  inset: 2.6cqw;
+  border-radius: 17px;
+  border: 1px solid rgb(186 230 253 / 0.16);
+  box-shadow: inset 0 0 0 1px rgb(6 20 47 / 0.25);
+  pointer-events: none;
 }
 .bcard__face--front::after {
   content: "";
   position: absolute;
   inset: 0;
   pointer-events: none;
-  background: linear-gradient(115deg, transparent 35%, rgb(255 255 255 / 0.12) 48%, transparent 60%);
+  background: linear-gradient(115deg, transparent 35%, rgb(255 255 255 / 0.1) 48%, transparent 60%);
 }
 .bcard__face--back {
   transform: rotateY(180deg);
@@ -3081,7 +3095,7 @@ html.theme-light .dcard-sheet__panel { border-color: #fff; background: #ffffff; 
   font-weight: 900;
   letter-spacing: -0.04em;
 }
-.bcard__dot { color: #ff6b35; }
+.bcard__dot { color: var(--color-facs-logo); }
 .bcard__kind {
   font-size: 3.1cqw;
   font-weight: 700;
@@ -3290,3 +3304,125 @@ html.theme-light .dcard-steps { color: #1e293b; }
   .bcard__inner { transition: none; }
   .dcard-install:hover { translate: none; }
 }
+
+/* ── Thẻ danh thiếp: chủ thẻ tự chỉnh sửa ── */
+.dcard-owner {
+  margin-top: 18px;
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  padding: 8px 14px;
+  border-radius: 999px;
+  font-size: 13px;
+  font-weight: 600;
+  color: rgb(148 163 184);
+  transition: color 0.2s, background-color 0.2s;
+}
+.dcard-owner:hover { color: #e2e8f0; background: rgb(255 255 255 / 0.05); }
+.dcard-sheet__panel--form {
+  max-width: 520px;
+  max-height: calc(100dvh - 32px);
+  overflow-y: auto;
+  overscroll-behavior: contain;
+  padding-top: 56px;
+}
+.dcard-sheet__panel--form .dcard-sheet__name { display: inline-flex; align-items: center; gap: 8px; }
+.cedit { width: 100%; display: flex; flex-direction: column; align-items: stretch; gap: 12px; text-align: left; }
+.cedit > .dcard-sheet__name, .cedit > .dcard__muted { text-align: center; justify-content: center; }
+.cedit-grid { display: grid; grid-template-columns: 1fr; gap: 12px; }
+@media (min-width: 520px) { .cedit-grid { grid-template-columns: 1fr 1fr; } }
+.cedit-field { display: flex; flex-direction: column; gap: 6px; min-width: 0; }
+.cedit-field > span { font-size: 12px; font-weight: 700; letter-spacing: 0.02em; color: rgb(148 163 184); }
+.cedit-field input {
+  height: 44px;
+  width: 100%;
+  padding: 0 14px;
+  border-radius: 12px;
+  border: 1px solid rgb(255 255 255 / 0.14);
+  background: rgb(255 255 255 / 0.05);
+  font-size: 16px; /* ≥16px để iPhone không tự phóng to khi gõ */
+  color: #f1f5f9;
+  outline: none;
+  transition: border-color 0.2s, box-shadow 0.2s;
+}
+.cedit-field input:focus { border-color: rgb(103 232 249 / 0.7); box-shadow: 0 0 0 3px rgb(34 211 238 / 0.18); }
+.cedit-hint { font-size: 12.5px; line-height: 1.5; color: rgb(148 163 184); }
+.cedit-msg { padding: 10px 12px; border-radius: 12px; font-size: 13.5px; line-height: 1.5; }
+.cedit-msg--error { background: rgb(239 68 68 / 0.12); color: #fecaca; border: 1px solid rgb(239 68 68 / 0.3); }
+.cedit-msg--ok { background: rgb(16 185 129 / 0.12); color: #a7f3d0; border: 1px solid rgb(16 185 129 / 0.3); }
+.cedit-actions { display: flex; justify-content: center; gap: 10px; flex-wrap: wrap; }
+.cedit-primary {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  gap: 8px;
+  min-width: 180px;
+  height: 46px;
+  padding: 0 22px;
+  border-radius: 999px;
+  font-size: 15px;
+  font-weight: 700;
+}
+.cedit-primary:disabled { opacity: 0.7; cursor: progress; }
+.cedit-switch, .cedit-account {
+  display: flex;
+  flex-wrap: wrap;
+  justify-content: center;
+  gap: 6px 16px;
+  font-size: 13px;
+}
+.cedit-switch button, .cedit-account button { font-weight: 600; color: #67e8f9; }
+.cedit-switch button:hover, .cedit-account button:hover { text-decoration: underline; }
+.cedit-account { padding-top: 12px; border-top: 1px solid rgb(255 255 255 / 0.08); color: rgb(148 163 184); }
+.cedit-account span { display: inline-flex; align-items: center; gap: 5px; }
+.cedit-photo { display: flex; flex-direction: column; align-items: center; gap: 10px; }
+.cedit-photo img {
+  width: 104px;
+  height: 104px;
+  border-radius: 50%;
+  object-fit: cover;
+  border: 3px solid rgb(255 255 255 / 0.9);
+  box-shadow: 0 12px 26px -12px rgb(0 0 0 / 0.6);
+  background: #1e293b;
+}
+.cedit-pill { font-size: 12px; font-weight: 600; padding: 4px 10px; border-radius: 999px; background: rgb(34 211 238 / 0.14); color: #a5f3fc; }
+.cedit-loading { display: grid; place-items: center; min-height: 160px; width: 100%; color: #67e8f9; }
+.cedit-spin { animation: cedit-spin 0.9s linear infinite; }
+@keyframes cedit-spin { to { transform: rotate(360deg); } }
+.cedit-crop { width: 100%; display: flex; flex-direction: column; align-items: center; gap: 14px; }
+.cedit-crop__view {
+  position: relative;
+  overflow: hidden;
+  border-radius: 18px;
+  background: #0b1222;
+  touch-action: none;
+  cursor: grab;
+  display: grid;
+  place-items: center;
+  color: #67e8f9;
+}
+.cedit-crop__view:active { cursor: grabbing; }
+.cedit-crop__view img { position: absolute; left: 0; top: 0; max-width: none; user-select: none; -webkit-user-drag: none; }
+.cedit-crop__ring {
+  position: absolute;
+  inset: 0;
+  border-radius: 50%;
+  box-shadow: 0 0 0 999px rgb(4 10 22 / 0.55);
+  outline: 2px solid rgb(255 255 255 / 0.9);
+  outline-offset: -2px;
+  pointer-events: none;
+}
+.cedit-crop__zoom { display: flex; align-items: center; gap: 10px; width: min(100%, 300px); }
+.cedit-crop__zoom input { flex: 1; accent-color: #22d3ee; }
+html.theme-light .dcard-owner { color: #586683; }
+html.theme-light .dcard-owner:hover { color: #0b1a3a; background: rgb(30 64 175 / 0.06); }
+html.theme-light .cedit-field > span, html.theme-light .cedit-hint, html.theme-light .cedit-account { color: #586683; }
+html.theme-light .cedit-field input { border-color: rgb(30 64 175 / 0.18); background: #f8fbff; color: #0f172a; }
+html.theme-light .cedit-field input:focus { border-color: #2563eb; box-shadow: 0 0 0 3px rgb(37 99 235 / 0.15); }
+html.theme-light .cedit-msg--error { background: #fef2f2; color: #b91c1c; border-color: #fecaca; }
+html.theme-light .cedit-msg--ok { background: #ecfdf5; color: #047857; border-color: #a7f3d0; }
+html.theme-light .cedit-switch button, html.theme-light .cedit-account button { color: #1d4ed8; }
+html.theme-light .cedit-account { border-color: rgb(30 64 175 / 0.1); }
+html.theme-light .cedit-pill { background: #e0f2fe; color: #0369a1; }
+html.theme-light .cedit-loading { color: #1d4ed8; }
+@media (prefers-reduced-motion: reduce) { .cedit-spin { animation-duration: 2.5s; } }
