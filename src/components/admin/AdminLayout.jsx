@@ -125,18 +125,22 @@ function useCmsMotion(rootRef) {
 
     const apply = () => {
       frame = 0;
+      // Đọc hết vị trí trước rồi mới ghi (tránh bắt trình duyệt tính lại bố cục giữa các lần ghi).
+      const chain = [];
       let el = last?.target instanceof Element ? last.target.closest(".facs-card, .facs-tile") : null;
       while (el) {
-        const r = el.getBoundingClientRect();
+        chain.push([el, el.getBoundingClientRect()]);
+        el = el.parentElement?.closest(".facs-card, .facs-tile") || null;
+      }
+      for (const [card, r] of chain) {
         const x = last.clientX - r.left;
         const y = last.clientY - r.top;
-        el.style.setProperty("--mx", `${x}px`);
-        el.style.setProperty("--my", `${y}px`);
-        if (el.classList.contains("facs-tile") && !reduce) {
-          el.style.setProperty("--rx", `${((0.5 - y / r.height) * 7).toFixed(2)}deg`);
-          el.style.setProperty("--ry", `${((x / r.width - 0.5) * 9).toFixed(2)}deg`);
+        card.style.setProperty("--mx", `${x.toFixed(0)}px`);
+        card.style.setProperty("--my", `${y.toFixed(0)}px`);
+        if (card.classList.contains("facs-tile") && !reduce) {
+          card.style.setProperty("--rx", `${((0.5 - y / r.height) * 7).toFixed(2)}deg`);
+          card.style.setProperty("--ry", `${((x / r.width - 0.5) * 9).toFixed(2)}deg`);
         }
-        el = el.parentElement?.closest(".facs-card, .facs-tile") || null;
       }
     };
     const onMove = (e) => {

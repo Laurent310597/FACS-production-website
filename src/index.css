@@ -298,11 +298,18 @@ img {
   -webkit-mask-image: radial-gradient(ellipse 85% 75% at 60% 0%, #000 25%, transparent 80%);
   mask-image: radial-gradient(ellipse 85% 75% at 60% 0%, #000 25%, transparent 80%);
 }
+/* Ô sáng theo con trỏ: khối 440px dời bằng transform; background-position bù lại để chấm khớp lưới nền. */
 .facs-backdrop__grid--lit {
+  inset: auto;
+  left: 0;
+  top: 0;
+  width: 440px;
+  height: 440px;
   background-image: radial-gradient(rgb(142 169 255 / 0.75) 1.1px, transparent 1.5px);
-  -webkit-mask-image: radial-gradient(220px circle at var(--cx) var(--cy), #000, transparent 75%);
-  mask-image: radial-gradient(220px circle at var(--cx) var(--cy), #000, transparent 75%);
-  opacity: calc(var(--reveal) * 0.9);
+  -webkit-mask-image: radial-gradient(220px circle at 50% 50%, #000, transparent 75%);
+  mask-image: radial-gradient(220px circle at 50% 50%, #000, transparent 75%);
+  opacity: 0;
+  will-change: transform;
   transition: opacity 0.4s;
 }
 .facs-backdrop__waves {
@@ -950,8 +957,36 @@ html:not(:has(.facs-cms)) {
 /* Vị trí vệt phản chiếu trên thẻ kính – khai báo kiểu để có thể chuyển động mượt khi trở về vị trí ban đầu. */
 @property --gx {
   syntax: "<length-percentage>";
-  inherits: true;
+  inherits: false;
   initial-value: 32%;
+}
+/* Hiệu năng: vị trí con trỏ / độ nghiêng cập nhật mỗi lần rê chuột. Khai báo KHÔNG kế thừa để trình duyệt chỉ tính lại
+   chính thẻ đó (và lớp ::before/::after), không phải toàn bộ hàng trăm phần tử bên trong thẻ. */
+@property --mx {
+  syntax: "<length-percentage>";
+  inherits: false;
+  initial-value: 50%;
+}
+@property --my {
+  syntax: "<length-percentage>";
+  inherits: false;
+  initial-value: 0%;
+}
+@property --rx {
+  syntax: "<angle>";
+  inherits: false;
+  initial-value: 0deg;
+}
+@property --ry {
+  syntax: "<angle>";
+  inherits: false;
+  initial-value: 0deg;
+}
+:is(.site-card, .site-tile, .site-glass, .site-acrylic, .facs-card, .facs-tile)::before,
+:is(.site-card, .site-tile, .site-glass, .site-acrylic, .facs-card, .facs-tile)::after {
+  --mx: inherit;
+  --my: inherit;
+  --gx: inherit;
 }
 
 /* Thẻ kính: ảnh và chữ như in trên một tấm kính – nền trong mờ, viền sáng, vệt phản chiếu chạy theo con trỏ. */
