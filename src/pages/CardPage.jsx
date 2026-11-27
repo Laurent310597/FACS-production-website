@@ -1,6 +1,6 @@
-import { useEffect, useMemo, useState } from "react";
+import { lazy, Suspense, useEffect, useMemo, useState } from "react";
 import { createPortal } from "react-dom";
-import { Link, useParams } from "react-router-dom";
+import { Link, useParams, useSearchParams } from "react-router-dom";
 import { AnimatePresence, motion } from "framer-motion";
 import QRCode from "qrcode";
 import {
@@ -13,6 +13,7 @@ import {
   MapPin,
   MessageCircle,
   Moon,
+  PencilLine,
   Phone,
   Plus,
   RotateCw,
@@ -26,10 +27,15 @@ import {
 import { leadership } from "../data/team";
 import { COMPANY } from "../data/company";
 import { cardUrl, mapsUrl, toE164, zaloNumber } from "../lib/digitalCard";
+import { cardVcfUrl, fetchCardRow, mergeCard, readCardCache, writeCardCache } from "../lib/cardProfile";
+import { supabase } from "../lib/supabaseClient";
 import { useLanguage } from "../components/LanguageContext";
 import { setSiteTheme, useSiteTheme } from "../components/site/siteTheme";
 
+const CardEditor = lazy(() => import("../components/card/CardEditor"));
+
 const QR_DARK = "#0b2a5b";
+const LOGO_DOT = "#22d3ee"; // màu dấu "." của logo FACS (giống website)
 const MARK_SRC = "/facs-mark.png";
 
 // Mạng xã hội (icon dạng chữ để không phụ thuộc thư viện icon thương hiệu).
@@ -161,7 +167,7 @@ function BusinessCard({ person, isVi, title, role, qrSvg, flipped, onFlip, slug 
             <span className="bcard__kind">{isVi ? "Thẻ danh thiếp" : "Business card"}</span>
           </span>
           <span className="bcard__person">
-            <img src={`/card/${slug}.jpg`} alt="" className="bcard__photo" />
+            <img src={person.photoUrl} alt="" className="bcard__photo" onError={(e) => { if (!e.currentTarget.src.endsWith(`/card/${slug}.jpg`)) e.currentTarget.src = `/card/${slug}.jpg`; }} />
             <span className="bcard__name">{person.name}</span>
             <span className="bcard__title">{title}</span>
             <span className="bcard__role">{role}</span>
@@ -186,7 +192,7 @@ function BusinessCard({ person, isVi, title, role, qrSvg, flipped, onFlip, slug 
           <span className="bcard__back-url">{COMPANY.domain}/card/{slug}</span>
           <span className="bcard__back-brand">
             <img src={MARK_SRC} alt="" />
-            FACS<span className="bcard__dot">.</span>
+            <span>FACS<span className="bcard__dot">.</span></span>
           </span>
         </span>
       </span>
@@ -199,17 +205,73 @@ export default function CardPage() {
   const { language, setLanguage } = useLanguage();
   const theme = useSiteTheme();
   const isVi = language === "vi";
-  const person = leadership.find((p) => p.slug === slug);
+  const basePerson = leadership.find((p) => p.slug === slug);
+  const [searchParams, setSearchParams] = useSearchParams();
+  const [row, setRow] = useState(() => readCardCache(slug));
+  const person = useMemo(() => mergeCard(basePerson, row), [basePerson, row]);
+  const [canEdit, setCanEdit] = useState(false);
+  // Quay lại từ email (xác nhận tài khoản / đặt lại mật khẩu): mở ngay khung chỉnh sửa.
+  const [returnFlag] = useState(() => (searchParams.get("reset") ? "password" : searchParams.get("confirmed") ? "edit" : ""));
+  const [editMode, setEditMode] = useState(returnFlag || "login");
 
   const shareUrl = useMemo(() => cardUrl(slug, canonicalOrigin()), [slug]);
   const qrUrl = `${shareUrl}?src=qr`;
   const [qrSvg, setQrSvg] = useState("");
-  const [sheet, setSheet] = useState(null); // "qr" | "share" | null
+  const [sheet, setSheet] = useState(() => (returnFlag ? "edit" : null)); // "qr" | "share" | null
   const [copied, setCopied] = useState("");
   const [flipped, setFlipped] = useState(false);
   const { promptEvent, setPromptEvent, installed, ios } = useInstallApp();
   const shortName = `FACS · ${person ? person.name.trim().split(/\s+/).pop() : ""}`;
   useAppHead(slug, shortName);
+
+  // Thông tin mới nhất do chủ thẻ cập nhật (mất mạng thì dùng bản đã lưu trên máy).
+  useEffect(() => {
+    if (!basePerson) return undefined;
+    let alive = true;
+    fetchCardRow(slug)
+      .then((data) => {
+        if (!alive || !data) return;
+        setRow(data);
+        writeCardCache(slug, data);
+      })
+      .catch(() => {});
+    return () => {
+      alive = false;
+    };
+  }, [slug, basePerson]);
+
+  // Chủ thẻ đang đăng nhập: hiện nút chỉnh sửa nhanh ở đầu trang.
+  useEffect(() => {
+    if (!supabase || !basePerson) return undefined;
+    let alive = true;
+    const check = (session) => {
+      if (!session) {
+        setCanEdit(false);
+        return;
+      }
+      supabase.rpc("card_can_edit", { p_slug: slug }).then(({ data }) => alive && setCanEdit(data === true));
+    };
+    supabase.auth.getSession().then(({ data }) => check(data.session));
+    const { data } = supabase.auth.onAuthStateChange((event, session) => {
+      if (event === "PASSWORD_RECOVERY") {
+        setEditMode("password");
+        setSheet("edit");
+      }
+      check(session);
+    });
+    return () => {
+      alive = false;
+      data.subscription.unsubscribe();
+    };
+  }, [slug, basePerson]);
+
+  useEffect(() => {
+    if (!searchParams.has("reset") && !searchParams.has("confirmed")) return;
+    const next = new URLSearchParams(searchParams);
+    next.delete("reset");
+    next.delete("confirmed");
+    setSearchParams(next, { replace: true });
+  }, [searchParams, setSearchParams]);
 
   useEffect(() => {
     let alive = true;
@@ -253,7 +315,7 @@ export default function CardPage() {
   const role = isVi ? person.roleVi : person.role;
   const credentials = isVi ? person.credentialsVi : person.credentials;
   const tel = toE164(person.phone);
-  const vcfHref = `/card/${slug}/${isVi ? "contact.vcf" : "contact-en.vcf"}`;
+  const vcfHref = cardVcfUrl(slug, isVi);
   const shareText = isVi ? `Thẻ danh thiếp của ${person.name} – ${title}, FACS` : `${person.name} – ${title}, FACS`;
   const baseName = `${fileSlug(person.name)}-FACS`;
 
@@ -347,7 +409,14 @@ export default function CardPage() {
     ctx.textAlign = "center";
     ctx.fillStyle = "#0b1a3a";
     ctx.font = "700 64px Cambria, Georgia, serif";
-    ctx.fillText("FACS.", W / 2, 132);
+    const wordW = ctx.measureText("FACS").width;
+    const dotW = ctx.measureText(".").width;
+    ctx.textAlign = "left";
+    ctx.fillText("FACS", W / 2 - (wordW + dotW) / 2, 132);
+    ctx.fillStyle = LOGO_DOT;
+    ctx.fillText(".", W / 2 - (wordW + dotW) / 2 + wordW, 132);
+    ctx.textAlign = "center";
+    ctx.fillStyle = "#0b1a3a";
     ctx.font = "700 58px Cambria, Georgia, serif";
     ctx.fillText(person.name, W / 2, 1104);
     ctx.fillStyle = "#475569";
@@ -411,6 +480,11 @@ export default function CardPage() {
           <span>FACS<span className="text-facs-logo">.</span></span>
         </Link>
         <div className="dcard-top__tools">
+          {canEdit && (
+            <button type="button" className="hdr-tool" onClick={() => { setEditMode("edit"); setSheet("edit"); }} aria-label={isVi ? "Chỉnh sửa thẻ" : "Edit card"} title={isVi ? "Chỉnh sửa thẻ" : "Edit card"}>
+              <PencilLine size={18} />
+            </button>
+          )}
           <div className="hdr-lang" role="group" aria-label={isVi ? "Ngôn ngữ" : "Language"}>
             <button type="button" onClick={() => setLanguage("en")} aria-pressed={!isVi} className={!isVi ? "is-on" : ""}>EN</button>
             <button type="button" onClick={() => setLanguage("vi")} aria-pressed={isVi} className={isVi ? "is-on" : ""}>VI</button>
@@ -557,18 +631,23 @@ export default function CardPage() {
             <span className="dcard__url">{COMPANY.domain}/card/{slug}</span>
           </div>
         </article>
+
+        <button type="button" className="dcard-owner" onClick={() => { setEditMode(canEdit ? "edit" : "login"); setSheet("edit"); }}>
+          <PencilLine size={14} aria-hidden="true" />
+          {isVi ? "Chỉnh sửa thẻ · dành cho chủ thẻ" : "Edit card · for the card owner"}
+        </button>
       </div>
 
       {/* Gắn thẳng vào <body>: khung chuyển trang có transform nên position:fixed bên trong sẽ lệch khỏi giữa màn hình. */}
       {createPortal(
       <AnimatePresence>
         {sheet && (
-          <motion.div className="dcard-sheet" data-no-translate initial={{ opacity: 0 }} animate={{ opacity: 1 }} exit={{ opacity: 0 }} onClick={() => setSheet(null)}>
+          <motion.div className="dcard-sheet" data-no-translate initial={{ opacity: 0 }} animate={{ opacity: 1 }} exit={{ opacity: 0 }} onClick={() => sheet !== "edit" && setSheet(null)}>
             <motion.div
-              className="dcard-sheet__panel"
+              className={`dcard-sheet__panel${sheet === "edit" ? " dcard-sheet__panel--form" : ""}`}
               role="dialog"
               aria-modal="true"
-              aria-label={sheet === "qr" ? (isVi ? "Mã QR" : "QR code") : isVi ? "Chia sẻ thẻ" : "Share card"}
+              aria-label={sheet === "edit" ? (isVi ? "Chỉnh sửa thẻ" : "Edit card") : sheet === "qr" ? (isVi ? "Mã QR" : "QR code") : isVi ? "Chia sẻ thẻ" : "Share card"}
               initial={{ y: 40, opacity: 0 }}
               animate={{ y: 0, opacity: 1 }}
               exit={{ y: 40, opacity: 0 }}
@@ -578,7 +657,22 @@ export default function CardPage() {
               <button type="button" className="dcard-sheet__close hdr-tool" onClick={() => setSheet(null)} aria-label={isVi ? "Đóng" : "Close"}>
                 <X size={18} />
               </button>
-              {sheet === "install" ? (
+              {sheet === "edit" ? (
+                <Suspense fallback={<div className="cedit-loading" />}>
+                  <CardEditor
+                    slug={slug}
+                    isVi={isVi}
+                    person={person}
+                    row={row}
+                    initialMode={editMode}
+                    onSaved={(data) => {
+                      setRow(data);
+                      writeCardCache(slug, data);
+                      setCanEdit(true);
+                    }}
+                  />
+                </Suspense>
+              ) : sheet === "install" ? (
                 <>
                   <span className="dcard-install__icon dcard-install__icon--lg"><img src="/card/icons/icon-192.png" alt="" /></span>
                   <div className="dcard-sheet__name">{isVi ? "Cài thẻ lên màn hình chính" : "Add to Home Screen"}</div>

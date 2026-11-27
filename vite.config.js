@@ -35,15 +35,19 @@ const escHtml = (s) => String(s).replace(/&/g, '&amp;').replace(/"/g, '&quot;').
  */
 function digitalCardPages() {
   let assets = []
+  let outDir = 'dist'
   return {
     name: 'facs-digital-card-pages',
     apply: 'build',
+    configResolved(config) {
+      outDir = config.build.outDir
+    },
     generateBundle(_options, bundle) {
       // JS/CSS cần để mở trang thẻ khi không có mạng (trang chính + phần CardPage tải riêng); bỏ ảnh lớn của các trang khác.
       assets = Object.keys(bundle).filter((f) => /\.(js|css)$/.test(f)).map((f) => `/${f}`)
     },
     closeBundle() {
-      const dist = resolve('dist')
+      const dist = resolve(outDir)
       const shell = readFileSync(resolve(dist, 'index.html'), 'utf8')
       for (const p of readLeadership()) {
         const dir = resolve(dist, 'card', p.slug)
@@ -120,6 +124,7 @@ function digitalCardPages() {
       const precache = [
         ...people.flatMap((p) => [`/card/${p.slug}`, `/card/${p.slug}.jpg`, `/card/${p.slug}/contact.vcf`, `/card/${p.slug}/contact-en.vcf`, `/card/${p.slug}/manifest.webmanifest`]),
         '/facs-mark.png',
+        '/card/card-pattern.svg',
         '/card/icons/icon-192.png',
         '/card/icons/apple-touch-icon.png',
         ...assets,
