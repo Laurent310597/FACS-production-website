@@ -14,8 +14,11 @@ import {
   MessageCircle,
   Moon,
   Phone,
-  QrCode,
+  Plus,
+  RotateCw,
+  Share,
   Share2,
+  Smartphone,
   Sun,
   UserPlus,
   X,
@@ -78,6 +81,118 @@ const fileSlug = (name) =>
     .replace(/[^A-Za-z0-9]+/g, "-")
     .replace(/^-|-$/g, "");
 
+/** Chạy như app trên màn hình chính (đã cài)? */
+function isStandalone() {
+  if (typeof window === "undefined") return false;
+  return window.matchMedia?.("(display-mode: standalone)").matches || window.navigator.standalone === true;
+}
+
+/** iPhone/iPad: không có nút cài tự động, phải hướng dẫn "Thêm vào MH chính". */
+function isIOS() {
+  if (typeof navigator === "undefined") return false;
+  return /iPad|iPhone|iPod/.test(navigator.userAgent) || (navigator.platform === "MacIntel" && navigator.maxTouchPoints > 1);
+}
+
+/** Cài thẻ thành app: Android/Chrome dùng lời nhắc cài đặt của trình duyệt; iPhone hiện hướng dẫn. */
+function useInstallApp() {
+  const [promptEvent, setPromptEvent] = useState(null);
+  const [installed, setInstalled] = useState(isStandalone);
+  useEffect(() => {
+    const onPrompt = (e) => {
+      e.preventDefault();
+      setPromptEvent(e);
+    };
+    const onInstalled = () => {
+      setInstalled(true);
+      setPromptEvent(null);
+    };
+    window.addEventListener("beforeinstallprompt", onPrompt);
+    window.addEventListener("appinstalled", onInstalled);
+    return () => {
+      window.removeEventListener("beforeinstallprompt", onPrompt);
+      window.removeEventListener("appinstalled", onInstalled);
+    };
+  }, []);
+  return { promptEvent, setPromptEvent, installed, ios: isIOS() };
+}
+
+/** Gắn manifest + thẻ meta "app" cho iPhone khi vào thẻ bằng điều hướng trong website (trang mở thẳng đã có sẵn từ lúc build). */
+function useAppHead(slug, shortName) {
+  useEffect(() => {
+    const added = [];
+    const ensure = (selector, create) => {
+      if (document.head.querySelector(selector)) return;
+      const el = create();
+      document.head.appendChild(el);
+      added.push(el);
+    };
+    const link = (rel, href) => () => Object.assign(document.createElement("link"), { rel, href });
+    const meta = (name, content) => () => Object.assign(document.createElement("meta"), { name, content });
+    ensure('link[rel="manifest"]', link("manifest", `/card/${slug}/manifest.webmanifest`));
+    ensure('link[rel="apple-touch-icon"]', link("apple-touch-icon", "/card/icons/apple-touch-icon.png"));
+    ensure('meta[name="apple-mobile-web-app-capable"]', meta("apple-mobile-web-app-capable", "yes"));
+    ensure('meta[name="apple-mobile-web-app-title"]', meta("apple-mobile-web-app-title", shortName));
+    // Lưu sẵn thẻ để mở được khi không có mạng (chỉ bản build thật; phạm vi /card/, không ảnh hưởng website).
+    if (import.meta.env.PROD && "serviceWorker" in navigator) {
+      navigator.serviceWorker.register("/card/sw.js", { scope: "/card/" }).catch(() => {});
+    }
+    return () => added.forEach((el) => el.remove());
+  }, [slug, shortName]);
+}
+
+/** Tấm danh thiếp: mặt trước thông tin, chạm để lật sang mặt sau là mã QR. */
+function BusinessCard({ person, isVi, title, role, qrSvg, flipped, onFlip, slug }) {
+  return (
+    <button
+      type="button"
+      className={`bcard${flipped ? " is-flipped" : ""}`}
+      onClick={onFlip}
+      aria-pressed={flipped}
+      aria-label={flipped ? (isVi ? "Mặt sau: mã QR. Chạm để lật lại" : "Back: QR code. Tap to flip back") : isVi ? "Mặt trước. Chạm để xem mã QR" : "Front. Tap to show the QR code"}
+    >
+      <span className="bcard__inner">
+        <span className="bcard__face bcard__face--front">
+          <span className="bcard__top">
+            <span className="bcard__brand">
+              <span className="bcard__plate"><img src={MARK_SRC} alt="" /></span>
+              <span className="bcard__wordmark">FACS<span className="bcard__dot">.</span></span>
+            </span>
+            <span className="bcard__kind">{isVi ? "Thẻ danh thiếp" : "Business card"}</span>
+          </span>
+          <span className="bcard__person">
+            <img src={`/card/${slug}.jpg`} alt="" className="bcard__photo" />
+            <span className="bcard__name">{person.name}</span>
+            <span className="bcard__title">{title}</span>
+            <span className="bcard__role">{role}</span>
+          </span>
+          <span className="bcard__lines">
+            <span><Phone size={14} aria-hidden="true" />{person.phone}</span>
+            <span><Mail size={14} aria-hidden="true" />{person.email}</span>
+            <span><Globe size={14} aria-hidden="true" />{COMPANY.domain}</span>
+          </span>
+          <span className="bcard__foot">
+            <span className="bcard__slogan">{isVi ? COMPANY.sloganVi : COMPANY.slogan}</span>
+            <RotateCw size={15} aria-hidden="true" className="bcard__flipicon" />
+          </span>
+        </span>
+        <span className="bcard__face bcard__face--back">
+          <span className="bcard__back-title">{isVi ? "Quét để lưu liên hệ" : "Scan to save contact"}</span>
+          <span className="bcard__qr">
+            <span className="bcard__qr-code" dangerouslySetInnerHTML={{ __html: qrSvg }} />
+            <span className="bcard__qr-mark"><img src={MARK_SRC} alt="" /></span>
+          </span>
+          <span className="bcard__back-name">{person.name}</span>
+          <span className="bcard__back-url">{COMPANY.domain}/card/{slug}</span>
+          <span className="bcard__back-brand">
+            <img src={MARK_SRC} alt="" />
+            FACS<span className="bcard__dot">.</span>
+          </span>
+        </span>
+      </span>
+    </button>
+  );
+}
+
 export default function CardPage() {
   const { slug } = useParams();
   const { language, setLanguage } = useLanguage();
@@ -90,6 +205,10 @@ export default function CardPage() {
   const [qrSvg, setQrSvg] = useState("");
   const [sheet, setSheet] = useState(null); // "qr" | "share" | null
   const [copied, setCopied] = useState("");
+  const [flipped, setFlipped] = useState(false);
+  const { promptEvent, setPromptEvent, installed, ios } = useInstallApp();
+  const shortName = `FACS · ${person ? person.name.trim().split(/\s+/).pop() : ""}`;
+  useAppHead(slug, shortName);
 
   useEffect(() => {
     let alive = true;
@@ -265,8 +384,23 @@ export default function CardPage() {
     { key: "call", icon: Phone, label: isVi ? "Gọi" : "Call", href: `tel:${tel}` },
     { key: "zalo", icon: MessageCircle, label: "Zalo", href: `https://zalo.me/${zaloNumber(person.phone)}`, external: true },
     { key: "mail", icon: Mail, label: "Email", href: `mailto:${person.email}` },
-    { key: "qr", icon: QrCode, label: isVi ? "Mã QR" : "QR code", onClick: () => setSheet("qr") },
+    { key: "save", icon: UserPlus, label: isVi ? "Danh bạ" : "Save", href: vcfHref },
+    { key: "share", icon: Share2, label: isVi ? "Chia sẻ" : "Share", onClick: share },
   ];
+
+  const install = async () => {
+    if (promptEvent) {
+      promptEvent.prompt();
+      try {
+        await promptEvent.userChoice;
+      } finally {
+        setPromptEvent(null);
+      }
+      return;
+    }
+    setSheet("install");
+  };
+  const showInstall = !installed && (promptEvent || ios || coarse);
 
   return (
     <main className="dcard-page" data-no-translate>
@@ -291,52 +425,44 @@ export default function CardPage() {
         </div>
       </div>
 
-      <div className="dcard-layout">
-        <motion.article className="dcard" initial={{ opacity: 0, y: 24 }} animate={{ opacity: 1, y: 0 }} transition={{ duration: 0.6, ease: [0.2, 0.8, 0.2, 1] }}>
-          <div className="dcard__band" aria-hidden="true">
-            <span className="dcard__band-slogan">{isVi ? COMPANY.sloganVi : COMPANY.slogan}</span>
-          </div>
+      <div className="dcard-stage">
+        <motion.div initial={{ opacity: 0, y: 28, scale: 0.97 }} animate={{ opacity: 1, y: 0, scale: 1 }} transition={{ duration: 0.7, ease: [0.2, 0.8, 0.2, 1] }}>
+          <BusinessCard person={person} isVi={isVi} title={title} role={role} qrSvg={qrSvg} flipped={flipped} onFlip={() => setFlipped((f) => !f)} slug={slug} />
+        </motion.div>
+        <p className="dcard-hint">
+          <RotateCw size={14} aria-hidden="true" />
+          {flipped ? (isVi ? "Chạm vào thẻ để xem lại mặt trước" : "Tap the card to see the front") : isVi ? "Chạm vào thẻ để hiện mã QR" : "Tap the card to show the QR code"}
+        </p>
 
-          <div className="dcard__head">
-            <img src={person.photo} alt={person.name} className="dcard__photo" width="112" height="112" />
-            <h1 className="dcard__name">{person.name}</h1>
-            <p className="dcard__title">{title}</p>
-            <p className="dcard__role">{role}</p>
-            <ul className="dcard__chips" aria-label={isVi ? "Chứng chỉ" : "Credentials"}>
-              {credentials.map((c) => (
-                <li key={c}>{c}</li>
-              ))}
-            </ul>
-          </div>
+        <div className="dcard-quick">
+          {actions.map((a) => {
+            const Icon = a.icon;
+            const body = (
+              <>
+                <span className="dcard__action-icon"><Icon size={20} /></span>
+                <span>{a.label}</span>
+              </>
+            );
+            return a.href ? (
+              <a key={a.key} href={a.href} className="dcard__action" {...(a.external ? { target: "_blank", rel: "noreferrer" } : {})}>{body}</a>
+            ) : (
+              <button key={a.key} type="button" className="dcard__action" onClick={a.onClick}>{body}</button>
+            );
+          })}
+        </div>
 
-          <div className="dcard__actions">
-            {actions.map((a) => {
-              const Icon = a.icon;
-              const body = (
-                <>
-                  <span className="dcard__action-icon"><Icon size={20} /></span>
-                  <span>{a.label}</span>
-                </>
-              );
-              return a.href ? (
-                <a key={a.key} href={a.href} className="dcard__action" {...(a.external ? { target: "_blank", rel: "noreferrer" } : {})}>{body}</a>
-              ) : (
-                <button key={a.key} type="button" className="dcard__action" onClick={a.onClick}>{body}</button>
-              );
-            })}
-          </div>
+        {showInstall && (
+          <button type="button" className="dcard-install" onClick={install}>
+            <span className="dcard-install__icon"><img src="/card/icons/icon-192.png" alt="" /></span>
+            <span className="dcard-install__text">
+              <strong>{isVi ? "Cài thẻ lên màn hình chính" : "Add card to Home Screen"}</strong>
+              <span>{isVi ? "Mở thẻ như một ứng dụng, dùng được cả khi không có mạng" : "Open it like an app, even offline"}</span>
+            </span>
+            <Plus size={20} aria-hidden="true" />
+          </button>
+        )}
 
-          <div className="dcard__cta">
-            <a href={vcfHref} className="site-cta dcard__btn">
-              <UserPlus size={18} />
-              {isVi ? "Lưu vào danh bạ" : "Save contact"}
-            </a>
-            <button type="button" className="dcard__btn dcard__btn--ghost" onClick={share}>
-              <Share2 size={18} />
-              {isVi ? "Chia sẻ thẻ" : "Share card"}
-            </button>
-          </div>
-
+        <article className="dcard dcard--details">
           <ul className="dcard__rows">
             <li>
               <Phone size={17} aria-hidden="true" />
@@ -352,6 +478,12 @@ export default function CardPage() {
                 {copied === "email" ? <Check size={15} /> : <Copy size={15} />}
               </button>
             </li>
+          </ul>
+
+          <ul className="dcard__chips dcard__chips--left" aria-label={isVi ? "Chứng chỉ" : "Credentials"}>
+            {credentials.map((c) => (
+              <li key={c}>{c}</li>
+            ))}
           </ul>
 
           <section className="dcard__company" aria-label={isVi ? "Thông tin công ty" : "Company information"}>
@@ -408,24 +540,22 @@ export default function CardPage() {
             </ul>
           </section>
 
+          <div className="dcard__downloads">
+            <span className="dcard__row-label">{isVi ? "Tải mã QR" : "Download QR"}</span>
+            <div className="dcard-side__btns">
+              <button type="button" className="dcard__chipbtn" onClick={downloadPng}><Download size={15} /> PNG</button>
+              <button type="button" className="dcard__chipbtn" onClick={downloadSvg}><Download size={15} /> SVG</button>
+              <button type="button" className="dcard__chipbtn" onClick={() => copy(shareUrl, "link")}>{copied === "link" ? <Check size={15} /> : <Copy size={15} />} Link</button>
+            </div>
+          </div>
+
           <div className="dcard__foot">
             <Link to={`/about/team/${slug}`} className="dcard__profile">
               {isVi ? "Xem hồ sơ đầy đủ" : "View full profile"} <ArrowUpRight size={15} />
             </Link>
             <span className="dcard__url">{COMPANY.domain}/card/{slug}</span>
           </div>
-        </motion.article>
-
-        {/* Máy tính: mã QR luôn hiện cạnh thẻ để người đối diện quét. */}
-        <motion.aside className="dcard-side" initial={{ opacity: 0, y: 24 }} animate={{ opacity: 1, y: 0 }} transition={{ duration: 0.6, delay: 0.12, ease: [0.2, 0.8, 0.2, 1] }}>
-          {qrBlock(false)}
-          <p className="dcard-side__hint">{isVi ? "Quét để mở thẻ danh thiếp trên điện thoại" : "Scan to open this card on your phone"}</p>
-          <div className="dcard-side__btns">
-            <button type="button" className="dcard__chipbtn" onClick={downloadPng}><Download size={15} /> PNG</button>
-            <button type="button" className="dcard__chipbtn" onClick={downloadSvg}><Download size={15} /> SVG</button>
-            <button type="button" className="dcard__chipbtn" onClick={() => copy(shareUrl, "link")}>{copied === "link" ? <Check size={15} /> : <Copy size={15} />} Link</button>
-          </div>
-        </motion.aside>
+        </article>
       </div>
 
       {/* Gắn thẳng vào <body>: khung chuyển trang có transform nên position:fixed bên trong sẽ lệch khỏi giữa màn hình. */}
@@ -447,7 +577,26 @@ export default function CardPage() {
               <button type="button" className="dcard-sheet__close hdr-tool" onClick={() => setSheet(null)} aria-label={isVi ? "Đóng" : "Close"}>
                 <X size={18} />
               </button>
-              {sheet === "qr" ? (
+              {sheet === "install" ? (
+                <>
+                  <span className="dcard-install__icon dcard-install__icon--lg"><img src="/card/icons/icon-192.png" alt="" /></span>
+                  <div className="dcard-sheet__name">{isVi ? "Cài thẻ lên màn hình chính" : "Add to Home Screen"}</div>
+                  {ios ? (
+                    <ol className="dcard-steps">
+                      <li><span>1</span><span>{isVi ? "Bấm nút Chia sẻ" : "Tap the Share button"} <Share size={16} aria-label={isVi ? "biểu tượng chia sẻ" : "share icon"} /> {isVi ? "trên thanh trình duyệt" : "in the browser bar"}</span></li>
+                      <li><span>2</span><span>{isVi ? "Chọn “Thêm vào MH chính”" : "Choose “Add to Home Screen”"} <Plus size={16} aria-hidden="true" /></span></li>
+                      <li><span>3</span><span>{isVi ? "Bấm “Thêm” – biểu tượng FACS hiện trên màn hình chính" : "Tap “Add” – the FACS icon appears on your Home Screen"}</span></li>
+                    </ol>
+                  ) : (
+                    <ol className="dcard-steps">
+                      <li><span>1</span><span>{isVi ? "Mở menu ⋮ của trình duyệt" : "Open the browser menu ⋮"}</span></li>
+                      <li><span>2</span><span>{isVi ? "Chọn “Thêm vào màn hình chính” hoặc “Cài đặt ứng dụng”" : "Choose “Add to Home screen” or “Install app”"}</span></li>
+                      <li><span>3</span><span>{isVi ? "Biểu tượng FACS hiện trên màn hình chính" : "The FACS icon appears on your Home Screen"}</span></li>
+                    </ol>
+                  )}
+                  <div className="dcard__muted"><Smartphone size={14} aria-hidden="true" /> {isVi ? "Chạm biểu tượng là mở thẳng thẻ của bạn, kể cả khi không có mạng." : "Tap the icon to open your card instantly, even offline."}</div>
+                </>
+              ) : sheet === "qr" ? (
                 <>
                   {qrBlock(true)}
                   <div className="dcard-sheet__name">{person.name}</div>
