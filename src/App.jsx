@@ -1,4 +1,4 @@
-import { useEffect, useState } from "react";
+import { lazy, Suspense, useEffect, useState } from "react";
 import { BrowserRouter, Routes, Route, Navigate, useLocation } from "react-router-dom";
 import { AnimatePresence, MotionConfig, motion } from "framer-motion";
 
@@ -40,6 +40,8 @@ import ApplicationPage from "./pages/ApplicationPage";
 import ContactPage from "./pages/ContactPage";
 import LegalPage from "./pages/LegalPage";
 import TeamMemberDetailPage from "./pages/TeamMemberDetailPage";
+// Thẻ danh thiếp số tải riêng (kèm thư viện QR) để không làm nặng các trang khác.
+const CardPage = lazy(() => import("./pages/CardPage"));
 import ScrollToTop from "./components/ScrollToTop";
 import PageTransition from "./components/PageTransition";
 import MouseGlow from "./components/MouseGlow";
@@ -132,6 +134,7 @@ function AnimatedRoutes() {
         <Route path="/" element={<PageTransition><HomePage /></PageTransition>} />
         <Route path="/about" element={<PageTransition><AboutPage /></PageTransition>} />
         <Route path="/about/team/:slug" element={<PageTransition><TeamMemberDetailPage /></PageTransition>} />
+        <Route path="/card/:slug" element={<PageTransition><Suspense fallback={null}><CardPage /></Suspense></PageTransition>} />
         <Route path="/services" element={<PageTransition><ServicesPage /></PageTransition>} />
         <Route path="/services/:slug" element={<PageTransition><ServiceDetailPage /></PageTransition>} />
         <Route path="/industries" element={<PageTransition><IndustriesPage /></PageTransition>} />

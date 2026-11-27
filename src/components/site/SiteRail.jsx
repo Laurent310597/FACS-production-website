@@ -31,7 +31,8 @@ export default function SiteRail() {
   const { language } = useLanguage();
   const theme = useSiteTheme();
   const isVi = language === "vi";
-  if (pathname.startsWith("/admin")) return null;
+  // CMS và trang thẻ danh thiếp số (/card) không có thanh điều khiển.
+  if (pathname.startsWith("/admin") || pathname.startsWith("/card/")) return null;
   const light = theme === "light";
 
   return (

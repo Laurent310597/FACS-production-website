@@ -36,7 +36,7 @@ function readSections() {
  */
 export default function SiteSideDecor() {
   const { pathname } = useLocation();
-  const hidden = pathname.startsWith("/admin");
+  const hidden = pathname.startsWith("/admin") || pathname.startsWith("/card/");
   const [sections, setSections] = useState([]);
   const [active, setActive] = useState(0);
   const ringRef = useRef(null);
