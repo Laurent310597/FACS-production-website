@@ -65,6 +65,8 @@ function digitalCardPages() {
           `<meta property="og:image:width" content="640" />`,
           `<meta property="og:image:height" content="640" />`,
           `<meta name="twitter:card" content="summary" />`,
+          // Thẻ chỉ mở qua đường dẫn / QR: không đưa lên kết quả tìm kiếm.
+          `<meta name="robots" content="noindex, nofollow" />`,
           `<link rel="manifest" href="/card/${p.slug}/manifest.webmanifest" />`,
           `<link rel="apple-touch-icon" href="/card/icons/apple-touch-icon.png" />`,
           `<meta name="apple-mobile-web-app-capable" content="yes" />`,

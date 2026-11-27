@@ -1,6 +1,15 @@
 {
   "headers": [
     {
+      "source": "/card/(.*)",
+      "headers": [
+        {
+          "key": "X-Robots-Tag",
+          "value": "noindex, nofollow"
+        }
+      ]
+    },
+    {
       "source": "/card/:slug/:file(contact.*\\.vcf)",
       "headers": [
         {

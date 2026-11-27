@@ -132,6 +132,7 @@ function useAppHead(slug, shortName) {
     ensure('link[rel="apple-touch-icon"]', link("apple-touch-icon", "/card/icons/apple-touch-icon.png"));
     ensure('meta[name="apple-mobile-web-app-capable"]', meta("apple-mobile-web-app-capable", "yes"));
     ensure('meta[name="apple-mobile-web-app-title"]', meta("apple-mobile-web-app-title", shortName));
+    ensure('meta[name="robots"]', meta("robots", "noindex, nofollow"));
     // Lưu sẵn thẻ để mở được khi không có mạng (chỉ bản build thật; phạm vi /card/, không ảnh hưởng website).
     if (import.meta.env.PROD && "serviceWorker" in navigator) {
       navigator.serviceWorker.register("/card/sw.js", { scope: "/card/" }).catch(() => {});
