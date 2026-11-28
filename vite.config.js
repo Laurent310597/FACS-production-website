@@ -219,7 +219,8 @@ function seoPages() {
       const data = { services, industries, tools: toolMeta, team: readLeadership(), posts, jobs }
       const entries = sitemapEntries(data)
       let pages = 0
-      for (const entry of entries) {
+      const legacy = posts.flatMap((p) => (p.slug && p.slug !== p.slug_vi && p.slug !== p.slug_en ? [{ path: `/insights/${p.slug}` }] : []))
+      for (const entry of [...entries, ...legacy]) {
         const seo = resolveSeo(entry.path, 'vi', data)
         if (!seo) continue
         const html = injectHead(template, { lang: 'vi', ...seo })

@@ -264,6 +264,9 @@ export function resolveSeo(pathname, lang = "vi", data = {}) {
     if (!post) return null;
     const postLang = slug === post.slug_en && slug !== post.slug_vi ? "en" : slug === post.slug_vi ? "vi" : lang;
     const pe = postLang === "en";
+    // Đường dẫn cũ (slug chung) trỏ canonical về đường dẫn theo ngôn ngữ để Google không coi là trùng lặp.
+    const canonicalSlug = (pe ? post.slug_en : post.slug_vi) || post.slug_vi || post.slug_en || slug;
+    const canonical = `${SITE_URL}/insights/${canonicalSlug}`;
     const title = (pe ? post.seo_title_en || post.title_en : post.seo_title_vi || post.title_vi) || post.title_vi || post.title_en || "FACS Insights";
     const description = clip(plain((pe ? post.seo_description_en || post.excerpt_en : post.seo_description_vi || post.excerpt_vi) || post.excerpt_vi || post.excerpt_en || ""), 200);
     const image = post.cover_image_url || DEFAULT_IMAGE;
@@ -271,6 +274,7 @@ export function resolveSeo(pathname, lang = "vi", data = {}) {
       ...base,
       title: `${title} | FACS Insights`,
       description,
+      canonical,
       image,
       type: "article",
       lang: postLang,
@@ -286,7 +290,7 @@ export function resolveSeo(pathname, lang = "vi", data = {}) {
           inLanguage: postLang,
           author: post.author_name && post.author_name !== COMPANY.name ? { "@type": "Person", name: post.author_name } : { "@id": ORG_ID },
           publisher: { "@id": ORG_ID },
-          mainEntityOfPage: base.canonical,
+          mainEntityOfPage: canonical,
         },
         breadcrumbLd([crumbHome(lang), { name: "Insights", path: "/insights" }, { name: clip(title, 80), path }]),
       ],
@@ -332,7 +336,8 @@ export function sitemapEntries(data = {}) {
   for (const m of data.team || []) entries.push({ path: `/about/team/${m.slug}`, priority: 0.5 });
   for (const j of data.jobs || []) entries.push({ path: `/careers/${j.slug}`, priority: 0.5, lastmod: j.updated_at || j.published_at });
   for (const p of data.posts || []) {
-    for (const slug of new Set([p.slug_vi, p.slug_en, p.slug].filter(Boolean))) {
+    const slugs = [p.slug_vi, p.slug_en].filter(Boolean);
+    for (const slug of new Set(slugs.length ? slugs : [p.slug].filter(Boolean))) {
       entries.push({ path: `/insights/${slug}`, priority: 0.7, lastmod: p.updated_at || p.published_at });
     }
   }
