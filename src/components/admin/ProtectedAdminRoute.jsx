@@ -1,6 +1,7 @@
 import { useEffect, useState } from "react";
 import { Navigate, useLocation } from "react-router-dom";
 import { isSupabaseConfigured, supabase } from "../../lib/supabaseClient";
+import { excludeThisBrowser } from "../../lib/analytics";
 import AdminConfigurationNotice from "./AdminConfigurationNotice";
 
 export default function ProtectedAdminRoute({ children }) {
@@ -32,6 +33,7 @@ export default function ProtectedAdminRoute({ children }) {
     if (!supabase || !userId) return undefined;
     let mounted = true;
     supabase.rpc("is_cms_admin").then(({ data, error }) => {
+      if (!error && data === true) excludeThisBrowser(); // không tính lượt xem của quản trị viên vào số liệu
       if (mounted) setAccess({ user: userId, ok: !error && data === true });
     });
     return () => {

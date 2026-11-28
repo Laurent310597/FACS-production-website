@@ -29,6 +29,7 @@ import { COMPANY } from "../data/company";
 import { cardUrl, mapsUrl, toE164, zaloNumber } from "../lib/digitalCard";
 import { cardVcfUrl, fetchCardRow, mergeCard, readCardCache, writeCardCache } from "../lib/cardProfile";
 import { supabase } from "../lib/supabaseClient";
+import { track } from "../lib/analytics";
 import { useLanguage } from "../components/LanguageContext";
 import { setSiteTheme, useSiteTheme } from "../components/site/siteTheme";
 
@@ -339,6 +340,7 @@ export default function CardPage() {
 
   // Chia sẻ: trên điện thoại mở bảng chia sẻ của máy (Zalo, Messenger, WhatsApp, AirDrop…); máy tính mở bảng chọn kênh.
   const share = async () => {
+    track("card_share", { label: "share" });
     if (navigator.share) {
       try {
         await navigator.share({ title: `${person.name} · FACS`, text: shareText, url: shareUrl });
@@ -351,6 +353,7 @@ export default function CardPage() {
   };
 
   const downloadSvg = async () => {
+    track("card_qr_download", { label: "svg" });
     const svg = await QRCode.toString(qrUrl, { type: "svg", errorCorrectionLevel: "H", margin: 2, color: { dark: QR_DARK, light: "#ffffff" } });
     const size = Number(svg.match(/viewBox="0 0 (\d+)/)?.[1] || 33);
     let mark = "";
@@ -375,6 +378,7 @@ export default function CardPage() {
 
   // Ảnh PNG để gửi qua chat / in: QR + logo ở giữa + tên, chức danh, tên miền.
   const downloadPng = async () => {
+    track("card_qr_download", { label: "png" });
     const W = 1080;
     const H = 1350;
     const canvas = document.createElement("canvas");

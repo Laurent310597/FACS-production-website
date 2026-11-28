@@ -1,4 +1,17 @@
 {
+  "redirects": [
+    {
+      "source": "/(.*)",
+      "has": [
+        {
+          "type": "host",
+          "value": "www.facs.vn"
+        }
+      ],
+      "destination": "https://facs.vn/$1",
+      "permanent": true
+    }
+  ],
   "headers": [
     {
       "source": "/card/(.*)",
@@ -41,6 +54,28 @@
         {
           "key": "Content-Type",
           "value": "application/manifest+json; charset=utf-8"
+        },
+        {
+          "key": "Cache-Control",
+          "value": "public, max-age=0, must-revalidate"
+        }
+      ]
+    },
+    {
+      "source": "/admin/(.*)",
+      "headers": [
+        {
+          "key": "X-Robots-Tag",
+          "value": "noindex, nofollow"
+        }
+      ]
+    },
+    {
+      "source": "/sitemap.xml",
+      "headers": [
+        {
+          "key": "Content-Type",
+          "value": "application/xml; charset=utf-8"
         },
         {
           "key": "Cache-Control",

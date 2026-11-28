@@ -1,4 +1,5 @@
 import {
+  Activity,
   BarChart3,
   Briefcase,
   Building2,
@@ -26,6 +27,12 @@ export const AI_OFFICE_URL = import.meta.env.VITE_AI_OFFICE_URL || "https://facs
 
 // Một nguồn duy nhất cho menu quản trị: thanh bên (mở rộng / thu gọn) và menu vòng xoay đều đọc từ đây.
 export const ADMIN_NAV = [
+  {
+    id: "analytics",
+    label: "Đo lường",
+    icon: Activity,
+    items: [{ to: "/admin/analytics", label: "Tổng quan truy cập", icon: BarChart3 }],
+  },
   {
     id: "insights",
     label: "Insights",
