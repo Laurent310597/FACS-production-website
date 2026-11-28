@@ -1,11 +1,14 @@
-import { defineConfig } from 'vite'
+import { defineConfig, loadEnv } from 'vite'
 import react from '@vitejs/plugin-react'
 import tailwindcss from '@tailwindcss/vite'
 import { readFileSync, writeFileSync, mkdirSync, existsSync } from 'node:fs'
 import { resolve } from 'node:path'
+import process from 'node:process'
 import { createHash } from 'node:crypto'
 import { COMPANY } from './src/data/company.js'
 import { buildVCard, cardUrl } from './src/lib/digitalCard.js'
+import { resolveSeo, sitemapEntries, SITE_URL, DEFAULT_IMAGE } from './src/seo/siteSeo.js'
+import { toolMeta } from './src/data/tools.js'
 
 // Đọc thông tin liên hệ của ban lãnh đạo từ src/data/team.js (tệp đó import ảnh nên không import trực tiếp ở đây được).
 function readLeadership() {
@@ -139,10 +142,111 @@ function digitalCardPages() {
   }
 }
 
+// ── SEO kỹ thuật: tạo sẵn HTML từng trang (tiêu đề, mô tả, canonical, ảnh chia sẻ, JSON-LD) + sitemap.xml ──
+// Google, Zalo, Facebook đọc được ngay mà không cần chạy JavaScript. Nội dung trang vẫn do ứng dụng React hiển thị như cũ.
+async function fetchPublished(env, table, select, order) {
+  const url = env.VITE_SUPABASE_URL?.trim()
+  const key = (env.VITE_SUPABASE_PUBLISHABLE_KEY || env.VITE_SUPABASE_ANON_KEY || '').trim()
+  if (!url || !key) return []
+  const now = new Date().toISOString()
+  const q = `${url}/rest/v1/${table}?select=${select}&status=eq.published&published_at=lte.${encodeURIComponent(now)}&order=${order}`
+  try {
+    const res = await fetch(q, { headers: { apikey: key }, signal: AbortSignal.timeout(10000) })
+    if (!res.ok) throw new Error(`HTTP ${res.status}`)
+    return await res.json()
+  } catch (error) {
+    console.warn(`[seo] Không tải được ${table} lúc build (${error.message}) – bỏ qua trang ${table}.`)
+    return []
+  }
+}
+
+function headBlock(seo) {
+  const tags = [
+    `<title>${escHtml(seo.title)}</title>`,
+    `<meta name="description" content="${escHtml(seo.description)}" />`,
+    `<meta name="robots" content="${seo.noindex ? 'noindex, nofollow' : 'index, follow'}" />`,
+    `<link rel="canonical" href="${escHtml(seo.canonical)}" />`,
+    `<meta property="og:site_name" content="FACS" />`,
+    `<meta property="og:title" content="${escHtml(seo.title)}" />`,
+    `<meta property="og:description" content="${escHtml(seo.description)}" />`,
+    `<meta property="og:type" content="${seo.type}" />`,
+    `<meta property="og:url" content="${escHtml(seo.canonical)}" />`,
+    `<meta property="og:image" content="${escHtml(seo.image || DEFAULT_IMAGE)}" />`,
+    `<meta property="og:locale" content="${seo.lang === 'en' ? 'en_US' : 'vi_VN'}" />`,
+    `<meta name="twitter:card" content="summary_large_image" />`,
+    `<meta name="twitter:title" content="${escHtml(seo.title)}" />`,
+    `<meta name="twitter:description" content="${escHtml(seo.description)}" />`,
+    `<meta name="twitter:image" content="${escHtml(seo.image || DEFAULT_IMAGE)}" />`,
+  ]
+  if (seo.jsonLd?.length) {
+    const json = JSON.stringify(seo.jsonLd.length === 1 ? seo.jsonLd[0] : seo.jsonLd).replace(/</g, '\\u003c')
+    tags.push(`<script type="application/ld+json" id="seo-jsonld">${json}</script>`)
+  }
+  return tags.map((t) => `    ${t}`).join('\n')
+}
+
+function injectHead(template, seo) {
+  const cleaned = template
+    .replace(/\s*<title>[\s\S]*?<\/title>/, '')
+    .replace(/\s*<meta (name|property)="(description|robots|og:[^"]+|twitter:[^"]+)"[^>]*>/g, '')
+    .replace(/\s*<link rel="canonical"[^>]*>/g, '')
+    .replace(/\s*<script type="application\/ld\+json"[\s\S]*?<\/script>/g, '')
+    .replace(/<html lang="[^"]*">/, `<html lang="${seo.lang === 'en' ? 'en' : 'vi'}">`)
+  return cleaned.replace('</head>', `${headBlock(seo)}\n  </head>`)
+}
+
+function seoPages() {
+  let outDir = 'dist'
+  let env = {}
+  return {
+    name: 'facs-seo-pages',
+    apply: 'build',
+    configResolved(config) {
+      outDir = config.build.outDir
+      env = { ...loadEnv(config.mode, process.cwd(), 'VITE_'), ...process.env }
+    },
+    async closeBundle() {
+      const dist = resolve(outDir)
+      const templatePath = resolve(dist, 'index.html')
+      if (!existsSync(templatePath)) return
+      const template = readFileSync(templatePath, 'utf8')
+      const [{ services }, { industries }, posts, jobs] = await Promise.all([
+        import('./src/data/services.js'),
+        import('./src/data/industries.js'),
+        fetchPublished(env, 'posts', 'slug,slug_vi,slug_en,title_vi,title_en,excerpt_vi,excerpt_en,seo_title_vi,seo_title_en,seo_description_vi,seo_description_en,cover_image_url,author_name,published_at,updated_at', 'published_at.desc'),
+        fetchPublished(env, 'job_posts', 'slug,title_vi,title_en,summary_vi,summary_en,content_vi,content_en,employment_type,application_deadline,published_at,updated_at', 'published_at.desc'),
+      ])
+      const data = { services, industries, tools: toolMeta, team: readLeadership(), posts, jobs }
+      const entries = sitemapEntries(data)
+      let pages = 0
+      for (const entry of entries) {
+        const seo = resolveSeo(entry.path, 'vi', data)
+        if (!seo) continue
+        const html = injectHead(template, { lang: 'vi', ...seo })
+        const file = entry.path === '/' ? templatePath : resolve(dist, `.${entry.path}`, 'index.html')
+        mkdirSync(resolve(file, '..'), { recursive: true })
+        writeFileSync(file, html)
+        pages += 1
+      }
+      const today = new Date().toISOString().slice(0, 10)
+      const xml = [
+        '<?xml version="1.0" encoding="UTF-8"?>',
+        '<urlset xmlns="http://www.sitemaps.org/schemas/sitemap/0.9">',
+        ...entries.map((e) => `  <url><loc>${SITE_URL}${e.path === '/' ? '/' : e.path}</loc><lastmod>${(e.lastmod || today).slice(0, 10)}</lastmod><priority>${e.priority.toFixed(1)}</priority></url>`),
+        '</urlset>',
+        '',
+      ].join('\n')
+      writeFileSync(resolve(dist, 'sitemap.xml'), xml)
+      console.log(`[seo] ${pages} trang có HTML riêng, sitemap ${entries.length} đường dẫn (bài viết: ${posts.length}, tuyển dụng: ${jobs.length}).`)
+    },
+  }
+}
+
 export default defineConfig({
   plugins: [
     react(),
     tailwindcss(),
     digitalCardPages(),
+    seoPages(),
   ],
 })

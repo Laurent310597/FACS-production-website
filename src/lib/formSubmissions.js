@@ -1,4 +1,5 @@
 import { supabase } from "./supabaseClient";
+import { track } from "./analytics";
 
 export function newSubmissionKey() {
   return window.crypto.randomUUID();
@@ -26,6 +27,7 @@ export async function submitWebsiteForm(formElement, { type, language, submissio
     throw new Error(message);
   }
   if (data?.error) throw new Error(data.error);
+  track(type === "contact" ? "contact_submit" : type === "application" ? "application_submit" : "form_submit", { label: type });
   return data;
 }
 

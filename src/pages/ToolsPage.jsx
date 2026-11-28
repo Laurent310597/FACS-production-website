@@ -6,18 +6,13 @@ import SiteBackdrop from "../components/site/SiteBackdrop";
 import Footer from "../components/Footer";
 import { useLanguage } from "../components/LanguageContext";
 import { supabase } from "../lib/supabaseClient";
+import { toolMeta } from "../data/tools";
 
 const money = (value, language = "vi") => new Intl.NumberFormat(language === "vi" ? "vi-VN" : "en-US", { maximumFractionDigits: 0 }).format(Number(value) || 0);
 const numberValue = (value) => Math.max(0, Number(String(value).replace(/[^0-9.-]/g, "")) || 0);
 
-const toolList = [
-  { slug: "gross-net", icon: Banknote, vi: "Tính lương Gross – Net", en: "Gross – Net Salary", descVi: "Ước tính lương thực nhận, bảo hiểm và thuế TNCN theo quy định 2026.", descEn: "Estimate take-home pay, compulsory insurance and PIT under the 2026 rules." },
-  { slug: "personal-income-tax", icon: Calculator, vi: "Tính thuế TNCN", en: "Personal Income Tax", descVi: "Tính thuế tiền lương theo biểu thuế lũy tiến từng phần 5 bậc.", descEn: "Calculate salary income tax using the five-band progressive schedule." },
-  { slug: "unemployment-benefit", icon: ShieldCheck, vi: "Tính BHTN", en: "Unemployment Benefit", descVi: "Ước tính mức hưởng hằng tháng và thời gian hưởng trợ cấp thất nghiệp.", descEn: "Estimate monthly unemployment benefit and entitlement duration." },
-  { slug: "one-time-social-insurance", icon: Landmark, vi: "Tính BHXH một lần", en: "One-time Social Insurance", descVi: "Ước tính quyền lợi theo thời gian đóng trước và từ năm 2014.", descEn: "Estimate the benefit based on contribution periods before and from 2014." },
-  { slug: "savings-plan", icon: PiggyBank, vi: "Lập kế hoạch tiết kiệm", en: "Savings Planner", descVi: "Mô phỏng lãi kép, mục tiêu tài chính và khoản tiết kiệm định kỳ.", descEn: "Model compound growth, financial targets and recurring savings." },
-  { slug: "rates-and-gold", icon: Coins, vi: "Dữ liệu thị trường tài chính", en: "Financial Market Data", descVi: "Theo dõi tỷ giá VCB, giá vàng Việt Nam và thế giới, cùng các chỉ số chứng khoán tham khảo.", descEn: "Monitor VCB exchange rates, Vietnam and global gold prices, plus reference securities indices." },
-];
+const toolIcons = { "gross-net": Banknote, "personal-income-tax": Calculator, "unemployment-benefit": ShieldCheck, "one-time-social-insurance": Landmark, "savings-plan": PiggyBank, "rates-and-gold": Coins };
+const toolList = toolMeta.map((tool) => ({ ...tool, icon: toolIcons[tool.slug] }));
 
 const toolGuides = {
   "gross-net": {

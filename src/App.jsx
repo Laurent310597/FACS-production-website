@@ -1,4 +1,6 @@
 import { lazy, Suspense, useEffect, useState } from "react";
+import SiteMeta from "./components/site/SiteMeta";
+import ContactDock from "./components/site/ContactDock";
 import { BrowserRouter, Routes, Route, Navigate, useLocation } from "react-router-dom";
 import { AnimatePresence, MotionConfig, motion } from "framer-motion";
 
@@ -19,6 +21,7 @@ import AdminJobsPage from "./pages/admin/AdminJobsPage";
 import AdminJobEditorPage from "./pages/admin/AdminJobEditorPage";
 import AdminApplicationsPage from "./pages/admin/AdminApplicationsPage";
 import AdminInquiriesPage from "./pages/admin/AdminInquiriesPage";
+import AdminAnalyticsPage from "./pages/admin/AdminAnalyticsPage";
 import AdminFormEmailPage from "./pages/admin/AdminFormEmailPage";
 import AdminEmailPage from "./pages/admin/AdminEmailPage";
 import AdminLegalCalendarPage from "./pages/admin/AdminLegalCalendarPage";
@@ -153,6 +156,7 @@ function AnimatedRoutes() {
         <Route path="/admin/jobs/new" element={<ProtectedAdminRoute><AdminJobEditorPage /></ProtectedAdminRoute>} />
         <Route path="/admin/jobs/:id/edit" element={<ProtectedAdminRoute><AdminJobEditorPage /></ProtectedAdminRoute>} />
         <Route path="/admin/applications" element={<ProtectedAdminRoute><AdminApplicationsPage /></ProtectedAdminRoute>} />
+        <Route path="/admin/analytics" element={<ProtectedAdminRoute><AdminAnalyticsPage /></ProtectedAdminRoute>} />
         <Route path="/admin/inquiries" element={<ProtectedAdminRoute><AdminInquiriesPage /></ProtectedAdminRoute>} />
         <Route path="/admin/form-email" element={<ProtectedAdminRoute><AdminFormEmailPage /></ProtectedAdminRoute>} />
         <Route path="/admin/email" element={<ProtectedAdminRoute><AdminEmailPage /></ProtectedAdminRoute>} />
@@ -192,6 +196,8 @@ export default function App() {
         <SiteRail />
         <SiteSideDecor />
         <HomeIntroOverlay />
+        <SiteMeta />
+        <ContactDock />
         {/* Thông báo dạng toast cho CMS; giữ qua các lần chuyển trang */}
         <ToastProvider>
           <ConfirmProvider>

@@ -10,6 +10,8 @@ export const COMPANY = {
   description: "Strategic financial, legal and operational consulting infrastructure for modern enterprises in Vietnam.",
   hotline: "(+84) 972 798 424",
   email: "contact@facs.vn",
+  // Zalo: chat với số hotline. Khi có Zalo OA, thay bằng đường dẫn OA (ví dụ https://zalo.me/<id-OA>).
+  zalo: "https://zalo.me/0972798424",
   facebook: "https://www.facebook.com/profile.php?id=61550646023438",
   linkedin: "https://www.linkedin.com/in/facs-vietnam/",
   instagram: "https://www.instagram.com/facs.company/",
